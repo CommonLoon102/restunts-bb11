@@ -185,9 +185,8 @@ Cd("C:/Restunts");
 #include "PLAY.HC";
 ```
 
-Compilation can take a minute or more under software emulation. HolyC may print
-warnings about 64-bit register variables; these are expected because the port
-explicitly preserves DOS integer widths. Wait for the intro or main menu.
+Compilation can take a minute or more under software emulation. Wait for the
+intro or main menu. The sources should compile without warnings.
 
 On the main menu, use Left/Right to select **Let's Drive**, then press Enter.
 With the standard default configuration, driving uses the keyboard and automatic

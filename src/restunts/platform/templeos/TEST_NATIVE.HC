@@ -30,11 +30,6 @@ legacy_u32 temple_test_audio_ticks=0;
 legacy_u32 temple_test_callback_ticks=0;
 legacy_u32 temple_test_worker_request=0,temple_test_worker_acknowledged=0;
 
-legacy_void TempleAudioTick()
-{
-  temple_test_audio_ticks++;
-}
-
 legacy_void TempleVideoPresent()
 {
 }
@@ -47,6 +42,11 @@ legacy_void TempleVideoShutdown()
 #include "INPUT.HC"
 #include "TIMER.HC"
 #include "RUNTIME.HC"
+
+legacy_void TempleAudioTick()
+{
+  temple_test_audio_ticks++;
+}
 
 legacy_void TempleTestAssert(legacy_u8 condition,legacy_u8 *message)
 {
@@ -64,9 +64,9 @@ legacy_void TempleTestCallback()
 legacy_void TempleTestFindPattern(legacy_u8 *pattern)
 {
   legacy_u8 *directory=StrNew(Fs->cur_dir);
-  legacy_u8 drive=Fs->cur_dv->drv_let;
+  legacy_u8 noreg drive=Fs->cur_dv->drv_let;
   legacy_u8 *name=RsDosFileFindFirst(pattern);
-  legacy_u8 found=0,match;
+  legacy_u8 noreg found=0,noreg match;
   while(name) {
     match=0;
     if(!StrCmp(name,TEMPLE_TEST_NAME)) {
@@ -88,7 +88,7 @@ legacy_void TempleTestFindPattern(legacy_u8 *pattern)
 
 legacy_void TempleTestFileSearch()
 {
-  legacy_u16 handle=RsDosFileOpen(TEMPLE_TEST_SECOND_PATH,TEMPLE_FILE_CREATE);
+  legacy_u16 noreg handle=RsDosFileOpen(TEMPLE_TEST_SECOND_PATH,TEMPLE_FILE_CREATE);
   legacy_u8 *name;
   TempleTestAssert(handle!=TEMPLE_FILE_INVALID_HANDLE,"create second search fixture");
   TempleTestAssert(RsDosFileWrite(handle,"S",1)==1,"write second search fixture");
@@ -123,9 +123,9 @@ legacy_void TempleTestPumpWorker(CTask *recipient)
 
 legacy_void TempleTestPumpScheduling()
 {
-  legacy_u16 round;
-  legacy_u32 before;
-  legacy_u8 progressed=TRUE,advanced=TRUE,delivered=TRUE;
+  legacy_u16 noreg round;
+  legacy_u32 noreg before;
+  legacy_u8 noreg progressed=TRUE,noreg advanced=TRUE,noreg delivered=TRUE;
   CTask *worker=Spawn(&TempleTestPumpWorker,Fs,"Pump regression",Fs->gs->num);
   TempleTestAssert(worker!=NULL,"spawn cooperative worker");
   RsKbInitInterrupt();
@@ -157,7 +157,7 @@ legacy_void TempleTestPumpScheduling()
 legacy_void TempleTestTimerCadence()
 {
   legacy_s64 start,elapsed;
-  legacy_u32 expected;
+  legacy_u32 noreg expected;
   RsDosTimerSetupInterrupt();
   start=cnts.jiffies;
   while((cnts.jiffies-start)<TEMPLE_TEST_TIMER_SECONDS*JIFFY_FREQ) {
@@ -178,11 +178,11 @@ legacy_void TempleTestTimerCadence()
 
 legacy_void TempleTestNative()
 {
-  legacy_u16 handle;
+  legacy_u16 noreg handle;
   legacy_u8 buffer[TEMPLE_TEST_BUFFER_SIZE];
   legacy_u8 *path;
-  legacy_u32 before;
-  legacy_s16 y;
+  legacy_u32 noreg before;
+  legacy_s16 noreg y;
   legacy_s64 first,last;
   TempleTestAssert(sizeof(legacy_u16)==2&&sizeof(legacy_u32)==4&&sizeof(legacy_u8 *)==8,
       "fixed fields/native pointer sizes");

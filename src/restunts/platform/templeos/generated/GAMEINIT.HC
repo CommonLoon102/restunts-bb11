@@ -2,7 +2,7 @@
 
 legacy_s8 RsGameinitLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_626;
+  legacy_s32 noreg temple_tmp_626;
   if((value<=127)) {
     temple_tmp_626=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsGameinitLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsGameinitLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_627;
+  legacy_s32 noreg temple_tmp_627;
   if((value<=32767)) {
     temple_tmp_627=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsGameinitLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsGameinitLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_628;
+  legacy_s32 noreg temple_tmp_628;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_628=TempleCastS32(TempleCastS32(value));
   } else {
@@ -44,7 +44,7 @@ legacy_s16 RsGameinitAngleWithOffset(legacy_s16 angle,legacy_s16 offset)
 
 legacy_s32 RsGameinitTrackCoordinateToWorld(legacy_s16 base,legacy_s16 offset)
 {
-  legacy_s16 temple_coordinate_629;
+  legacy_s16 noreg temple_coordinate_629;
   temple_coordinate_629=TempleCastS16(RsGameinitLegacyS16FromBits(TempleCastU16(
       TempleCastU16(TempleCastU16(TempleCastS32((TempleCastU16(base)+TempleCastU16(offset))))))));
   return TempleCastS32(RsGameinitLegacyS32FromBits(
@@ -96,9 +96,9 @@ legacy_void RsGameinitInitCarWheels(
     CCarState *playerstate,legacy_s32 pos_x,legacy_s32 pos_y,legacy_s32 pos_z)
 {
   CVector temple_whl_pos_630;
-  legacy_u16 temple_i_632;
+  legacy_u16 noreg temple_i_632;
   legacy_u16 *temple_tmp_633;
-  legacy_u16 temple_tmp_634;
+  legacy_u16 noreg temple_tmp_634;
   (temple_whl_pos_630.x=TempleCastS16(
       RsGameinitLegacyS16FromBits(TempleCastU16(TempleCastU16(TempleCastU16(RsLegacyS32DivOrZero(
           TempleCastS32(RsGameinitLegacyS32FromBits(TempleCastU32(TempleCastU32(pos_x)))),
@@ -195,7 +195,7 @@ legacy_void RsInitCarstateFromSimd(CCarState *playerstate,CSimd *simd,legacy_s8 
 
 legacy_void RsGameinitInitFollowCameraPositions()
 {
-  legacy_u32 temple_tmp_635;
+  legacy_u32 noreg temple_tmp_635;
   if((TempleCastU32((TempleCastU16(10)&31))>=16)) {
     temple_tmp_635=TempleCastU32(0);
   } else {
@@ -241,10 +241,10 @@ legacy_void RsGameinitInitFollowCameraPositions()
 
 legacy_void RsGameinitInitRaceCars(legacy_s16 initialization_mode)
 {
-  legacy_s16 temple_start_row_offset_636;
-  legacy_s16 temple_start_column_offset_637;
-  legacy_u8 temple_route_point_638;
-  legacy_s32 temple_tmp_639;
+  legacy_s16 noreg temple_start_row_offset_636;
+  legacy_s16 noreg temple_start_column_offset_637;
+  legacy_u8 noreg temple_route_point_638;
+  legacy_s32 noreg temple_tmp_639;
   RsGameinitCalculateCarStartOffset(TempleCastS16(track_angle),TempleCastS16(256),
       (&(temple_start_column_offset_637)),(&(temple_start_row_offset_636)));
   RsGameinitInitCarAtStart((&(state.playerstate)),(&(simd_player)),
@@ -288,15 +288,15 @@ legacy_void RsGameinitInitRaceCars(legacy_s16 initialization_mode)
 
 legacy_void RsInitGameState(legacy_s16 initialization_mode)
 {
-  legacy_u16 temple_i_641;
+  legacy_u16 noreg temple_i_641;
   legacy_u16 *temple_tmp_642;
-  legacy_u16 temple_tmp_643;
-  legacy_u16 temple_i_645;
+  legacy_u16 noreg temple_tmp_643;
+  legacy_u16 noreg temple_i_645;
   legacy_u16 *temple_tmp_646;
-  legacy_u16 temple_tmp_647;
-  legacy_u16 temple_i_649;
+  legacy_u16 noreg temple_tmp_647;
+  legacy_u16 noreg temple_i_649;
   legacy_u16 *temple_tmp_650;
-  legacy_u16 temple_tmp_651;
+  legacy_u16 noreg temple_tmp_651;
   if((initialization_mode==GAMESTATE_INIT_RESET_CHECKPOINTS)) {
     (elapsed_time1=TempleCastU16(0));
     temple_i_641=TempleCastU16(0);
@@ -392,10 +392,10 @@ legacy_void RsInitGameStateWithFrameRateByte(legacy_u16 frame_rate)
 
 legacy_void RsRestoreGamestate(legacy_u16 frame)
 {
-  legacy_s32 temple_tmp_652;
-  legacy_s32 temple_tmp_653;
-  legacy_u16 temple_curframe_654;
-  legacy_s32 temple_tmp_655;
+  legacy_s32 noreg temple_tmp_652;
+  legacy_s32 noreg temple_tmp_653;
+  legacy_u16 noreg temple_curframe_654;
+  legacy_s32 noreg temple_tmp_655;
   temple_tmp_652=!!((frame==0));
   if(temple_tmp_652) {
     temple_tmp_652=!!((elapsed_time1==0));

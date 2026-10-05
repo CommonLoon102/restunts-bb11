@@ -38,7 +38,7 @@ legacy_u8 *RsInternal2Fmemcpy(legacy_u8 *destination,legacy_u8 *source,legacy_u1
 
 legacy_s16 RsDosWriteStdout(legacy_s8 *text,legacy_u16 length)
 {
-  legacy_u16 index;
+  legacy_u16 noreg index;
   for(index=0;index<length;index++) {
     PutChars(text[index]);
   }
@@ -87,5 +87,6 @@ legacy_void RsDosInterruptsEnable()
 
 legacy_void RsDosSetCriticalErrorHandler(legacy_u8 *callback)
 {
+  no_warn callback;
   // File operations return DOS error codes through dos_file_error().
 }

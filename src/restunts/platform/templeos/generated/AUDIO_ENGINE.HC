@@ -2,7 +2,7 @@
 
 legacy_s8 RsAudioEngineLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_2661;
+  legacy_s32 noreg temple_tmp_2661;
   if((value<=127)) {
     temple_tmp_2661=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsAudioEngineLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsAudioEngineLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_2662;
+  legacy_s32 noreg temple_tmp_2662;
   if((value<=32767)) {
     temple_tmp_2662=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsAudioEngineLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsAudioEngineLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_2663;
+  legacy_s32 noreg temple_tmp_2663;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_2663=TempleCastS32(TempleCastS32(value));
   } else {
@@ -47,8 +47,8 @@ legacy_u8 *RsAudioReadFarPointer(legacy_u8 *source)
 
 legacy_void RsAudioWriteFarPointer(legacy_u8 *destination,legacy_u8 *value)
 {
-  legacy_u16 temple_legacy_write_u16_value__2665;
-  legacy_u16 temple_legacy_write_u16_value__2667;
+  legacy_u16 noreg temple_legacy_write_u16_value__2665;
+  legacy_u16 noreg temple_legacy_write_u16_value__2667;
   while(1) {
     temple_legacy_write_u16_value__2665=
         TempleCastU16(TempleCastU16(RsDosMemoryPointerOffset(value)));
@@ -73,9 +73,9 @@ legacy_void RsAudioWriteFarPointer(legacy_u8 *destination,legacy_u8 *value)
 
 legacy_void RsAudioAddDriverTimer()
 {
-  legacy_u16 temple_index_2669;
+  legacy_u16 noreg temple_index_2669;
   legacy_u16 *temple_tmp_2670;
-  legacy_u16 temple_tmp_2671;
+  legacy_u16 noreg temple_tmp_2671;
   temple_index_2669=TempleCastU16(0);
   while(1) {
     if(!((temple_index_2669<25))) {
@@ -93,10 +93,10 @@ legacy_void RsAudioAddDriverTimer()
 
 legacy_void RsAudioRemoveDriverTimer()
 {
-  legacy_u16 temple_index_2673;
-  legacy_s16 temple_channel_2674;
+  legacy_u16 noreg temple_index_2673;
+  legacy_s16 noreg temple_channel_2674;
   legacy_u16 *temple_tmp_2675;
-  legacy_u16 temple_tmp_2676;
+  legacy_u16 noreg temple_tmp_2676;
   temple_index_2673=TempleCastU16(0);
   while(1) {
     if(!((temple_index_2673<25))) {
@@ -119,12 +119,12 @@ legacy_void RsAudioEngineAudioCopyEngineDefinition(
     CAudioEngineDefinition *engine_definition,legacy_u8 *source_pointer)
 {
   CFullAudioEngineDefinition *temple_source_2677;
-  legacy_u16 temple_index_2679;
+  legacy_u16 noreg temple_index_2679;
   legacy_u16 *temple_tmp_2680;
-  legacy_u16 temple_tmp_2681;
-  legacy_u16 temple_index_2683;
+  legacy_u16 noreg temple_tmp_2681;
+  legacy_u16 noreg temple_index_2683;
   legacy_u16 *temple_tmp_2684;
-  legacy_u16 temple_tmp_2685;
+  legacy_u16 noreg temple_tmp_2685;
   temple_source_2677=source_pointer;
   (engine_definition->sample_count=TempleCastU16(temple_source_2677->sample_count));
   temple_index_2679=TempleCastU16(0);
@@ -160,9 +160,9 @@ legacy_void RsAudioEngineAudioResolveEngineDefinition(CAudioEngineDefinition *en
     legacy_u8 *shape_resources,legacy_u8 *audio_resources)
 {
   legacy_u8 *temple_resource_2686;
-  legacy_u16 temple_resource_index_2688;
+  legacy_u16 noreg temple_resource_index_2688;
   legacy_u16 *temple_tmp_2689;
-  legacy_u16 temple_tmp_2690;
+  legacy_u16 noreg temple_tmp_2690;
   if((engine_definition->initialized==0)) {
     temple_resource_2686=RsLocateShapeFatal((shape_resources)(legacy_s8 *),
         RsPadId((RsAudioReadFarPointer(((&(engine_definition->resources[0])))(legacy_u8 *)))(
@@ -195,15 +195,15 @@ MemSet(&temple_exhausted_handles_message_2695,0,sizeof(temple_exhausted_handles_
 legacy_s16 RsAudioInitEngine(legacy_s16 unused_type,legacy_u8 *source_pointer,
     legacy_u8 *shape_resources,legacy_u8 *audio_resources)
 {
-  legacy_u16 temple_index_2691;
+  legacy_u16 noreg temple_index_2691;
   legacy_u16 *temple_tmp_2693;
-  legacy_u16 temple_tmp_2694;
+  legacy_u16 noreg temple_tmp_2694;
   CAudioTimer *temple_timer_2696;
   CAudioEngineDefinition *temple_engine_definition_2697;
-  legacy_s16 temple_channel_2698;
+  legacy_s16 noreg temple_channel_2698;
   legacy_u8 *temple_definition_2699;
-  legacy_u16 temple_divisor_2700;
-  legacy_u16 temple_rate_2701;
+  legacy_u16 noreg temple_divisor_2700;
+  legacy_u16 noreg temple_rate_2701;
   unused_type;
   (temple_index_2691=TempleCastU16(0));
   while(1) {
@@ -259,14 +259,14 @@ legacy_s16 RsAudioInitEngine(legacy_s16 unused_type,legacy_u8 *source_pointer,
 legacy_void RsAudioStartEngine(legacy_s16 index)
 {
   CAudioTimer *temple_timer_2702;
-  legacy_s32 temple_tmp_2703;
-  legacy_s16 temple_handle_2704;
+  legacy_s32 noreg temple_tmp_2703;
+  legacy_s16 noreg temple_handle_2704;
   CAudioEngineDefinition *temple_engine_definition_2705;
-  legacy_u16 temple_sample_count_2706;
+  legacy_u16 noreg temple_sample_count_2706;
   legacy_u8 *temple_definition_2707;
-  legacy_u16 temple_divisor_2708;
-  legacy_u16 temple_value_2709;
-  legacy_s16 temple_channel_2710;
+  legacy_u16 noreg temple_divisor_2708;
+  legacy_u16 noreg temple_value_2709;
+  legacy_s16 noreg temple_channel_2710;
   temple_timer_2702=(&(audio_timers[index]));
   temple_tmp_2703=!!((temple_timer_2702->active!=1));
   if(!temple_tmp_2703) {
@@ -303,17 +303,17 @@ legacy_void RsAudioUpdateEngineSpatial(legacy_s16 index,legacy_s16 base_value,le
     legacy_s16 second_z,legacy_s16 interval)
 {
   CAudioTimer *temple_timer_2711;
-  legacy_u16 temple_second_distance_2712;
-  legacy_u16 temple_first_distance_2713;
-  legacy_u16 temple_distance_delta_2714;
-  legacy_u16 temple_quotient_2715;
-  legacy_u16 temple_scaled_delta_2716;
-  legacy_u16 temple_volume_2717;
+  legacy_u16 noreg temple_second_distance_2712;
+  legacy_u16 noreg temple_first_distance_2713;
+  legacy_u16 noreg temple_distance_delta_2714;
+  legacy_u16 noreg temple_quotient_2715;
+  legacy_u16 noreg temple_scaled_delta_2716;
+  legacy_u16 noreg temple_volume_2717;
   CAudioEngineDefinition *temple_engine_definition_2718;
   legacy_u8 *temple_definition_2719;
-  legacy_u16 temple_divisor_2720;
-  legacy_u16 temple_base_rate_2721;
-  legacy_u16 temple_denominator_2722;
+  legacy_u16 noreg temple_divisor_2720;
+  legacy_u16 noreg temple_base_rate_2721;
+  legacy_u16 noreg temple_denominator_2722;
   temple_timer_2711=(&(audio_timers[index]));
   temple_second_distance_2712=TempleCastU16(TempleCastU16(RsPolarRadius2D(
       TempleCastS16(RsPolarRadius2D(TempleCastS16(second_x),TempleCastS16(second_z))),
@@ -421,13 +421,13 @@ legacy_void RsAudioApplyCarStateSample(legacy_u8 *sample,legacy_s16 interval)
 
 legacy_void RsAudioEngineAudioUpdateTimerVolume(CAudioTimer *timer)
 {
-  legacy_u16 temple_volume_accumulator_2723;
+  legacy_u16 noreg temple_volume_accumulator_2723;
   legacy_u16 *temple_tmp_2724;
-  legacy_u8 temple_volume_2725;
-  legacy_s32 temple_tmp_2726;
-  legacy_s16 temple_channel_2727;
-  legacy_u8 temple_secondary_volume_2728;
-  legacy_s32 temple_tmp_2729;
+  legacy_u8 noreg temple_volume_2725;
+  legacy_s32 noreg temple_tmp_2726;
+  legacy_s16 noreg temple_channel_2727;
+  legacy_u8 noreg temple_secondary_volume_2728;
+  legacy_s32 noreg temple_tmp_2729;
   temple_volume_accumulator_2723=TempleCastU16(TempleCastU16(TempleCastS32(
       (TempleCastU16(TempleCastU16(TempleCastS32((TempleCastU16(timer->target_volume)<<4))))+
           TempleCastU16(
@@ -468,11 +468,11 @@ legacy_void RsAudioEngineAudioUpdateTimerVolume(CAudioTimer *timer)
 
 legacy_void RsAudioEngineAudioUpdateTimerPitch(CAudioTimer *timer)
 {
-  legacy_u32 temple_accumulator_2730;
+  legacy_u32 noreg temple_accumulator_2730;
   legacy_u32 *temple_tmp_2731;
-  legacy_u16 temple_pitch_2732;
-  legacy_s32 temple_tmp_2733;
-  legacy_s16 temple_channel_2734;
+  legacy_u16 noreg temple_pitch_2732;
+  legacy_s32 noreg temple_tmp_2733;
+  legacy_s16 noreg temple_channel_2734;
   temple_accumulator_2730=TempleCastU32(timer->current_pitch);
   (temple_accumulator_2730=
           TempleCastU32(TempleCastU32((TempleCastU32((temple_accumulator_2730*7))+
@@ -497,7 +497,7 @@ legacy_void RsAudioEngineAudioUpdateTimerPitch(CAudioTimer *timer)
 
 legacy_void RsAudioEngineAudioRestartTimerEngine(CAudioTimer *timer,legacy_u16 index)
 {
-  legacy_s16 temple_channel_2735;
+  legacy_s16 noreg temple_channel_2735;
   if((timer->restart_engine!=0)) {
     temple_channel_2735=TempleCastS16(timer->effect_channel);
     if((timer->engine_active!=0)) {
@@ -514,12 +514,12 @@ legacy_void RsAudioEngineAudioRestartTimerEngine(CAudioTimer *timer,legacy_u16 i
 
 legacy_void RsAudioDriverTimer()
 {
-  legacy_s32 temple_tmp_2736;
+  legacy_s32 noreg temple_tmp_2736;
   CAudioTimer *temple_timer_2737;
-  legacy_u16 temple_index_2739;
-  legacy_s32 temple_tmp_2740;
+  legacy_u16 noreg temple_index_2739;
+  legacy_s32 noreg temple_tmp_2740;
   legacy_u16 *temple_tmp_2741;
-  legacy_u16 temple_tmp_2742;
+  legacy_u16 noreg temple_tmp_2742;
   if((RsDosDataStackSegmentsMatch()==0)) {
     return;
   }
@@ -598,10 +598,10 @@ legacy_s16 RsAudioToggleMusic()
 
 legacy_s16 RsAudioEffectRangeIdle()
 {
-  legacy_s32 temple_tmp_2743;
-  legacy_u16 temple_channel_2745;
+  legacy_s32 noreg temple_tmp_2743;
+  legacy_u16 noreg temple_channel_2745;
   legacy_u16 *temple_tmp_2746;
-  legacy_u16 temple_tmp_2747;
+  legacy_u16 noreg temple_tmp_2747;
   temple_tmp_2743=!!((audio_suspended==AUDIO_STATE_ENABLED));
   if(!temple_tmp_2743) {
     temple_tmp_2743=!!((audio_music_enabled==AUDIO_STATE_DISABLED));
@@ -640,9 +640,9 @@ legacy_void RsAudioStopMusic()
 
 legacy_void RsAudioEnableEffects()
 {
-  legacy_s16 temple_channel_2749;
+  legacy_s16 noreg temple_channel_2749;
   legacy_s16 *temple_tmp_2750;
-  legacy_s16 temple_tmp_2751;
+  legacy_s16 noreg temple_tmp_2751;
   if((audio_effects_enabled==AUDIO_STATE_ENABLED)) {
     return;
   }
@@ -663,9 +663,9 @@ legacy_void RsAudioEnableEffects()
 
 legacy_void RsAudioDisableEffects()
 {
-  legacy_s16 temple_channel_2753;
+  legacy_s16 noreg temple_channel_2753;
   legacy_s16 *temple_tmp_2754;
-  legacy_s16 temple_tmp_2755;
+  legacy_s16 noreg temple_tmp_2755;
   if((audio_effects_enabled==AUDIO_STATE_DISABLED)) {
     return;
   }
@@ -697,8 +697,8 @@ legacy_s16 RsAudioToggleEffects()
 
 legacy_s16 RsAudioEffectChannelIdle(legacy_s16 channel)
 {
-  legacy_s32 temple_tmp_2756;
-  legacy_s32 temple_tmp_2757;
+  legacy_s32 noreg temple_tmp_2756;
+  legacy_s32 noreg temple_tmp_2757;
   temple_tmp_2756=!!((audio_effects_enabled==AUDIO_STATE_DISABLED));
   if(!temple_tmp_2756) {
     temple_tmp_2756=!!((TempleCastU16(channel)<16));
@@ -722,15 +722,15 @@ legacy_void RsAudioSetFinishCallback(legacy_s16 channel,legacy_u8 *value)
 legacy_void RsAudioInitChannelRange(legacy_s16 first_channel,legacy_s16 last_channel,
     legacy_u8 *resource,legacy_u16 resource_data_offset,legacy_u16 rate,legacy_u8 priority)
 {
-  legacy_s16 temple_channel_2758;
-  legacy_s16 temple_last_2759;
-  legacy_u16 temple_resource_offset_2760;
-  legacy_u16 temple_resource_segment_2761;
+  legacy_s16 noreg temple_channel_2758;
+  legacy_s16 noreg temple_last_2759;
+  legacy_u16 noreg temple_resource_offset_2760;
+  legacy_u16 noreg temple_resource_segment_2761;
   CAudioChannel *temple_chunk_2762;
   legacy_u8 *temple_resource_data_2764;
-  legacy_u32 temple_pointer_value_2765;
-  legacy_u16 temple_pointer_offset_2766;
-  legacy_u16 temple_pointer_segment_2767;
+  legacy_u32 noreg temple_pointer_value_2765;
+  legacy_u16 noreg temple_pointer_offset_2766;
+  legacy_u16 noreg temple_pointer_segment_2767;
   temple_channel_2758=TempleCastS16(TempleCastS16(first_channel));
   temple_last_2759=TempleCastS16(TempleCastS16(last_channel));
   if((temple_channel_2758>temple_last_2759)) {
@@ -811,9 +811,9 @@ legacy_void RsAudioEngineAudioClearDriverContext(CAudioContext *context)
 legacy_void RsAudioResetChannels()
 {
   CAudioContext *temple_context_2768;
-  legacy_u16 temple_context_index_2770;
+  legacy_u16 noreg temple_context_index_2770;
   legacy_u16 *temple_tmp_2771;
-  legacy_u16 temple_tmp_2772;
+  legacy_u16 noreg temple_tmp_2772;
   (audio_update_lock=TempleCastS16(AUDIO_UPDATE_LOCKED));
   RsAudioInitChannelRange(TempleCastS16(0),TempleCastS16(23),0,TempleCastU16(0),
       TempleCastU16(127),TempleCastU8(0));
@@ -839,17 +839,17 @@ legacy_void RsAudioResetChannels()
 
 legacy_void RsAudioReleaseChannelRange(legacy_s16 first_channel,legacy_s16 last_channel)
 {
-  legacy_s16 temple_channel_2773;
+  legacy_s16 noreg temple_channel_2773;
   CAudioChannel *temple_chunk_2774;
   CAudioContext *temple_context_2775;
-  legacy_u16 temple_context_index_2777;
-  legacy_u16 temple_channel_bits_2778;
-  legacy_s32 temple_tmp_2779;
+  legacy_u16 noreg temple_context_index_2777;
+  legacy_u16 noreg temple_channel_bits_2778;
+  legacy_s32 noreg temple_tmp_2779;
   legacy_u16 *temple_tmp_2780;
-  legacy_u16 temple_tmp_2781;
-  legacy_u16 temple_context_index_2784;
+  legacy_u16 noreg temple_tmp_2781;
+  legacy_u16 noreg temple_context_index_2784;
   legacy_u16 *temple_tmp_2785;
-  legacy_u16 temple_tmp_2786;
+  legacy_u16 noreg temple_tmp_2786;
   if((dos_audio_uses_direct_channels==0)) {
     (temple_context_2775=dos_audio_contexts);
     temple_context_index_2777=TempleCastU16(0);
@@ -920,7 +920,7 @@ MemSet(
 legacy_u8 *RsAudioEngineAudioSelectSampleResource(legacy_u8 *original_resource,legacy_u8 note)
 {
   legacy_u8 *temple_resources_2788[7];
-  legacy_u16 temple_note_index_2789;
+  legacy_u16 noreg temple_note_index_2789;
   if((original_resource==0)) {
     return 0;
   }
@@ -945,10 +945,10 @@ legacy_u8 *RsAudioEngineAudioSelectSampleResource(legacy_u8 *original_resource,l
 legacy_u8 RsAudioEngineAudioContextMatchesResource(CAudioContext *context,CAudioChannel *timer,
     legacy_u16 resource_mask,legacy_u16 context_index,legacy_s16 restrict_to_timer)
 {
-  legacy_u16 temple_context_mask_2791;
-  legacy_s32 temple_tmp_2792;
-  legacy_s32 temple_tmp_2793;
-  legacy_s32 temple_tmp_2794;
+  legacy_u16 noreg temple_context_mask_2791;
+  legacy_s32 noreg temple_tmp_2792;
+  legacy_s32 noreg temple_tmp_2793;
+  legacy_s32 noreg temple_tmp_2794;
   if((dos_audio_uses_direct_channels==0)) {
     if((context_index<16)) {
       temple_tmp_2792=TempleCastS32(TempleCastU16(TempleCastU32((1<<context_index))));
@@ -974,9 +974,9 @@ legacy_u8 RsAudioEngineAudioContextMatchesResource(CAudioContext *context,CAudio
 legacy_void RsAudioEngineAudioConsiderOlderContext(
     CAudioContext *context,legacy_u16 context_index,CAudioContextSelection *selection)
 {
-  legacy_u32 temple_age_2795;
-  legacy_s32 temple_tmp_2796;
-  legacy_s32 temple_tmp_2797;
+  legacy_u32 noreg temple_age_2795;
+  legacy_s32 noreg temple_tmp_2796;
+  legacy_s32 noreg temple_tmp_2797;
   temple_age_2795=TempleCastU32(context->age);
   temple_tmp_2796=!!((context->state==AUDIO_CONTEXT_STATE_PLAYING));
   if(temple_tmp_2796) {
@@ -1001,11 +1001,11 @@ legacy_void RsAudioEngineAudioReclaimDriverContext(
 {
   CAudioContext *temple_context_2798;
   CAudioChannel *temple_old_timer_2799;
-  legacy_s32 temple_tmp_2800;
+  legacy_s32 noreg temple_tmp_2800;
   legacy_u8 *temple_tmp_2801;
-  legacy_u8 temple_tmp_2802;
+  legacy_u8 noreg temple_tmp_2802;
   legacy_u8 *temple_tmp_2803;
-  legacy_u8 temple_tmp_2804;
+  legacy_u8 noreg temple_tmp_2804;
   temple_context_2798=(&(dos_audio_contexts[selected]));
   temple_tmp_2800=!!((dos_audio_uses_direct_channels==0));
   if(temple_tmp_2800) {
@@ -1032,19 +1032,19 @@ legacy_void RsAudioEngineAudioReclaimDriverContext(
 
 legacy_s16 RsAudioEngineAudioFindDriverContext(legacy_u8 *resource,CAudioChannel *timer)
 {
-  legacy_u16 temple_resource_mask_2805;
+  legacy_u16 noreg temple_resource_mask_2805;
   CAudioContextSelection temple_selection_2806;
-  legacy_s16 temple_restrict_to_timer_2807;
-  legacy_u16 temple_context_count_2808;
+  legacy_s16 noreg temple_restrict_to_timer_2807;
+  legacy_u16 noreg temple_context_count_2808;
   CAudioContext *temple_context_2809;
-  legacy_u16 temple_context_index_2811;
+  legacy_u16 noreg temple_context_index_2811;
   legacy_u8 *temple_tmp_2812;
-  legacy_u8 temple_tmp_2813;
-  legacy_s32 temple_tmp_2814;
+  legacy_u8 noreg temple_tmp_2813;
+  legacy_s32 noreg temple_tmp_2814;
   legacy_u16 *temple_tmp_2815;
-  legacy_u16 temple_tmp_2816;
-  legacy_s16 temple_selected_2817;
-  legacy_s32 temple_tmp_2818;
+  legacy_u16 noreg temple_tmp_2816;
+  legacy_s16 noreg temple_selected_2817;
+  legacy_s32 noreg temple_tmp_2818;
   temple_resource_mask_2805=TempleCastU16(RsResourceReadU16le((resource+12)));
   if((temple_resource_mask_2805==0)) {
     return TempleCastS16(TempleCastS32((-(1))));
@@ -1116,12 +1116,12 @@ legacy_s16 RsAudioStartNote(CAudioChannel *timer,legacy_u16 value,legacy_u32 dur
     legacy_u8 note,legacy_u16 parameter,legacy_s16 handle)
 {
   legacy_u8 *temple_resource_2819;
-  legacy_s16 temple_context_index_2820;
+  legacy_s16 noreg temple_context_index_2820;
   CAudioContext *temple_context_2821;
-  legacy_s32 temple_tmp_2822;
-  legacy_s16 temple_driver_channel_2823;
-  legacy_s32 temple_tmp_2824;
-  legacy_s16 temple_pitch_2825;
+  legacy_s32 noreg temple_tmp_2822;
+  legacy_s16 noreg temple_driver_channel_2823;
+  legacy_s32 noreg temple_tmp_2824;
+  legacy_s16 noreg temple_pitch_2825;
   temple_resource_2819=(RsAudioReadFarPointer(((&(timer->resource)))(legacy_u8 *)))(legacy_u8 *);
   (temple_resource_2819=(RsAudioEngineAudioSelectSampleResource(
       temple_resource_2819,TempleCastU8(note)))(legacy_u8 *));
@@ -1207,9 +1207,9 @@ legacy_s16 RsAudioStartSample(legacy_u16 value,legacy_s16 handle)
 
 legacy_void RsAudioAdvanceDriverContext(CAudioContext *context)
 {
-  legacy_u32 temple_value_2827;
+  legacy_u32 noreg temple_value_2827;
   CAudioChannel *temple_chunk_2828;
-  legacy_s32 temple_tmp_2829;
+  legacy_s32 noreg temple_tmp_2829;
   (context->age=TempleCastU32(
       TempleCastU32(TempleCastU32((TempleCastU32(context->age)+TempleCastU32(1))))));
   temple_value_2827=TempleCastU32(context->fade_out_flag);
@@ -1240,13 +1240,13 @@ legacy_u16 RsAudioEngineAudioAbsoluteWord(legacy_s16 value)
 
 legacy_void RsAudioEngineAudioUpdateContextEnvelope(CAudioContext *context,legacy_u8 *resource)
 {
-  legacy_s16 temple_level_2830;
-  legacy_u16 temple_value_2831;
-  legacy_s32 temple_tmp_2832;
-  legacy_s32 temple_tmp_2833;
+  legacy_s16 noreg temple_level_2830;
+  legacy_u16 noreg temple_value_2831;
+  legacy_s32 noreg temple_tmp_2832;
+  legacy_s32 noreg temple_tmp_2833;
   CAudioChannel *temple_chunk_2834;
   legacy_u8 *temple_tmp_2835;
-  legacy_u8 temple_tmp_2836;
+  legacy_u8 noreg temple_tmp_2836;
   if((context->envelope_state==AUDIO_ENVELOPE_STATE_ATTACK)) {
     (temple_level_2830=TempleCastS16(RsAudioEngineLegacyS16FromBits(
         TempleCastU16(TempleCastU16(TempleCastU16(TempleCastS32((TempleCastU16(context->level)+
@@ -1312,14 +1312,14 @@ legacy_void RsAudioEngineAudioUpdateContextEnvelope(CAudioContext *context,legac
 
 legacy_void RsAudioEngineAudioUpdateContextModulation(CAudioContext *context,legacy_u8 *resource)
 {
-  legacy_u16 temple_value_2837;
+  legacy_u16 noreg temple_value_2837;
   legacy_u8 *temple_tmp_2838;
-  legacy_u8 temple_tmp_2839;
-  legacy_s16 temple_modulation_2840;
-  legacy_u16 temple_magnitude_2841;
-  legacy_u16 temple_threshold_2842;
-  legacy_s32 temple_tmp_2843;
-  legacy_s32 temple_tmp_2844;
+  legacy_u8 noreg temple_tmp_2839;
+  legacy_s16 noreg temple_modulation_2840;
+  legacy_u16 noreg temple_magnitude_2841;
+  legacy_u16 noreg temple_threshold_2842;
+  legacy_s32 noreg temple_tmp_2843;
+  legacy_s32 noreg temple_tmp_2844;
   if((resource[40]!=0)) {
     temple_value_2837=TempleCastU16(context->modulation_delay);
     if((temple_value_2837!=0)) {
@@ -1382,12 +1382,12 @@ legacy_void RsAudioEngineAudioUpdateContextModulation(CAudioContext *context,leg
 
 legacy_void RsAudioEngineAudioUpdateContextSequence(CAudioContext *context,legacy_u8 *resource)
 {
-  legacy_u16 temple_value_2845;
+  legacy_u16 noreg temple_value_2845;
   legacy_u8 *temple_tmp_2846;
-  legacy_u8 temple_tmp_2847;
-  legacy_u8 temple_sequence_index_2848;
+  legacy_u8 noreg temple_tmp_2847;
+  legacy_u8 noreg temple_sequence_index_2848;
   legacy_u8 *temple_tmp_2849;
-  legacy_u8 temple_tmp_2850;
+  legacy_u8 noreg temple_tmp_2850;
   if((resource[53]!=0)) {
     temple_value_2845=TempleCastU16(context->sequence_delay);
     if((temple_value_2845!=0)) {
@@ -1420,10 +1420,10 @@ legacy_void RsAudioEngineAudioUpdateContextSequence(CAudioContext *context,legac
 legacy_void RsAudioUpdateDriverContexts()
 {
   CAudioContext *temple_context_2851;
-  legacy_u16 temple_context_index_2853;
+  legacy_u16 noreg temple_context_index_2853;
   legacy_u8 *temple_resource_2854;
   legacy_u16 *temple_tmp_2855;
-  legacy_u16 temple_tmp_2856;
+  legacy_u16 noreg temple_tmp_2856;
   temple_context_2851=dos_audio_contexts;
   temple_context_index_2853=TempleCastU16(0);
   while(1) {
@@ -1458,14 +1458,14 @@ legacy_void RsAudioUpdateDriverContexts()
 legacy_void RsAudioSuspend()
 {
   CAudioChannel *temple_chunk_2857;
-  legacy_u16 temple_channel_2859;
-  legacy_s32 temple_tmp_2860;
+  legacy_u16 noreg temple_channel_2859;
+  legacy_s32 noreg temple_tmp_2860;
   legacy_u16 *temple_tmp_2861;
-  legacy_u16 temple_tmp_2862;
+  legacy_u16 noreg temple_tmp_2862;
   CAudioContext *temple_context_2863;
-  legacy_u16 temple_context_index_2865;
+  legacy_u16 noreg temple_context_index_2865;
   legacy_u16 *temple_tmp_2866;
-  legacy_u16 temple_tmp_2867;
+  legacy_u16 noreg temple_tmp_2867;
   (audio_suspended=TempleCastU8(AUDIO_STATE_ENABLED));
   (audio_update_lock=TempleCastS16(AUDIO_UPDATE_LOCKED));
   if((dos_audio_uses_direct_channels!=0)) {
@@ -1517,10 +1517,10 @@ legacy_void RsAudioSuspend()
 
 legacy_void RsAudioResume()
 {
-  legacy_u16 temple_channel_2869;
-  legacy_s32 temple_tmp_2870;
+  legacy_u16 noreg temple_channel_2869;
+  legacy_s32 noreg temple_tmp_2870;
   legacy_u16 *temple_tmp_2871;
-  legacy_u16 temple_tmp_2872;
+  legacy_u16 noreg temple_tmp_2872;
   (audio_suspended=TempleCastU8(AUDIO_STATE_ENABLED));
   (audio_update_lock=TempleCastS16(AUDIO_UPDATE_LOCKED));
   if((dos_audio_uses_direct_channels!=0)) {
@@ -1552,10 +1552,10 @@ legacy_void RsAudioResume()
 
 legacy_s16 RsAudioEngineAudioFindFreeSfxChannel()
 {
-  legacy_s16 temple_candidate_2874;
-  legacy_s32 temple_tmp_2875;
+  legacy_s16 noreg temple_candidate_2874;
+  legacy_s32 noreg temple_tmp_2875;
   legacy_s16 *temple_tmp_2876;
-  legacy_s16 temple_tmp_2877;
+  legacy_s16 noreg temple_tmp_2877;
   temple_candidate_2874=TempleCastS16(16);
   while(1) {
     if(!((TempleCastU16(temple_candidate_2874)<=23))) {
@@ -1585,17 +1585,17 @@ legacy_s16 RsAudioPlayEffectAtRate(
     legacy_u8 *resource,legacy_s16 channel,legacy_u8 priority,legacy_u16 rate)
 {
   legacy_u8 *temple_bytes_2878;
-  legacy_s32 temple_tmp_2879;
-  legacy_s32 temple_tmp_2880;
-  legacy_u16 temple_scaled_rate_2881;
-  legacy_u8 temple_lowest_priority_2882;
-  legacy_s16 temple_replacement_2883;
-  legacy_s16 temple_candidate_2885;
-  legacy_s32 temple_tmp_2886;
+  legacy_s32 noreg temple_tmp_2879;
+  legacy_s32 noreg temple_tmp_2880;
+  legacy_u16 noreg temple_scaled_rate_2881;
+  legacy_u8 noreg temple_lowest_priority_2882;
+  legacy_s16 noreg temple_replacement_2883;
+  legacy_s16 noreg temple_candidate_2885;
+  legacy_s32 noreg temple_tmp_2886;
   legacy_s16 *temple_tmp_2887;
-  legacy_s16 temple_tmp_2888;
-  legacy_s32 temple_tmp_2889;
-  legacy_u16 temple_resource_data_offset_2890;
+  legacy_s16 noreg temple_tmp_2888;
+  legacy_s32 noreg temple_tmp_2889;
+  legacy_u16 noreg temple_resource_data_offset_2890;
   temple_bytes_2878=(resource)(legacy_u8 *);
   temple_tmp_2879=!!((audio_effects_enabled==AUDIO_STATE_DISABLED));
   if(!temple_tmp_2879) {
@@ -1688,7 +1688,7 @@ legacy_s16 RsAudioReserveEffectChannel(legacy_s16 channel,legacy_u8 priority)
 
 legacy_void RsAudioStopEffectChannel(legacy_s16 channel)
 {
-  legacy_s32 temple_tmp_2891;
+  legacy_s32 noreg temple_tmp_2891;
   temple_tmp_2891=!!((TempleCastU16(channel)<16));
   if(!temple_tmp_2891) {
     temple_tmp_2891=!!((TempleCastU16(channel)>23));
@@ -1705,7 +1705,7 @@ legacy_void RsAudioStopEffectChannel(legacy_s16 channel)
 
 legacy_void RsAudioStopSkidSound(legacy_s16 index)
 {
-  legacy_s16 temple_channel_2892;
+  legacy_s16 noreg temple_channel_2892;
   temple_channel_2892=TempleCastS16(audio_timers[index].secondary_effect_channel);
   RsAudioStopEffectChannel(TempleCastS16(temple_channel_2892));
   (audio_timers[index].secondary_effect_channel=TempleCastS16(TempleCastS32((-(1)))));
@@ -1713,7 +1713,7 @@ legacy_void RsAudioStopSkidSound(legacy_s16 index)
 
 legacy_s16 RsAudioTimerEffectIdle(legacy_s16 index)
 {
-  legacy_s16 temple_channel_2893;
+  legacy_s16 noreg temple_channel_2893;
   temple_channel_2893=TempleCastS16(audio_timers[index].effect_channel);
   if((temple_channel_2893<0)) {
     return TempleCastS16(1);
@@ -1723,8 +1723,8 @@ legacy_s16 RsAudioTimerEffectIdle(legacy_s16 index)
 
 legacy_void RsAudioStopEngine(legacy_s16 index)
 {
-  legacy_s32 temple_tmp_2894;
-  legacy_s16 temple_channel_2895;
+  legacy_s32 noreg temple_tmp_2894;
+  legacy_s16 noreg temple_channel_2895;
   temple_tmp_2894=!!((audio_timers[index].active!=1));
   if(!temple_tmp_2894) {
     temple_tmp_2894=!!((audio_timers[index].engine_active!=1));
@@ -1742,7 +1742,7 @@ legacy_void RsAudioStopEngine(legacy_s16 index)
 legacy_s16 RsAudioEngineAudioStartTimerResource(
     CAudioTimer *timer,legacy_u16 resource_index,legacy_u8 priority)
 {
-  legacy_u16 temple_rate_2896;
+  legacy_u16 noreg temple_rate_2896;
   legacy_u8 *temple_resource_2897;
   temple_rate_2896=TempleCastU16(TempleCastS32((timer->current_volume>>4)));
   temple_resource_2897=
@@ -1756,7 +1756,7 @@ legacy_s16 RsAudioEngineAudioStartIndexedEvent(
     legacy_s16 index,legacy_u16 resource_index,legacy_u8 priority)
 {
   CAudioTimer *temple_timer_2898;
-  legacy_s16 temple_channel_2899;
+  legacy_s16 noreg temple_channel_2899;
   temple_timer_2898=(&(audio_timers[index]));
   temple_channel_2899=TempleCastS16(RsAudioEngineAudioStartTimerResource(
       temple_timer_2898,TempleCastU16(resource_index),TempleCastU8(priority)));
@@ -1802,7 +1802,7 @@ legacy_void RsAudioPlayEngineFailure(legacy_s16 index)
 legacy_void RsAudioEngineAudioStartSecondaryEvent(legacy_s16 index,legacy_u16 resource_index)
 {
   CAudioTimer *temple_timer_2900;
-  legacy_s16 temple_channel_2901;
+  legacy_s16 noreg temple_channel_2901;
   temple_timer_2900=(&(audio_timers[index]));
   temple_channel_2901=TempleCastS16(temple_timer_2900->secondary_effect_channel);
   if((temple_channel_2901!=TempleCastS32((-(1))))) {
@@ -1839,9 +1839,9 @@ legacy_void RsAudioRequestContextFade(legacy_s16 index)
 
 legacy_s16 RsAudioSetMusicChannelVolume(legacy_s16 value)
 {
-  legacy_s16 temple_channel_2902;
+  legacy_s16 noreg temple_channel_2902;
   legacy_s16 *temple_tmp_2904;
-  legacy_s16 temple_tmp_2905;
+  legacy_s16 noreg temple_tmp_2905;
   (temple_channel_2902=TempleCastS16(0));
   while(1) {
     if(!((temple_channel_2902<TempleCastU16(audio_music_channel_count)))) {
@@ -1858,10 +1858,10 @@ legacy_s16 RsAudioSetMusicChannelVolume(legacy_s16 value)
 
 legacy_void RsAudioFadeOut(legacy_s16 delay_ticks)
 {
-  legacy_u32 temple_delay_2906;
-  legacy_u8 temple_uses_direct_channels_2907;
-  legacy_s16 temple_volume_2908;
-  legacy_u32 temple_tmp_2909;
+  legacy_u32 noreg temple_delay_2906;
+  legacy_u8 noreg temple_uses_direct_channels_2907;
+  legacy_s16 noreg temple_volume_2908;
+  legacy_u32 noreg temple_tmp_2909;
   temple_delay_2906=TempleCastU32(TempleCastU32(TempleCastS32(delay_ticks)));
   temple_uses_direct_channels_2907=TempleCastU8(dos_audio_uses_direct_channels);
   if((temple_uses_direct_channels_2907!=0)) {

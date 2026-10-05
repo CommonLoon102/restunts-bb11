@@ -2,7 +2,7 @@
 
 legacy_s8 RsGhostLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_1932;
+  legacy_s32 noreg temple_tmp_1932;
   if((value<=127)) {
     temple_tmp_1932=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsGhostLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsGhostLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_1933;
+  legacy_s32 noreg temple_tmp_1933;
   if((value<=32767)) {
     temple_tmp_1933=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsGhostLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsGhostLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_1934;
+  legacy_s32 noreg temple_tmp_1934;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_1934=TempleCastS32(TempleCastS32(value));
   } else {
@@ -45,7 +45,7 @@ legacy_s16 RsGhostGhostSeek(legacy_u16 file,legacy_s32 offset)
 
 legacy_void RsGhostEndRace()
 {
-  legacy_s32 temple_tmp_1935;
+  legacy_s32 noreg temple_tmp_1935;
   temple_tmp_1935=!!((rs_ghost_ghost_active!=0));
   if(temple_tmp_1935) {
     temple_tmp_1935=!!((gameconfig.game_opponenttype==0));
@@ -82,7 +82,7 @@ legacy_s16 RsGhostIsSelected()
 
 legacy_s16 RsGhostIsActive()
 {
-  legacy_s32 temple_tmp_1936;
+  legacy_s32 noreg temple_tmp_1936;
   temple_tmp_1936=!!((rs_ghost_ghost_active!=0));
   if(temple_tmp_1936) {
     temple_tmp_1936=!!((gameconfig.game_opponenttype==0));
@@ -92,7 +92,7 @@ legacy_s16 RsGhostIsActive()
 
 CCarState *RsGhostCarState()
 {
-  legacy_s32 temple_tmp_1937;
+  legacy_s32 noreg temple_tmp_1937;
   CCarState *temple_tmp_1938;
   temple_tmp_1937=!!(RsGhostIsActive());
   if(temple_tmp_1937) {
@@ -108,7 +108,7 @@ CCarState *RsGhostCarState()
 
 CGhostCameraState *RsGhostCameraState()
 {
-  legacy_s32 temple_tmp_1939;
+  legacy_s32 noreg temple_tmp_1939;
   CGhostCameraState *temple_tmp_1940;
   temple_tmp_1939=!!(RsGhostIsActive());
   if(temple_tmp_1939) {
@@ -124,7 +124,7 @@ CGhostCameraState *RsGhostCameraState()
 
 legacy_s16 RsGhostGhostPreviousCameraCoordinate(legacy_s16 previous,legacy_s16 current)
 {
-  legacy_s32 temple_delta_1941;
+  legacy_s32 noreg temple_delta_1941;
   temple_delta_1941=TempleCastS32(RsGhostLegacyS16FromBits(TempleCastU16(TempleCastU16(
       TempleCastU16(TempleCastS32((TempleCastU16(current)-TempleCastU16(previous))))))));
   (temple_delta_1941=TempleCastS32(TempleCastS32(
@@ -138,9 +138,9 @@ legacy_s16 RsGhostGhostPreviousCameraCoordinate(legacy_s16 previous,legacy_s16 c
 
 legacy_void RsGhostAdjustCameraMotion(CVector *previous,CVector *current)
 {
-  legacy_s32 temple_tmp_1942;
-  legacy_s32 temple_tmp_1943;
-  legacy_s32 temple_tmp_1944;
+  legacy_s32 noreg temple_tmp_1942;
+  legacy_s32 noreg temple_tmp_1943;
+  legacy_s32 noreg temple_tmp_1944;
   temple_tmp_1942=!!((!(RsGhostIsActive())));
   if(!temple_tmp_1942) {
     temple_tmp_1942=!!((!(rs_ghost_ghost_pose_valid)));
@@ -194,14 +194,14 @@ legacy_s8 *RsGhostCarId()
 
 legacy_u16 RsGhostGhostCreateFile(legacy_s8 *name)
 {
-  legacy_u32 temple_candidate_1947;
-  legacy_u32 temple_digits_1948;
-  legacy_u16 temple_index_1950;
+  legacy_u32 noreg temple_candidate_1947;
+  legacy_u32 noreg temple_digits_1948;
+  legacy_u16 noreg temple_index_1950;
   legacy_u32 *temple_tmp_1951;
   legacy_u16 *temple_tmp_1952;
-  legacy_u16 temple_tmp_1953;
+  legacy_u16 noreg temple_tmp_1953;
   legacy_u32 *temple_tmp_1954;
-  legacy_u32 temple_tmp_1955;
+  legacy_u32 noreg temple_tmp_1955;
   temple_candidate_1947=TempleCastU32(0);
   while(1) {
     if(!((temple_candidate_1947<1000000))) {
@@ -237,19 +237,19 @@ legacy_u16 RsGhostGhostCreateFile(legacy_s8 *name)
 
 legacy_s16 RsGhostGhostValidCarId(legacy_s8 *id)
 {
-  legacy_u16 temple_index_1957;
-  legacy_u8 temple_character_1958;
-  legacy_s32 temple_tmp_1959;
-  legacy_s32 temple_tmp_1960;
-  legacy_s32 temple_tmp_1961;
-  legacy_s32 temple_tmp_1962;
-  legacy_s32 temple_tmp_1963;
-  legacy_s32 temple_tmp_1964;
-  legacy_s32 temple_tmp_1965;
-  legacy_s32 temple_tmp_1966;
-  legacy_s32 temple_tmp_1967;
+  legacy_u16 noreg temple_index_1957;
+  legacy_u8 noreg temple_character_1958;
+  legacy_s32 noreg temple_tmp_1959;
+  legacy_s32 noreg temple_tmp_1960;
+  legacy_s32 noreg temple_tmp_1961;
+  legacy_s32 noreg temple_tmp_1962;
+  legacy_s32 noreg temple_tmp_1963;
+  legacy_s32 noreg temple_tmp_1964;
+  legacy_s32 noreg temple_tmp_1965;
+  legacy_s32 noreg temple_tmp_1966;
+  legacy_s32 noreg temple_tmp_1967;
   legacy_u16 *temple_tmp_1968;
-  legacy_u16 temple_tmp_1969;
+  legacy_u16 noreg temple_tmp_1969;
   temple_index_1957=TempleCastU16(0);
   while(1) {
     if(!((temple_index_1957<4))) {
@@ -305,13 +305,13 @@ legacy_s16 RsGhostGhostValidCarId(legacy_s8 *id)
 
 legacy_s16 RsGhostGhostValidConfig(CGameInfo *config)
 {
-  legacy_s32 temple_tmp_1970;
-  legacy_s32 temple_tmp_1971;
-  legacy_s32 temple_tmp_1972;
-  legacy_s32 temple_tmp_1973;
-  legacy_s32 temple_tmp_1974;
-  legacy_s32 temple_tmp_1975;
-  legacy_s32 temple_tmp_1976;
+  legacy_s32 noreg temple_tmp_1970;
+  legacy_s32 noreg temple_tmp_1971;
+  legacy_s32 noreg temple_tmp_1972;
+  legacy_s32 noreg temple_tmp_1973;
+  legacy_s32 noreg temple_tmp_1974;
+  legacy_s32 noreg temple_tmp_1975;
+  legacy_s32 noreg temple_tmp_1976;
   temple_tmp_1970=!!((config->game_framespersec!=GAME_FRAME_RATE_LOW));
   if(temple_tmp_1970) {
     temple_tmp_1970=!!((config->game_framespersec!=GAME_FRAME_RATE_NORMAL));
@@ -352,9 +352,9 @@ legacy_s16 RsGhostGhostValidConfig(CGameInfo *config)
 legacy_s16 RsGhostGhostCopyInput(legacy_u16 source,legacy_u16 destination,legacy_u16 length)
 {
   legacy_u8 temple_buffer_1977[256];
-  legacy_u16 temple_count_1979;
+  legacy_u16 noreg temple_count_1979;
   legacy_u64 temple_tmp_1980;
-  legacy_s32 temple_tmp_1981;
+  legacy_s32 noreg temple_tmp_1981;
   legacy_u16 *temple_tmp_1982;
   while(1) {
     if(!((length!=0))) {
@@ -384,27 +384,27 @@ legacy_s16 RsGhostGhostCopyInput(legacy_u16 source,legacy_u16 destination,legacy
 legacy_s16 RsGhostSelectReplay(legacy_s8 *directory,legacy_s8 *name)
 {
   legacy_s8 temple_path_1983[128];
-  legacy_u16 temple_directory_length_1984;
-  legacy_s32 temple_tmp_1985;
-  legacy_u16 temple_source_1986;
+  legacy_u16 noreg temple_directory_length_1984;
+  legacy_s32 noreg temple_tmp_1985;
+  legacy_u16 noreg temple_source_1986;
   legacy_u8 temple_header_1987[(26+1802)];
   CGameInfo temple_config_1988;
   legacy_s8 temple_temp_name_1989[13];
-  legacy_u16 temple_destination_1990;
-  legacy_s16 temple_copied_1991;
-  legacy_s32 temple_tmp_1992;
-  legacy_u16 temple_index_1994;
-  legacy_u8 temple_previous_1995;
+  legacy_u16 noreg temple_destination_1990;
+  legacy_s16 noreg temple_copied_1991;
+  legacy_s32 noreg temple_tmp_1992;
+  legacy_u16 noreg temple_index_1994;
+  legacy_u8 noreg temple_previous_1995;
   legacy_u16 *temple_tmp_1996;
-  legacy_u16 temple_tmp_1997;
-  legacy_s32 temple_tmp_1998;
-  legacy_s32 temple_tmp_1999;
-  legacy_u16 temple_index_2001;
+  legacy_u16 noreg temple_tmp_1997;
+  legacy_s32 noreg temple_tmp_1998;
+  legacy_s32 noreg temple_tmp_1999;
+  legacy_u16 noreg temple_index_2001;
   legacy_u16 *temple_tmp_2002;
-  legacy_u16 temple_tmp_2003;
-  legacy_u16 temple_index_2005;
+  legacy_u16 noreg temple_tmp_2003;
+  legacy_u16 noreg temple_index_2005;
   legacy_u16 *temple_tmp_2006;
-  legacy_u16 temple_tmp_2007;
+  legacy_u16 noreg temple_tmp_2007;
   if((directory==0)) {
     temple_tmp_1985=TempleCastS32(0);
   } else {
@@ -521,17 +521,17 @@ legacy_s16 RsGhostSelectReplay(legacy_s8 *directory,legacy_s8 *name)
 
 legacy_void RsGhostCheckTrack()
 {
-  legacy_u16 temple_index_2009;
+  legacy_u16 noreg temple_index_2009;
   legacy_u16 *temple_tmp_2010;
-  legacy_u16 temple_tmp_2011;
+  legacy_u16 noreg temple_tmp_2011;
   legacy_u8 temple_buffer_2012[256];
-  legacy_u16 temple_offset_2013;
-  legacy_u16 temple_remaining_2015;
-  legacy_u16 temple_count_2016;
+  legacy_u16 noreg temple_offset_2013;
+  legacy_u16 noreg temple_remaining_2015;
+  legacy_u16 noreg temple_count_2016;
   legacy_u64 temple_tmp_2017;
-  legacy_u16 temple_index_2019;
+  legacy_u16 noreg temple_index_2019;
   legacy_u16 *temple_tmp_2020;
-  legacy_u16 temple_tmp_2021;
+  legacy_u16 noreg temple_tmp_2021;
   legacy_u16 *temple_tmp_2022;
   if((!(RsGhostIsSelected()))) {
     return;
@@ -594,33 +594,33 @@ legacy_void RsGhostCheckTrack()
 
 legacy_s16 RsGhostPrepareRace()
 {
-  legacy_s32 temple_tmp_2023;
-  legacy_s32 temple_tmp_2024;
+  legacy_s32 noreg temple_tmp_2023;
+  legacy_s32 noreg temple_tmp_2024;
   CGameInfo temple_saved_config_2025;
   CGameState temple_saved_state_2026;
   CLegacyExecutionResidue temple_saved_residue_2027;
-  legacy_s16 temple_saved_render_headings_2028;
-  legacy_u16 temple_saved_frame_rate_2029;
-  legacy_u8 temple_saved_mode_2030;
-  legacy_s8 temple_saved_is_in_replay_2031;
-  legacy_s8 temple_saved_recording_flags_2032;
-  legacy_u16 temple_saved_elapsed_time1_2033;
-  legacy_u16 temple_saved_elapsed_time2_2034;
-  legacy_s16 temple_saved_checkpoint_interval_2035;
-  legacy_s16 temple_saved_timer_ticks_2036;
+  legacy_s16 noreg temple_saved_render_headings_2028;
+  legacy_u16 noreg temple_saved_frame_rate_2029;
+  legacy_u8 noreg temple_saved_mode_2030;
+  legacy_s8 noreg temple_saved_is_in_replay_2031;
+  legacy_s8 noreg temple_saved_recording_flags_2032;
+  legacy_u16 noreg temple_saved_elapsed_time1_2033;
+  legacy_u16 noreg temple_saved_elapsed_time2_2034;
+  legacy_s16 noreg temple_saved_checkpoint_interval_2035;
+  legacy_s16 noreg temple_saved_timer_ticks_2036;
   legacy_s8 *temple_saved_steering_table_2037;
-  legacy_u8 temple_saved_frame_countdown_2038;
-  legacy_u8 temple_saved_slow_countdown_2039;
-  legacy_u8 temple_saved_exit_request_2040;
-  legacy_u8 temple_saved_start_sequence_2041;
-  legacy_s16 temple_saved_flag_animation_2042;
+  legacy_u8 noreg temple_saved_frame_countdown_2038;
+  legacy_u8 noreg temple_saved_slow_countdown_2039;
+  legacy_u8 noreg temple_saved_exit_request_2040;
+  legacy_u8 noreg temple_saved_start_sequence_2041;
+  legacy_s16 noreg temple_saved_flag_animation_2042;
   legacy_s8 temple_seed_2043[6];
   CLegacyExecutionResidue temple_empty_residue_2044;
-  legacy_s16 temple_succeeded_2045;
-  legacy_u16 temple_frame_2047;
+  legacy_s16 noreg temple_succeeded_2045;
+  legacy_u16 noreg temple_frame_2047;
   legacy_u16 *temple_tmp_2048;
-  legacy_u16 temple_tmp_2049;
-  legacy_s32 temple_tmp_2050;
+  legacy_u16 noreg temple_tmp_2049;
+  legacy_s32 noreg temple_tmp_2050;
   RsGhostEndRace();
   RsGhostCheckTrack();
   temple_tmp_2023=!!((!(RsGhostIsSelected())));
@@ -735,11 +735,11 @@ legacy_s16 RsGhostPrepareRace()
 
 legacy_void RsGhostUpdate(legacy_u32 frame,legacy_u16 live_frame_rate)
 {
-  legacy_s32 temple_tmp_2051;
-  legacy_u32 temple_target_2052;
-  legacy_s32 temple_tmp_2053;
-  legacy_u32 temple_offset_2054;
-  legacy_s32 temple_tmp_2055;
+  legacy_s32 noreg temple_tmp_2051;
+  legacy_u32 noreg temple_target_2052;
+  legacy_s32 noreg temple_tmp_2053;
+  legacy_u32 noreg temple_offset_2054;
+  legacy_s32 noreg temple_tmp_2055;
   temple_tmp_2051=!!((!(RsGhostIsActive())));
   if(!temple_tmp_2051) {
     temple_tmp_2051=!!((live_frame_rate==0));

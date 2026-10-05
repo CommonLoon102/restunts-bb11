@@ -21,7 +21,15 @@ A = TRANSLATE.A
 # while the host oracle verifies the same arithmetic and storage semantics.
 FIXTURE = r'''
 #include "legacy.h"
+#include <stdarg.h>
 enum TranslationEnum { TranslationNegative = -1 };
+enum TranslationStorageEnum {
+    TRANSLATION_STORAGE_INITIAL = -1,
+    TRANSLATION_STORAGE_STEP = 2,
+    TRANSLATION_STORAGE_EXPECTED = 1,
+    TRANSLATION_STORAGE_FAILURE = 51,
+    TRANSLATION_VARIADIC_FAILURE = 52
+};
 struct TranslationPair { legacy_u16 first; legacy_s16 second; };
 struct TranslationPacked { legacy_s8 value; legacy_u8 neighbor; legacy_u16 word; legacy_u32 doubleWord; };
 static struct TranslationPacked translationPacked = {8, 56, 4660, 3735928559U};
@@ -51,6 +59,39 @@ static legacy_s32 TranslationArg(legacy_s16 value) { return value; }
 static legacy_s16 TranslationInc(legacy_s16 value) { return value + 1; }
 static legacy_s16 TranslationDec(legacy_s16 value) { return value - 1; }
 static legacy_s16 (*translation_callbacks[2])(legacy_s16) = {TranslationInc, TranslationDec};
+static legacy_s32 TranslationNarrowStorage(void)
+{
+    legacy_u8 byte = (legacy_u8)TRANSLATION_STORAGE_INITIAL;
+    legacy_s8 signedByte = TRANSLATION_STORAGE_INITIAL;
+    legacy_u16 word = (legacy_u16)TRANSLATION_STORAGE_INITIAL;
+    legacy_s16 signedWord = TRANSLATION_STORAGE_INITIAL;
+    legacy_u32 dword = (legacy_u32)TRANSLATION_STORAGE_INITIAL;
+    legacy_s32 signedDword = TRANSLATION_STORAGE_INITIAL;
+    legacy_u8 *bytePointer = &byte;
+    legacy_s16 *wordPointer = &signedWord;
+    legacy_u32 *dwordPointer = &dword;
+    *bytePointer = *bytePointer + TRANSLATION_STORAGE_STEP;
+    signedByte = signedByte + TRANSLATION_STORAGE_STEP;
+    word = word + TRANSLATION_STORAGE_STEP;
+    *wordPointer = *wordPointer + TRANSLATION_STORAGE_STEP;
+    *dwordPointer = *dwordPointer + TRANSLATION_STORAGE_STEP;
+    signedDword = signedDword + TRANSLATION_STORAGE_STEP;
+    return byte == TRANSLATION_STORAGE_EXPECTED && signedByte == TRANSLATION_STORAGE_EXPECTED &&
+        word == TRANSLATION_STORAGE_EXPECTED && signedWord == TRANSLATION_STORAGE_EXPECTED &&
+        dword == TRANSLATION_STORAGE_EXPECTED && signedDword == TRANSLATION_STORAGE_EXPECTED;
+}
+static legacy_s32 TranslationVariadic(legacy_s32 value, ...)
+{
+    va_list arguments;
+    va_start(arguments, value);
+    legacy_s32 result = value + va_arg(arguments, legacy_s32);
+    va_end(arguments);
+    return result;
+}
+static legacy_s32 TranslationIgnoredVariadic(legacy_s32 value, ...)
+{
+    return value;
+}
 legacy_s32 TranslationSemantics(void)
 {
     legacy_u16 word = 65535U;
@@ -157,6 +198,11 @@ legacy_s32 TranslationSemantics(void)
     word = 0;
     word += translationPacked.value * sizeof(struct TranslationPair) + 6U;
     if (word != 38) { return 50; }
+    if (!TranslationNarrowStorage()) { return TRANSLATION_STORAGE_FAILURE; }
+    if (TranslationVariadic(TRANSLATION_STORAGE_INITIAL, TRANSLATION_STORAGE_STEP) !=
+            TRANSLATION_STORAGE_EXPECTED ||
+        TranslationIgnoredVariadic(TRANSLATION_STORAGE_EXPECTED, TRANSLATION_STORAGE_STEP) !=
+            TRANSLATION_STORAGE_EXPECTED) { return TRANSLATION_VARIADIC_FAILURE; }
     return 0;
 }
 '''
@@ -186,9 +232,9 @@ def build(output, formatter=None):
         lines.append("#define " + name + " " + generator.expr(value)[1])
     for name, cls in model.classes.items():
         lines += [f"class {name}", "{"] + TRANSLATE.indent(generator.class_fields(cls)) + ["};"]
-    for name, (decl, renames, definition) in model.functions.items():
-        if definition:
-            lines.append("extern " + generator.prototype(decl.type, name) + ";")
+    declaration_position = len(lines)
+    declarations = {name: "extern " + generator.prototype(decl.type, name) + ";"
+                    for name, (decl, renames, definition) in model.functions.items() if definition}
     for name, (decl, renames) in model.global_defs.items():
         local = TRANSLATE.Generator(model, renames)
         lines += local.global_storage(decl, name)
@@ -200,6 +246,10 @@ def build(output, formatter=None):
     lines += ['legacy_s32 translation_result = TranslationSemantics();',
               'Print("Translation semantics result: %d\\n", translation_result);',
               'if (translation_result) { throw(\'TestFail\'); }']
+    needed = TRANSLATE.required_forwards({name_map.get(name, name) for name in declarations},
+        TRANSLATE.STYLE.rename_identifiers("\n".join(lines), name_map))
+    lines[declaration_position:declaration_position] = [declaration
+        for name, declaration in declarations.items() if name_map.get(name, name) in needed]
     text = TRANSLATE.output_text(lines, output.name, name_map, formatter)
     output.write_bytes(text.replace("\r\n", "\n").replace("\n", "\r\n").encode())
     print("Host C oracle passed; wrote", output)

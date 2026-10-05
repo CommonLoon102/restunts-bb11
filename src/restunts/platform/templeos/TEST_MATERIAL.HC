@@ -25,7 +25,7 @@ legacy_u32 TestMaterialHash(legacy_s16 *table)
   legacy_u64 hash=TEST_MATERIAL_HASH_OFFSET;
   legacy_s64 index;
   legacy_s64 byte;
-  legacy_u16 word;
+  legacy_u16 noreg word;
   /* FNV-1a of the DOS little-endian words, independently extracted from the
    * original EGA driver. Hash all entries, including invisible materials. */
   for(index=0;index<TEMPLE_MATERIAL_COUNT;index++) {
@@ -41,7 +41,7 @@ legacy_u32 TestMaterialHash(legacy_s16 *table)
 legacy_void TestMaterialInitialization()
 {
   legacy_u8 saved_pairs[TEMPLE_PALETTE_SOURCE_COUNT];
-  legacy_u8 saved_have_default=temple_raster_have_default;
+  legacy_u8 noreg saved_have_default=temple_raster_have_default;
   legacy_s64 iteration;
   legacy_s64 index;
   MemCpy(saved_pairs,temple_raster_default_pairs,sizeof(saved_pairs));
@@ -96,7 +96,7 @@ legacy_void TestMaterialRaster(CDC *dc)
   legacy_s64 material;
   legacy_s64 x;
   legacy_s64 y;
-  legacy_u8 expected;
+  legacy_u8 noreg expected;
   vertices[0].px=0;
   vertices[0].py=0;
   vertices[1].px=TEST_MATERIAL_SIDE;

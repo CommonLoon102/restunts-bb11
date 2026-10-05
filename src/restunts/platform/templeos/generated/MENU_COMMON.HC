@@ -2,7 +2,7 @@
 
 legacy_s8 RsMenuCommonLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_2148;
+  legacy_s32 noreg temple_tmp_2148;
   if((value<=127)) {
     temple_tmp_2148=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsMenuCommonLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsMenuCommonLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_2149;
+  legacy_s32 noreg temple_tmp_2149;
   if((value<=32767)) {
     temple_tmp_2149=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsMenuCommonLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsMenuCommonLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_2150;
+  legacy_s32 noreg temple_tmp_2150;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_2150=TempleCastS32(TempleCastS32(value));
   } else {
@@ -57,10 +57,10 @@ legacy_void RsMenuUpdateIdleCounter(legacy_u16 elapsed,legacy_s16 limit)
 legacy_s16 RsMenuAnimateButtonHighlight(
     legacy_s16 item_index,CButtonArea *buttons,legacy_s16 second_color,legacy_s16 first_color)
 {
-  legacy_u16 temple_delta_2151;
-  legacy_u16 temple_animation_counter_2152;
-  legacy_s16 temple_selected_color_2154;
-  legacy_s32 temple_tmp_2155;
+  legacy_u16 noreg temple_delta_2151;
+  legacy_u16 noreg temple_animation_counter_2152;
+  legacy_s16 noreg temple_selected_color_2154;
+  legacy_s32 noreg temple_tmp_2155;
   temple_delta_2151=TempleCastU16(TempleCastU16(RsTimerGetDeltaAlt()));
   temple_animation_counter_2152=TempleCastU16(TempleCastU16(TempleCastS32(
       (TempleCastU16(rs_menu_common_menu_animation_counter)+TempleCastU16(temple_delta_2151)))));
@@ -99,28 +99,28 @@ legacy_void RsDrawButton(legacy_s8 *text,legacy_s16 x,legacy_s16 y,legacy_s16 wi
     legacy_s16 font_color)
 {
   legacy_s8 *temple_copied_text_2156;
-  legacy_u16 temple_length_2157;
-  legacy_u16 temple_line_count_2158;
-  legacy_u16 temple_source_index_2160;
+  legacy_u16 noreg temple_length_2157;
+  legacy_u16 noreg temple_line_count_2158;
+  legacy_u16 noreg temple_source_index_2160;
   legacy_u16 *temple_tmp_2161;
-  legacy_u16 temple_tmp_2162;
+  legacy_u16 noreg temple_tmp_2162;
   legacy_u16 *temple_tmp_2163;
-  legacy_u16 temple_tmp_2164;
-  legacy_s16 temple_remaining_2165;
-  legacy_s16 temple_vertical_offset_2166;
+  legacy_u16 noreg temple_tmp_2164;
+  legacy_s16 noreg temple_remaining_2165;
+  legacy_s16 noreg temple_vertical_offset_2166;
   legacy_s8 temple_line_2167[86];
-  legacy_u16 temple_destination_index_2168;
-  legacy_u16 temple_line_index_2169;
-  legacy_u16 temple_source_index_2171;
-  legacy_s8 temple_character_2172;
-  legacy_s32 temple_tmp_2173;
+  legacy_u16 noreg temple_destination_index_2168;
+  legacy_u16 noreg temple_line_index_2169;
+  legacy_u16 noreg temple_source_index_2171;
+  legacy_s8 noreg temple_character_2172;
+  legacy_s32 noreg temple_tmp_2173;
   legacy_u16 *temple_tmp_2174;
-  legacy_u16 temple_tmp_2175;
-  legacy_s16 temple_horizontal_offset_2176;
+  legacy_u16 noreg temple_tmp_2175;
+  legacy_s16 noreg temple_horizontal_offset_2176;
   legacy_u16 *temple_tmp_2177;
-  legacy_u16 temple_tmp_2178;
+  legacy_u16 noreg temple_tmp_2178;
   legacy_u16 *temple_tmp_2179;
-  legacy_u16 temple_tmp_2180;
+  legacy_u16 noreg temple_tmp_2180;
   RsSpriteFillRect(TempleCastS16(x),TempleCastS16(y),TempleCastS16(width),TempleCastS16(height),
       TempleCastS16(fill_color));
   RsDrawBeveledBorder(TempleCastS16(x),TempleCastS16(y),TempleCastS16(width),

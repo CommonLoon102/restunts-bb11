@@ -2,7 +2,7 @@
 
 legacy_s8 RsMemmgrLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_437;
+  legacy_s32 noreg temple_tmp_437;
   if((value<=127)) {
     temple_tmp_437=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsMemmgrLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsMemmgrLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_438;
+  legacy_s32 noreg temple_tmp_438;
   if((value<=32767)) {
     temple_tmp_438=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsMemmgrLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsMemmgrLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_439;
+  legacy_s32 noreg temple_tmp_439;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_439=TempleCastS32(TempleCastS32(value));
   } else {
@@ -40,8 +40,8 @@ legacy_s8 *RsMmgrPathToName(legacy_s8 *filename)
 {
   legacy_s8 *temple_result_440;
   legacy_s8 *temple_c_442;
-  legacy_s32 temple_tmp_443;
-  legacy_s32 temple_tmp_444;
+  legacy_s32 noreg temple_tmp_443;
+  legacy_s32 noreg temple_tmp_444;
   temple_result_440=filename;
   temple_c_442=filename;
   while(1) {
@@ -67,12 +67,12 @@ legacy_s8 *RsMmgrPathToName(legacy_s8 *filename)
 legacy_void RsMemmgrMmgrCopyResourceName(legacy_s8 *destination,legacy_s8 *name)
 {
   legacy_s8 *temple_basename_445;
-  legacy_s16 temple_name_index_446;
-  legacy_s32 temple_tmp_448;
+  legacy_s16 noreg temple_name_index_446;
+  legacy_s32 noreg temple_tmp_448;
   legacy_s16 *temple_tmp_449;
-  legacy_s16 temple_tmp_450;
+  legacy_s16 noreg temple_tmp_450;
   legacy_s16 *temple_tmp_452;
-  legacy_s16 temple_tmp_453;
+  legacy_s16 noreg temple_tmp_453;
   temple_basename_445=RsMmgrPathToName(name);
   temple_name_index_446=TempleCastS16(0);
   while(1) {
@@ -105,8 +105,8 @@ legacy_u8 *RsMmgrAllocPages(legacy_s8 *name,legacy_u16 paragraphs)
 {
   CMemChunk *temple_live_chunk_454;
   CMemChunk *temple_cached_chunk_455;
-  legacy_u16 temple_start_segment_456;
-  legacy_u16 temple_size_or_end_segment_457;
+  legacy_u16 noreg temple_start_segment_456;
+  legacy_u16 noreg temple_size_or_end_segment_457;
   legacy_u16 *temple_tmp_458;
   temple_live_chunk_454=mmgr_last_live_chunk;
   temple_cached_chunk_455=mmgr_first_cached_chunk;
@@ -169,7 +169,7 @@ legacy_u8 *RsMmgrAllocResbytes(legacy_s8 *name,legacy_s32 size)
 legacy_void RsMmgrAllocResmem(legacy_u16 end_segment)
 {
   legacy_u8 *temple_psp_460;
-  legacy_u16 temple_maxblocks_461;
+  legacy_u16 noreg temple_maxblocks_461;
   CMemChunk *temple_chunk_462;
   temple_psp_460=RsDosMemoryGetPsp();
   (pspseg=TempleCastU16(RsDosMemoryPointerSegment(temple_psp_460)));
@@ -231,15 +231,15 @@ legacy_u16 RsMmgrAllocatedParagraphs()
 legacy_u8 *RsMmgrFree(legacy_s8 *ptr)
 {
   CMemChunk *temple_chunk_464;
-  legacy_u16 temple_ptrseg_465;
-  legacy_u16 temple_free_paragraphs_467;
-  legacy_s32 temple_tmp_468;
-  legacy_s32 temple_tmp_469;
-  legacy_u16 temple_source_segment_470;
-  legacy_u16 temple_source_paragraphs_471;
-  legacy_s16 temple_name_index_473;
+  legacy_u16 noreg temple_ptrseg_465;
+  legacy_u16 noreg temple_free_paragraphs_467;
+  legacy_s32 noreg temple_tmp_468;
+  legacy_s32 noreg temple_tmp_469;
+  legacy_u16 noreg temple_source_segment_470;
+  legacy_u16 noreg temple_source_paragraphs_471;
+  legacy_s16 noreg temple_name_index_473;
   legacy_s16 *temple_tmp_474;
-  legacy_s16 temple_tmp_475;
+  legacy_s16 noreg temple_tmp_475;
   temple_chunk_464=mmgr_last_live_chunk;
   temple_ptrseg_465=TempleCastU16(RsDosMemoryPointerSegment(ptr));
   while(1) {
@@ -309,12 +309,12 @@ legacy_u8 *RsMmgrFree(legacy_s8 *ptr)
 
 legacy_void RsMmgrCopyParas(legacy_u16 srcseg,legacy_u16 destseg,legacy_s16 paras)
 {
-  legacy_u16 temple_count_477;
+  legacy_u16 noreg temple_count_477;
   legacy_s16 *temple_tmp_479;
   legacy_u16 *temple_srcptr_480;
   legacy_u16 *temple_destptr_481;
   legacy_u16 *temple_tmp_483;
-  legacy_u16 temple_tmp_484;
+  legacy_u16 noreg temple_tmp_484;
   legacy_u16 *temple_tmp_485;
   legacy_u16 *temple_tmp_486;
   TempleRasterForgetRange(RsDosMemoryMakePointer(TempleCastU16(destseg),TempleCastU16(0)),
@@ -355,16 +355,16 @@ legacy_void RsCopyParasReverse(legacy_u16 srcseg,legacy_u16 destseg,legacy_s16 p
 {
   legacy_u16 *temple_tmp_487;
   legacy_u16 *temple_tmp_488;
-  legacy_u16 temple_count_490;
+  legacy_u16 noreg temple_count_490;
   legacy_s16 *temple_tmp_491;
   legacy_u16 *temple_tmp_492;
   legacy_u16 *temple_tmp_493;
   legacy_u16 *temple_tmp_494;
-  legacy_u16 temple_ofs_495;
+  legacy_u16 noreg temple_ofs_495;
   legacy_u16 *temple_srcptr_496;
   legacy_u16 *temple_destptr_497;
   legacy_u16 *temple_tmp_499;
-  legacy_u16 temple_tmp_500;
+  legacy_u16 noreg temple_tmp_500;
   TempleRasterForgetRange(RsDosMemoryMakePointer(TempleCastU16(destseg),TempleCastU16(0)),
       TempleCastU32((TempleCastU32(TempleCastU16(paras))<<4)));
   temple_tmp_487=&(srcseg);
@@ -412,13 +412,13 @@ legacy_void RsMmgrFindFree()
 {
   CMemChunk *temple_source_chunk_501;
   CMemChunk *temple_destination_chunk_502;
-  legacy_u16 temple_free_paragraphs_503;
+  legacy_u16 noreg temple_free_paragraphs_503;
   legacy_u16 *temple_tmp_505;
-  legacy_u16 temple_destination_segment_506;
-  legacy_u16 temple_resstate_507;
-  legacy_s16 temple_name_index_509;
+  legacy_u16 noreg temple_destination_segment_506;
+  legacy_u16 noreg temple_resstate_507;
+  legacy_s16 noreg temple_name_index_509;
   legacy_s16 *temple_tmp_510;
-  legacy_s16 temple_tmp_511;
+  legacy_s16 noreg temple_tmp_511;
   temple_source_chunk_501=mmgr_cache_sentinel;
   temple_destination_chunk_502=temple_source_chunk_501;
   temple_free_paragraphs_503=TempleCastU16(0);
@@ -468,17 +468,17 @@ legacy_u8 *RsMmgrGetChunkByName(legacy_s8 *name)
 {
   legacy_s8 *temple_wanted_name_512;
   CMemChunk *temple_cached_chunk_513;
-  legacy_s16 temple_found_514;
+  legacy_s16 noreg temple_found_514;
   CMemChunk *temple_live_chunk_515;
-  legacy_s16 temple_name_index_517;
-  legacy_s32 temple_tmp_519;
+  legacy_s16 noreg temple_name_index_517;
+  legacy_s32 noreg temple_tmp_519;
   legacy_s16 *temple_tmp_520;
-  legacy_s16 temple_tmp_521;
-  legacy_s32 temple_tmp_522;
-  legacy_u16 temple_srcofs_523;
-  legacy_u16 temple_srcsize_524;
-  legacy_u16 temple_destofs_525;
-  legacy_s16 temple_allocation_end_segment_526;
+  legacy_s16 noreg temple_tmp_521;
+  legacy_s32 noreg temple_tmp_522;
+  legacy_u16 noreg temple_srcofs_523;
+  legacy_u16 noreg temple_srcsize_524;
+  legacy_u16 noreg temple_destofs_525;
+  legacy_s16 noreg temple_allocation_end_segment_526;
   temple_wanted_name_512=RsMmgrPathToName(name);
   temple_cached_chunk_513=mmgr_first_cached_chunk;
   temple_found_514=TempleCastS16(0);
@@ -556,10 +556,10 @@ legacy_u16 RsMmgrHasCachedResource(legacy_s8 *name)
 {
   legacy_s8 *temple_wanted_528;
   CMemChunk *temple_chunk_529;
-  legacy_s16 temple_i_530;
-  legacy_s32 temple_tmp_533;
+  legacy_s16 noreg temple_i_530;
+  legacy_s32 noreg temple_tmp_533;
   legacy_s16 *temple_tmp_534;
-  legacy_s16 temple_tmp_535;
+  legacy_s16 noreg temple_tmp_535;
   temple_wanted_528=RsMmgrPathToName(name);
   temple_chunk_529=mmgr_first_cached_chunk;
   while(1) {
@@ -602,7 +602,7 @@ legacy_u16 RsMmgrHasCachedResource(legacy_s8 *name)
 
 legacy_void RsMmgrRelease(legacy_u8 *ptr)
 {
-  legacy_u16 temple_segment_536;
+  legacy_u16 noreg temple_segment_536;
   CMemChunk *temple_chunk_537;
   TempleRasterForget(ptr);
   temple_segment_536=TempleCastU16(RsDosMemoryPointerSegment(ptr));
@@ -636,7 +636,7 @@ legacy_void RsMmgrRelease(legacy_u8 *ptr)
 
 legacy_void RsMmgrRenameChunk(legacy_s8 *ptr,legacy_s8 *name)
 {
-  legacy_u16 temple_segment_540;
+  legacy_u16 noreg temple_segment_540;
   CMemChunk *temple_chunk_541;
   temple_segment_540=TempleCastU16(RsDosMemoryPointerSegment(ptr));
   temple_chunk_541=mmgr_last_live_chunk;
@@ -657,7 +657,7 @@ legacy_void RsMmgrRenameChunk(legacy_s8 *ptr,legacy_s8 *name)
 
 legacy_u16 RsMmgrGetChunkSize(legacy_s8 *ptr)
 {
-  legacy_u16 temple_segment_543;
+  legacy_u16 noreg temple_segment_543;
   CMemChunk *temple_chunk_544;
   temple_segment_543=TempleCastU16(RsDosMemoryPointerSegment(ptr));
   temple_chunk_544=mmgr_last_live_chunk;
@@ -678,12 +678,12 @@ legacy_u16 RsMmgrGetChunkSize(legacy_s8 *ptr)
 
 legacy_u16 RsMmgrResizeMemory(legacy_u16 unused_offset,legacy_u16 segment,legacy_u16 paragraphs)
 {
-  legacy_u16 temple_size_or_end_segment_546;
+  legacy_u16 noreg temple_size_or_end_segment_546;
   CMemChunk *temple_chunk_547;
-  legacy_u16 temple_retained_549;
-  legacy_s32 temple_tmp_550;
-  legacy_u16 temple_changed_551;
-  legacy_s32 temple_tmp_552;
+  legacy_u16 noreg temple_retained_549;
+  legacy_s32 noreg temple_tmp_550;
+  legacy_u16 noreg temple_changed_551;
+  legacy_s32 noreg temple_tmp_552;
   CMemChunk *temple_limit_chunk_553;
   legacy_u16 *temple_tmp_554;
   unused_offset;
@@ -761,12 +761,12 @@ legacy_u16 RsMmgrResizeMemory(legacy_u16 unused_offset,legacy_u16 segment,legacy
 
 legacy_u8 *RsMmgrCompactLiveChunk(legacy_s8 *ptr)
 {
-  legacy_u16 temple_destination_segment_556;
+  legacy_u16 noreg temple_destination_segment_556;
   CMemChunk *temple_source_chunk_557;
   CMemChunk *temple_destination_chunk_559;
-  legacy_s16 temple_name_index_562;
+  legacy_s16 noreg temple_name_index_562;
   legacy_s16 *temple_tmp_563;
-  legacy_s16 temple_tmp_564;
+  legacy_s16 noreg temple_tmp_564;
   temple_destination_segment_556=TempleCastU16(RsDosMemoryPointerSegment(ptr));
   temple_source_chunk_557=mmgr_last_live_chunk;
   while(1) {
@@ -827,14 +827,14 @@ legacy_u8 *RsMmgrCompactLiveChunk(legacy_s8 *ptr)
 
 legacy_u32 RsMmgrGetResOfsDiffScaled()
 {
-  legacy_u32 temple_result_565;
+  legacy_u32 noreg temple_result_565;
   temple_result_565=TempleCastU32(RsMmgrGetOfsDiff());
   return TempleCastU32(TempleCastU32((temple_result_565<<4)));
 }
 
 legacy_u32 RsMmgrGetChunkSizeBytes(legacy_s8 *ptr)
 {
-  legacy_u32 temple_result_566;
+  legacy_u32 noreg temple_result_566;
   temple_result_566=TempleCastU32(RsMmgrGetChunkSize(ptr));
   return TempleCastU32(TempleCastU32((temple_result_566<<4)));
 }

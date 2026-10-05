@@ -2,7 +2,7 @@
 
 legacy_s8 RsMenuOpponentLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_2539;
+  legacy_s32 noreg temple_tmp_2539;
   if((value<=127)) {
     temple_tmp_2539=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsMenuOpponentLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsMenuOpponentLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_2540;
+  legacy_s32 noreg temple_tmp_2540;
   if((value<=32767)) {
     temple_tmp_2540=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsMenuOpponentLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsMenuOpponentLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_2541;
+  legacy_s32 noreg temple_tmp_2541;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_2541=TempleCastS32(TempleCastS32(value));
   } else {
@@ -39,11 +39,11 @@ legacy_s32 RsMenuOpponentLegacyS32FromBits(legacy_u32 value)
 legacy_void RsMenuOpponentOpponentMenuDrawDescription(COpponentMenuState *menu)
 {
   legacy_s8 *temple_description_2542;
-  legacy_s16 temple_line_y_2543;
-  legacy_u16 temple_line_length_2544;
-  legacy_u8 temple_character_2546;
+  legacy_s16 noreg temple_line_y_2543;
+  legacy_u16 noreg temple_line_length_2544;
+  legacy_u8 noreg temple_character_2546;
   legacy_u16 *temple_tmp_2547;
-  legacy_u16 temple_tmp_2548;
+  legacy_u16 noreg temple_tmp_2548;
   if((TempleCastU8(gameconfig.game_opponenttype)!=0)) {
     (temple_description_2542=RsLocateTextRes(menu->opponent_resource,opponent_description_id));
   } else {
@@ -93,12 +93,12 @@ MemSet(&temple_button_resource_ids_2549,0,sizeof(temple_button_resource_ids_2549
 legacy_void RsMenuOpponentOpponentMenuDrawBackground()
 {
   CShape2D *temple_shape_2550;
-  legacy_u16 temple_index_2552;
+  legacy_u16 noreg temple_index_2552;
   legacy_s8 *temple_label_2553;
-  legacy_s32 temple_tmp_2554;
+  legacy_s32 noreg temple_tmp_2554;
   legacy_s8 *temple_tmp_2555;
   legacy_u16 *temple_tmp_2556;
-  legacy_u16 temple_tmp_2557;
+  legacy_u16 noreg temple_tmp_2557;
   if((video_uses_page_flipping==0)) {
     RsSpriteSelectRenderWindow();
   } else {
@@ -155,8 +155,8 @@ legacy_void RsMenuOpponentOpponentMenuDrawBackground()
 
 legacy_void RsMenuOpponentOpponentMenuRefresh(COpponentMenuState *menu)
 {
-  legacy_u8 temple_selected_ghost_2558;
-  legacy_s32 temple_tmp_2559;
+  legacy_u8 noreg temple_selected_ghost_2558;
+  legacy_s32 noreg temple_tmp_2559;
   temple_selected_ghost_2558=TempleCastU8(TempleCastU8((RsGhostIsSelected()!=0)));
   temple_tmp_2559=!!((menu->displayed_opponent!=TempleCastU8(gameconfig.game_opponenttype)));
   if(!temple_tmp_2559) {
@@ -190,9 +190,9 @@ legacy_void RsMenuOpponentOpponentMenuRefresh(COpponentMenuState *menu)
 
 legacy_u16 RsMenuOpponentOpponentMenuPollInput(COpponentMenuState *menu)
 {
-  legacy_u16 temple_elapsed_2560;
-  legacy_u16 temple_key_2561;
-  legacy_s16 temple_hit_2562;
+  legacy_u16 noreg temple_elapsed_2560;
+  legacy_u16 noreg temple_key_2561;
+  legacy_s16 noreg temple_hit_2562;
   if((RsFrameStatusExpireIdle()!=0)) {
     RsMouseDrawOpaqueCheck();
     RsMenuOpponentOpponentMenuDrawBackground();
@@ -223,10 +223,10 @@ legacy_u16 RsMenuOpponentOpponentMenuPollInput(COpponentMenuState *menu)
 
 legacy_u8 RsMenuOpponentOpponentMenuActivateKey(COpponentMenuState *menu,legacy_u16 key)
 {
-  legacy_s32 temple_tmp_2563;
-  legacy_s32 temple_tmp_2564;
-  legacy_s32 temple_tmp_2565;
-  legacy_s32 temple_tmp_2566;
+  legacy_s32 noreg temple_tmp_2563;
+  legacy_s32 noreg temple_tmp_2564;
+  legacy_s32 noreg temple_tmp_2565;
+  legacy_s32 noreg temple_tmp_2566;
   if((key==TempleCastU16(KEY_F12))) {
     RsMouseDrawOpaqueCheck();
     RsHandleIngameKbShortcuts(
@@ -333,9 +333,9 @@ legacy_u8 RsMenuOpponentOpponentMenuActivateSelection(COpponentMenuState *menu)
 
 legacy_void RsMenuOpponentOpponentMenuRelease(COpponentMenuState *menu)
 {
-  legacy_u16 temple_index_2569;
+  legacy_u16 noreg temple_index_2569;
   legacy_u16 *temple_tmp_2570;
-  legacy_u16 temple_tmp_2571;
+  legacy_u16 noreg temple_tmp_2571;
   if((TempleCastU8(gameconfig.game_opponenttype)!=0)) {
     if((TempleCastU8(gameconfig.game_opponentcarid[0])==255)) {
       temple_index_2569=TempleCastU16(0);
@@ -371,7 +371,7 @@ legacy_void RsRunOpponentMenu()
 {
   COpponentMenuState temple_session_2572;
   COpponentMenuState *temple_menu_2573;
-  legacy_u16 temple_key_2575;
+  legacy_u16 noreg temple_key_2575;
   temple_menu_2573=(&(temple_session_2572));
   RsEnsureFileExists(TempleCastS16(4));
   (miscptr=RsFileLoadResfile(opponent_misc_resource_name));

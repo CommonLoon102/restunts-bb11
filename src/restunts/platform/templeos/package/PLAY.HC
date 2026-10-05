@@ -9,7 +9,7 @@ legacy_u8 TemplePlayHasData(legacy_u8 *directory)
 {
   legacy_u8 *resource=MStrPrint("%s/MISC.RES",directory);
   legacy_u8 *packed_resource=MStrPrint("%s/MISC.PRE",directory);
-  legacy_u8 present=FALSE;
+  legacy_u8 noreg present=FALSE;
   if(FileFind(resource,NULL,FUF_JUST_FILES)||FileFind(packed_resource,NULL,FUF_JUST_FILES)) {
     present=TRUE;
   }

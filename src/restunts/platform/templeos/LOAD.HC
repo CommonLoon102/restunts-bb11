@@ -22,9 +22,9 @@
 legacy_s16 Restunts(legacy_u8 *data_directory="C:/DATA",legacy_u8 skip_intro=FALSE)
 {
   legacy_u8 *previous_directory=StrNew(Fs->cur_dir);
-  legacy_u8 previous_drive=Fs->cur_dv->drv_let;
+  legacy_u8 noreg previous_drive=Fs->cur_dv->drv_let;
   legacy_s8 *arguments[TEMPLE_LAUNCH_ARGUMENT_CAPACITY];
-  legacy_s16 argument_count=1;
+  legacy_s16 noreg argument_count=1;
   legacy_u8 *restore_directory;
   if(!Cd(data_directory)) {
     PrintErr("Cannot open Restunts data directory: %s\n",data_directory);

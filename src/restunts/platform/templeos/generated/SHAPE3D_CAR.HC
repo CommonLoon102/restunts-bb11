@@ -2,7 +2,7 @@
 
 legacy_s8 RsShape3dCarLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_3385;
+  legacy_s32 noreg temple_tmp_3385;
   if((value<=127)) {
     temple_tmp_3385=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsShape3dCarLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsShape3dCarLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_3386;
+  legacy_s32 noreg temple_tmp_3386;
   if((value<=32767)) {
     temple_tmp_3386=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsShape3dCarLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsShape3dCarLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_3387;
+  legacy_s32 noreg temple_tmp_3387;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_3387=TempleCastS32(TempleCastS32(value));
   } else {
@@ -40,17 +40,17 @@ legacy_void RsShape3dCarShape3dInitCarWheelVertices(
     CShape3D *shape,CVector *centers,CVector *vertices)
 {
   CVector temple_resource_vertex_3388;
-  legacy_u32 temple_tmp_3389;
-  legacy_u32 temple_tmp_3390;
-  legacy_u32 temple_tmp_3391;
-  legacy_u32 temple_tmp_3392;
-  legacy_u32 temple_tmp_3393;
-  legacy_u32 temple_tmp_3394;
-  legacy_u32 temple_tmp_3395;
-  legacy_u32 temple_tmp_3396;
-  legacy_s16 temple_i_3398;
+  legacy_u32 noreg temple_tmp_3389;
+  legacy_u32 noreg temple_tmp_3390;
+  legacy_u32 noreg temple_tmp_3391;
+  legacy_u32 noreg temple_tmp_3392;
+  legacy_u32 noreg temple_tmp_3393;
+  legacy_u32 noreg temple_tmp_3394;
+  legacy_u32 noreg temple_tmp_3395;
+  legacy_u32 noreg temple_tmp_3396;
+  legacy_s16 noreg temple_i_3398;
   legacy_s16 *temple_tmp_3399;
-  legacy_s16 temple_tmp_3400;
+  legacy_s16 noreg temple_tmp_3400;
   RsShape3dVertexRead(shape,TempleCastU16(8),(&(temple_resource_vertex_3388)));
   (centers[((0))].x=TempleCastS16(temple_resource_vertex_3388.x));
   (centers[((0))].z=TempleCastS16(temple_resource_vertex_3388.z));
@@ -186,27 +186,27 @@ legacy_void RsShape3dCarShape3dInitCarWheelVertices(
 
 legacy_void RsShape3dLoadCarShapes(legacy_s8 *player_car_id,legacy_s8 *opponent_car_id)
 {
-  legacy_s16 temple_i_3402;
+  legacy_s16 noreg temple_i_3402;
   legacy_s16 *temple_tmp_3403;
-  legacy_s16 temple_tmp_3404;
-  legacy_s16 temple_i_3406;
+  legacy_s16 noreg temple_tmp_3404;
+  legacy_s16 noreg temple_i_3406;
   legacy_s16 *temple_tmp_3407;
-  legacy_s16 temple_tmp_3408;
-  legacy_s32 temple_tmp_3409;
-  legacy_s32 temple_tmp_3410;
-  legacy_s32 temple_tmp_3411;
-  legacy_u32 temple_resource_size_3412;
+  legacy_s16 noreg temple_tmp_3408;
+  legacy_s32 noreg temple_tmp_3409;
+  legacy_s32 noreg temple_tmp_3410;
+  legacy_s32 noreg temple_tmp_3411;
+  legacy_u32 noreg temple_resource_size_3412;
   legacy_u8 *temple_source_bytes_3413;
   legacy_u8 *temple_destination_bytes_3414;
-  legacy_u32 temple_copy_index_3416;
+  legacy_u32 noreg temple_copy_index_3416;
   legacy_u32 *temple_tmp_3417;
-  legacy_u32 temple_tmp_3418;
-  legacy_s16 temple_i_3420;
+  legacy_u32 noreg temple_tmp_3418;
+  legacy_s16 noreg temple_i_3420;
   legacy_s16 *temple_tmp_3421;
-  legacy_s16 temple_tmp_3422;
-  legacy_s16 temple_i_3424;
+  legacy_s16 noreg temple_tmp_3422;
+  legacy_s16 noreg temple_i_3424;
   legacy_s16 *temple_tmp_3425;
-  legacy_s16 temple_tmp_3426;
+  legacy_s16 noreg temple_tmp_3426;
   temple_i_3402=TempleCastS16(0);
   while(1) {
     if(!((temple_i_3402<4))) {
@@ -326,25 +326,25 @@ legacy_void RsShape3dLoadCarShapes(legacy_s8 *player_car_id,legacy_s8 *opponent_
 legacy_void RsShape3dCarShape3dSteerCarWheelVertices(CShape3D *shape,legacy_u16 first_vertex,
     legacy_s16 steering_angle,CVector *base_vertices,CVector *front_wheel_centers)
 {
-  legacy_s16 temple_steering_sine_3427;
-  legacy_u32 temple_tmp_3428;
-  legacy_u32 temple_tmp_3429;
-  legacy_u32 temple_tmp_3430;
-  legacy_u32 temple_tmp_3431;
-  legacy_s16 temple_steering_cosine_3432;
-  legacy_u32 temple_tmp_3433;
-  legacy_u32 temple_tmp_3434;
-  legacy_u32 temple_tmp_3435;
-  legacy_u32 temple_tmp_3436;
+  legacy_s16 noreg temple_steering_sine_3427;
+  legacy_u32 noreg temple_tmp_3428;
+  legacy_u32 noreg temple_tmp_3429;
+  legacy_u32 noreg temple_tmp_3430;
+  legacy_u32 noreg temple_tmp_3431;
+  legacy_s16 noreg temple_steering_cosine_3432;
+  legacy_u32 noreg temple_tmp_3433;
+  legacy_u32 noreg temple_tmp_3434;
+  legacy_u32 noreg temple_tmp_3435;
+  legacy_u32 noreg temple_tmp_3436;
   CVector temple_vertex_3437;
-  legacy_s16 temple_vertex_index_3439;
-  legacy_s16 temple_first_wheel_cosine_component_3440;
+  legacy_s16 noreg temple_vertex_index_3439;
+  legacy_s16 noreg temple_first_wheel_cosine_component_3440;
   legacy_s16 *temple_tmp_3441;
-  legacy_s16 temple_tmp_3442;
-  legacy_s16 temple_vertex_index_3444;
-  legacy_s16 temple_second_wheel_cosine_component_3445;
+  legacy_s16 noreg temple_tmp_3442;
+  legacy_s16 noreg temple_vertex_index_3444;
+  legacy_s16 noreg temple_second_wheel_cosine_component_3445;
   legacy_s16 *temple_tmp_3446;
-  legacy_s16 temple_tmp_3447;
+  legacy_s16 noreg temple_tmp_3447;
   if((TempleCastU32((TempleCastU16(1)&31))==0)) {
     temple_tmp_3431=TempleCastU32(TempleCastU16(steering_angle));
   } else {
@@ -486,18 +486,18 @@ legacy_void RsShape3dUpdateCarWheelVertices(CShape3D *shape,legacy_u16 first_ver
     CVector *base_vertices,CVector *front_wheel_centers)
 {
   CVector temple_vertex_3448;
-  legacy_s16 temple_wheel_index_3450;
-  legacy_s16 temple_vertical_offset_3451;
-  legacy_u32 temple_tmp_3452;
-  legacy_u32 temple_tmp_3453;
-  legacy_u32 temple_tmp_3454;
-  legacy_u32 temple_tmp_3455;
-  legacy_s16 temple_vertex_index_3456;
-  legacy_s16 temple_wheel_vertex_end_3457;
+  legacy_s16 noreg temple_wheel_index_3450;
+  legacy_s16 noreg temple_vertical_offset_3451;
+  legacy_u32 noreg temple_tmp_3452;
+  legacy_u32 noreg temple_tmp_3453;
+  legacy_u32 noreg temple_tmp_3454;
+  legacy_u32 noreg temple_tmp_3455;
+  legacy_s16 noreg temple_vertex_index_3456;
+  legacy_s16 noreg temple_wheel_vertex_end_3457;
   legacy_s16 *temple_tmp_3459;
-  legacy_s16 temple_tmp_3460;
+  legacy_s16 noreg temple_tmp_3460;
   legacy_s16 *temple_tmp_3461;
-  legacy_s16 temple_tmp_3462;
+  legacy_s16 noreg temple_tmp_3462;
   if((cached_wheel_state[4]!=steering_angle)) {
     RsShape3dCarShape3dSteerCarWheelVertices(shape,TempleCastU16(first_vertex),
         TempleCastS16(steering_angle),base_vertices,front_wheel_centers);
@@ -586,9 +586,9 @@ legacy_void RsShape3dUpdateCarWheelVertices(CShape3D *shape,legacy_u16 first_ver
 legacy_void RsShape3dFreeCarShapes()
 {
   CShape3D temple_empty_shape_3463;
-  legacy_s16 temple_shape_index_3465;
+  legacy_s16 noreg temple_shape_index_3465;
   legacy_s16 *temple_tmp_3466;
-  legacy_s16 temple_tmp_3467;
+  legacy_s16 noreg temple_tmp_3467;
   if((car2resptr!=0)) {
     RsShape3dUpdateCarWheelVertices((&(game3dshapes[OPPONENT_CAR_WHEEL_SHAPE])),TempleCastU16(8),
         TempleCastS16(0),neutral_wheel_suspension,opponent_wheel_vertex_state,

@@ -2,7 +2,7 @@
 
 legacy_s8 RsStrlibLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_571;
+  legacy_s32 noreg temple_tmp_571;
   if((value<=127)) {
     temple_tmp_571=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsStrlibLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsStrlibLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_572;
+  legacy_s32 noreg temple_tmp_572;
   if((value<=32767)) {
     temple_tmp_572=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsStrlibLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsStrlibLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_573;
+  legacy_s32 noreg temple_tmp_573;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_573=TempleCastS32(TempleCastS32(value));
   } else {
@@ -86,7 +86,7 @@ legacy_s16 RsInternal1Strcmp(legacy_s8 *left,legacy_s8 *right)
 {
   legacy_u8 *temple_left_bytes_579;
   legacy_u8 *temple_right_bytes_580;
-  legacy_s32 temple_tmp_582;
+  legacy_s32 noreg temple_tmp_582;
   temple_left_bytes_579=(left)(legacy_u8 *);
   temple_right_bytes_580=(right)(legacy_u8 *);
   while(1) {
@@ -109,7 +109,7 @@ legacy_s16 RsInternal1Strcmp(legacy_s8 *left,legacy_s8 *right)
 
 legacy_u8 RsStrlibLegacyAsciiLower(legacy_u8 character)
 {
-  legacy_s32 temple_tmp_583;
+  legacy_s32 noreg temple_tmp_583;
   temple_tmp_583=!!((character>='A'));
   if(temple_tmp_583) {
     temple_tmp_583=!!((character<='Z'));
@@ -122,9 +122,9 @@ legacy_u8 RsStrlibLegacyAsciiLower(legacy_u8 character)
 
 legacy_s16 RsInternal1Stricmp(legacy_s8 *left,legacy_s8 *right)
 {
-  legacy_u8 temple_left_character_584;
-  legacy_u8 temple_right_character_586;
-  legacy_s32 temple_tmp_587;
+  legacy_u8 noreg temple_left_character_584;
+  legacy_u8 noreg temple_right_character_586;
+  legacy_s32 noreg temple_tmp_587;
   while(1) {
     (temple_left_character_584=
             TempleCastU8(RsStrlibLegacyAsciiLower(TempleCastU8(TempleCastU8((*((left++))))))));

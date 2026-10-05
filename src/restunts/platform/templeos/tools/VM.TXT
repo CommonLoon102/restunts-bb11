@@ -19,9 +19,10 @@ when execution starts. The script declines installation and the first-use
 tour, checks the HolyC prompt, mounts only its disposable disk, and invokes
 ExeFile2 inside an exception handler. A completed entry emits
 RESTUNTS_VM_PASS; a compile/runtime exception emits RESTUNTS_VM_FAIL.
-The command also scans the captured compiler document for ERROR markers:
-some missing #include files report an error without throwing an exception.
-The command exits successfully only when both checks pass. A timeout also
+The command also scans the captured compiler document for ERROR and WARNING
+markers: some missing #include files report an error without throwing an
+exception. The command exits successfully only when both checks pass and the
+sources compile without warnings. A timeout also
 fails; an interactive game entry normally needs --no-wait instead.
 
 Useful options:
@@ -41,7 +42,8 @@ concurrent checks. TCG runs are more reliable when tested sequentially;
 keyboard events use a 40 ms hold and 80 ms spacing. Each run replaces that directory's generated SHARE.IMG;
 the script refuses to replace it while its guest is running. Normal output
 contains the result and artifact paths; failures include the last 40 lines.
-The complete compiler document is always retained in DEBUG.LOG.
+The wrapper disables the normal command-document scrollback limit with
+DocMax, so early compiler diagnostics remain available in DEBUG.LOG.
 
 Guest control after --keep or --no-wait:
 

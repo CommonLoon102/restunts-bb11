@@ -2,7 +2,7 @@
 
 legacy_s8 RsNumlibLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_588;
+  legacy_s32 noreg temple_tmp_588;
   if((value<=127)) {
     temple_tmp_588=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsNumlibLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsNumlibLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_589;
+  legacy_s32 noreg temple_tmp_589;
   if((value<=32767)) {
     temple_tmp_589=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsNumlibLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsNumlibLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_590;
+  legacy_s32 noreg temple_tmp_590;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_590=TempleCastS32(TempleCastS32(value));
   } else {

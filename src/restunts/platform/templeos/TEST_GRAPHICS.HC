@@ -59,7 +59,7 @@ legacy_void TestMaterialAssert(legacy_s64 condition)
 
 legacy_void TempleGraphicsQueueTest()
 {
-  legacy_u16 expected;
+  legacy_u16 noreg expected;
   RsInitPolyinfo();
   RsPolyinfoReset();
   shape_polygon_predecessor=polygon_list_tail;
@@ -113,7 +113,7 @@ legacy_void TempleGraphicsProjectionTest()
   legacy_s16 *saved_patterns=material_patlist_ptr_cpy;
   legacy_s16 *saved_secondary=material_clrlist2_ptr_cpy;
   legacy_s16 *saved_bits=material_patlist2_ptr_cpy;
-  legacy_u16 saved_reserved=reserved_material_video_word;
+  legacy_u16 noreg saved_reserved=reserved_material_video_word;
   MemSet(&shape,0,sizeof(shape));
   MemSet(&instance,0,sizeof(instance));
   MemSet(primitives,0,sizeof(primitives));
@@ -306,7 +306,7 @@ legacy_void TempleGraphicsTest()
   legacy_u32 saved[TEMPLE_GRAPHICS_CAPTURE_SIDE*TEMPLE_GRAPHICS_CAPTURE_SIDE*
       TEMPLE_RASTER_CELL_PIXELS];
   legacy_u64 x,y,slot,index,offset;
-  legacy_u8 mouse_was_shown=ms.show;
+  legacy_u8 noreg mouse_was_shown=ms.show;
 
   TempleGraphicsAssert(sizeof(CShape2D)==TEMPLE_GRAPHICS_HEADER_BYTES,"bitmap header layout");
   TempleGraphicsAssert(sizeof(CPoint2D)==TEMPLE_GRAPHICS_POINT_BYTES,"polygon point layout");

@@ -149,7 +149,7 @@ legacy_void TempleReplayTest()
   legacy_u8 *trace;
   legacy_u8 *serialized;
   legacy_u64 frame;
-  legacy_u32 hash;
+  legacy_u32 noreg hash;
   TempleReplayAssert(input&&input_size==TEMPLE_REPLAY_INPUT_BYTES,"original DEFAULT.RPL size");
   TempleReplayAssert(TempleReplayHash(input,input_size)==TEMPLE_REPLAY_INPUT_HASH,
       "original DEFAULT.RPL fingerprint");

@@ -2,7 +2,7 @@
 
 legacy_s8 RsHighscoreLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_1491;
+  legacy_s32 noreg temple_tmp_1491;
   if((value<=127)) {
     temple_tmp_1491=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsHighscoreLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsHighscoreLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_1492;
+  legacy_s32 noreg temple_tmp_1492;
   if((value<=32767)) {
     temple_tmp_1492=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsHighscoreLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsHighscoreLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_1493;
+  legacy_s32 noreg temple_tmp_1493;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_1493=TempleCastS32(TempleCastS32(value));
   } else {
@@ -105,23 +105,23 @@ legacy_u8 *RsHighscoreReadWithRetry(
 
 legacy_s16 RsHighscoreLoadOrCreate(legacy_s16 create_default)
 {
-  legacy_u16 temple_entry_1497;
+  legacy_u16 noreg temple_entry_1497;
   legacy_u16 *temple_tmp_1498;
-  legacy_u16 temple_tmp_1499;
+  legacy_u16 noreg temple_tmp_1499;
   legacy_u8 *temple_read_result_1500;
-  legacy_s32 temple_tmp_1501;
+  legacy_s32 noreg temple_tmp_1501;
   CHighscoreEntry temple_record_1502;
   legacy_u8 *temple_record_bytes_1503;
-  legacy_u16 temple_offset_1505;
+  legacy_u16 noreg temple_offset_1505;
   legacy_u16 *temple_tmp_1506;
-  legacy_u16 temple_tmp_1507;
-  legacy_u16 temple_offset_1509;
+  legacy_u16 noreg temple_tmp_1507;
+  legacy_u16 noreg temple_offset_1509;
   legacy_u16 *temple_tmp_1510;
-  legacy_u16 temple_tmp_1511;
+  legacy_u16 noreg temple_tmp_1511;
   CHighscoreEntry *temple_scores_1512;
-  legacy_u16 temple_entry_1514;
+  legacy_u16 noreg temple_entry_1514;
   legacy_u16 *temple_tmp_1515;
-  legacy_u16 temple_tmp_1516;
+  legacy_u16 noreg temple_tmp_1516;
   (rs_highscore_ranking_highlight=TempleCastU8(255));
   temple_entry_1497=TempleCastU16(0);
   while(1) {
@@ -198,10 +198,10 @@ legacy_void RsHighscoreSaveSorted()
 {
   CHighscoreEntry *temple_scores_1517;
   CHighscoreEntry temple_ordered_scores_1518[7];
-  legacy_u16 temple_entry_1520;
-  legacy_u16 temple_source_entry_1521;
+  legacy_u16 noreg temple_entry_1520;
+  legacy_u16 noreg temple_source_entry_1521;
   legacy_u16 *temple_tmp_1522;
-  legacy_u16 temple_tmp_1523;
+  legacy_u16 noreg temple_tmp_1523;
   temple_scores_1517=(track_highscore_table)(CHighscoreEntry *);
   temple_entry_1520=TempleCastU16(0);
   while(1) {
@@ -226,12 +226,12 @@ legacy_void RsPrintHighscoreEntry(legacy_s16 entry,legacy_u8 *text_offsets)
 {
   CHighscoreEntry *temple_scores_1524;
   CHighscoreEntry temple_record_1525;
-  legacy_u16 temple_output_offset_1526;
+  legacy_u16 noreg temple_output_offset_1526;
   legacy_s8 *temple_output_1527;
-  legacy_s16 temple_saved_frame_rate_1528;
-  legacy_s16 temple_frame_count_1529;
+  legacy_s16 noreg temple_saved_frame_rate_1528;
+  legacy_s16 noreg temple_frame_count_1529;
   legacy_s8 temple_formatted_time_1530[18];
-  legacy_s32 temple_tmp_1531;
+  legacy_s32 noreg temple_tmp_1531;
   temple_scores_1524=(track_highscore_table)(CHighscoreEntry *);
   MemCpy(&temple_record_1525,&(temple_scores_1524[ranking_entry_order[entry]]),
       sizeof(CHighscoreEntry));
@@ -282,12 +282,12 @@ legacy_void RsHighscoreDrawTable()
 {
   legacy_s8 *temple_text_1532;
   legacy_u8 temple_text_offsets_1533[4];
-  legacy_u16 temple_entry_1535;
-  legacy_s16 temple_row_1536;
-  legacy_s16 temple_color_1537;
-  legacy_s32 temple_tmp_1538;
+  legacy_u16 noreg temple_entry_1535;
+  legacy_s16 noreg temple_row_1536;
+  legacy_s16 noreg temple_color_1537;
+  legacy_s32 noreg temple_tmp_1538;
   legacy_u16 *temple_tmp_1539;
-  legacy_u16 temple_tmp_1540;
+  legacy_u16 noreg temple_tmp_1540;
   RsSpriteSelectRenderWindow();
   RsCopyString((&(res_id_buffer[0])),RsLocateTextRes(mainresptr,"hs1"));
   RsInternal1Strcat((&(res_id_buffer[0]))," '");
@@ -349,19 +349,19 @@ legacy_void RsHighscoreDrawTable()
 
 legacy_void RsEnterHiscore(legacy_s16 frame_count,legacy_u8 *prompt,legacy_u8 car_flag)
 {
-  legacy_u16 temple_time_bits_1541;
+  legacy_u16 noreg temple_time_bits_1541;
   CHighscoreEntry *temple_scores_1542;
-  legacy_u16 temple_entry_1543;
+  legacy_u16 noreg temple_entry_1543;
   legacy_u16 *temple_tmp_1545;
-  legacy_u16 temple_tmp_1546;
-  legacy_u16 temple_rank_1547;
+  legacy_u16 noreg temple_tmp_1546;
+  legacy_u16 noreg temple_rank_1547;
   legacy_u16 *temple_tmp_1549;
-  legacy_u16 temple_tmp_1550;
+  legacy_u16 noreg temple_tmp_1550;
   CHighscoreEntry temple_record_1551;
   legacy_u8 *temple_record_bytes_1552;
-  legacy_u16 temple_copied_1554;
+  legacy_u16 noreg temple_copied_1554;
   legacy_u16 *temple_tmp_1555;
-  legacy_u16 temple_tmp_1556;
+  legacy_u16 noreg temple_tmp_1556;
   legacy_s16 temple_positions_1557[2];
   temple_time_bits_1541=TempleCastU16(TempleCastU16(frame_count));
   if((framespersec==GAME_FRAME_RATE_LOW)) {
@@ -470,8 +470,8 @@ legacy_void RsHighscoreEndHiscoreDrawAnimationFrame(legacy_s8 *animation_resourc
     legacy_s16 animation_y,CSprite *animation_sprite,legacy_u8 draw_direct_copy)
 {
   CShape2D *temple_frame_shape_1558;
-  legacy_u16 temple_height_1559;
-  legacy_u16 temple_width_1560;
+  legacy_u16 noreg temple_height_1559;
+  legacy_u16 noreg temple_width_1560;
   (opponent_animation_frame_id[3]=
           TempleCastS8(TempleCastS8(TempleCastS32((frame_sequence[frame_index]+'0')))));
   temple_frame_shape_1558=
@@ -510,7 +510,7 @@ legacy_void RsHighscoreEndHiscoreAdvanceAnimation(
     legacy_s16 delta,legacy_s16 *timer,legacy_u8 *frame,legacy_u8 *frame_sequence)
 {
   legacy_u8 *temple_tmp_1561;
-  legacy_u8 temple_tmp_1562;
+  legacy_u8 noreg temple_tmp_1562;
   ((*(timer))=TempleCastS16(RsHighscoreLegacyS16FromBits(TempleCastU16(TempleCastU16(
       TempleCastU16(TempleCastS32((TempleCastU16((*(timer)))+TempleCastU16(delta)))))))));
   if(((*(timer))>=30)) {
@@ -544,7 +544,7 @@ legacy_s8 *RsHighscoreEndHiscoreResultText(legacy_s8 *opponent_resource,legacy_u
     legacy_u8 text_prefix,legacy_u16 resource_index)
 {
   legacy_s8 temple_text_id_1563[4];
-  legacy_s16 temple_selector_1564;
+  legacy_s16 noreg temple_selector_1564;
   if((outcome==END_SCREEN_OUTCOME_NONE)) {
     return RsLocateTextRes(opponent_resource,opponent_neutral_result_text_id);
   } else {
@@ -568,20 +568,20 @@ legacy_s8 *RsHighscoreEndHiscoreResultText(legacy_s8 *opponent_resource,legacy_u
 
 legacy_void RsHighscoreEndHiscoreAppendTextWord(CEndScreenTextLine *line,legacy_s16 animation_x)
 {
-  legacy_s16 temple_word_width_1565;
-  legacy_s32 temple_tmp_1566;
-  legacy_u16 temple_copy_index_1568;
+  legacy_s16 noreg temple_word_width_1565;
+  legacy_s32 noreg temple_tmp_1566;
+  legacy_u16 noreg temple_copy_index_1568;
   legacy_u16 *temple_tmp_1569;
-  legacy_u16 temple_tmp_1570;
+  legacy_u16 noreg temple_tmp_1570;
   legacy_u16 *temple_tmp_1571;
-  legacy_u16 temple_tmp_1572;
-  legacy_u16 temple_first_character_1573;
-  legacy_u32 temple_tmp_1574;
-  legacy_u16 temple_copy_index_1576;
+  legacy_u16 noreg temple_tmp_1572;
+  legacy_u16 noreg temple_first_character_1573;
+  legacy_u32 noreg temple_tmp_1574;
+  legacy_u16 noreg temple_copy_index_1576;
   legacy_u16 *temple_tmp_1577;
-  legacy_u16 temple_tmp_1578;
+  legacy_u16 noreg temple_tmp_1578;
   legacy_u16 *temple_tmp_1579;
-  legacy_u16 temple_tmp_1580;
+  legacy_u16 noreg temple_tmp_1580;
   (line->word[line->word_length]=TempleCastS8(0));
   temple_word_width_1565=TempleCastS16(TempleCastS16(RsFontTextWidth(line->word)));
   temple_tmp_1566=
@@ -645,10 +645,10 @@ legacy_void RsHighscoreEndHiscoreAppendTextWord(CEndScreenTextLine *line,legacy_
 legacy_void RsHighscoreEndHiscoreConsumeText(
     CEndScreenTextLine *line,legacy_s8 *text,legacy_s16 animation_x)
 {
-  legacy_u8 temple_character_1582;
-  legacy_s32 temple_tmp_1583;
+  legacy_u8 noreg temple_character_1582;
+  legacy_s32 noreg temple_tmp_1583;
   legacy_u16 *temple_tmp_1584;
-  legacy_u16 temple_tmp_1585;
+  legacy_u16 noreg temple_tmp_1585;
   while(1) {
     if(!(1)) {
       break;
@@ -679,12 +679,12 @@ legacy_void RsHighscoreEndHiscoreDrawOpponentText(
     legacy_s8 *opponent_resource,legacy_u8 outcome,legacy_u8 text_prefix,legacy_s16 animation_x)
 {
   CEndScreenTextLine temple_line_1586;
-  legacy_u16 temple_resource_count_1587;
-  legacy_u32 temple_tmp_1588;
-  legacy_u16 temple_resource_index_1590;
+  legacy_u16 noreg temple_resource_count_1587;
+  legacy_u32 noreg temple_tmp_1588;
+  legacy_u16 noreg temple_resource_index_1590;
   legacy_s8 *temple_text_1591;
   legacy_u16 *temple_tmp_1592;
-  legacy_u16 temple_tmp_1593;
+  legacy_u16 noreg temple_tmp_1593;
   (temple_line_1586.line_y=TempleCastS16(8));
   (temple_line_1586.output_length=TempleCastU16(0));
   (temple_line_1586.line_width=TempleCastS16(0));
@@ -777,7 +777,7 @@ legacy_void RsHighscoreEndHiscoreDrawPlayerTime(CEndScreenState *screen)
 legacy_void RsHighscoreEndHiscoreDrawOpponentTime(CEndScreenState *screen)
 {
   legacy_s8 temple_number_1595[18];
-  legacy_s32 temple_tmp_1596;
+  legacy_s32 noreg temple_tmp_1596;
   (screen->outcome=TempleCastU8(END_SCREEN_OUTCOME_NONE));
   if((gameconfig.game_opponenttype!=0)) {
     if((g_state_opponent_finish_time==0)) {
@@ -812,7 +812,7 @@ legacy_void RsHighscoreEndHiscoreDrawOpponentTime(CEndScreenState *screen)
 
 legacy_void RsHighscoreEndHiscoreLoadMusic(CEndScreenState *screen)
 {
-  legacy_s32 temple_tmp_1597;
+  legacy_s32 noreg temple_tmp_1597;
   if((screen->outcome==END_SCREEN_OUTCOME_LOSS)) {
     RsFileLoadAudiores(
         victory_music_resource_name,victory_instrument_resource_name,victory_song_id);
@@ -832,8 +832,8 @@ legacy_void RsHighscoreEndHiscoreLoadMusic(CEndScreenState *screen)
 
 legacy_void RsHighscoreEndHiscoreDrawStatistics(CEndScreenState *screen)
 {
-  legacy_u16 temple_duration_1598;
-  legacy_u16 temple_average_speed_1599;
+  legacy_u16 noreg temple_duration_1598;
+  legacy_u16 noreg temple_average_speed_1599;
   legacy_s8 temple_number_1600[18];
   RsHighscoreEndHiscoreSetText(screen->misc_resource,average_speed_label_id);
   temple_duration_1598=TempleCastU16(TempleCastU16(
@@ -880,7 +880,7 @@ legacy_void RsHighscoreEndHiscoreDrawStatistics(CEndScreenState *screen)
 
 legacy_void RsHighscoreEndHiscoreChooseTextVariants(CEndScreenState *screen)
 {
-  legacy_s16 temple_random_value_1601;
+  legacy_s16 noreg temple_random_value_1601;
   (previous_end_opening_variant=TempleCastS16(end_opening_variant));
   (previous_end_outcome_variant=TempleCastS16(end_outcome_variant));
   (previous_end_closing_variant=TempleCastS16(end_closing_variant));
@@ -964,10 +964,10 @@ legacy_void RsHighscoreEndHiscorePrepareAnimation(CEndScreenState *screen)
 legacy_void RsHighscoreEndHiscoreValidateTrack(CEndScreenState *screen)
 {
   legacy_u8 *temple_track_resource_1602;
-  legacy_u16 temple_result_1603;
-  legacy_u16 temple_i_1605;
+  legacy_u16 noreg temple_result_1603;
+  legacy_u16 noreg temple_i_1605;
   legacy_u16 *temple_tmp_1606;
-  legacy_u16 temple_tmp_1607;
+  legacy_u16 noreg temple_tmp_1607;
   (screen->score_status=TempleCastS8(0));
   RsFileBuildPath(track_directory,gameconfig.game_trackname,track_file_extension,g_path_buf);
   temple_track_resource_1602=
@@ -1005,10 +1005,10 @@ legacy_void RsHighscoreEndHiscoreValidateTrack(CEndScreenState *screen)
 
 legacy_void RsHighscoreEndHiscoreCheckScore(CEndScreenState *screen)
 {
-  legacy_s32 temple_tmp_1608;
+  legacy_s32 noreg temple_tmp_1608;
   CHighscoreEntry *temple_scores_1609;
-  legacy_s32 temple_tmp_1610;
-  legacy_s32 temple_tmp_1611;
+  legacy_s32 noreg temple_tmp_1610;
+  legacy_s32 noreg temple_tmp_1611;
   RsHighscoreEndHiscoreValidateTrack(screen);
   temple_tmp_1608=!!((screen->score_status==0));
   if(temple_tmp_1608) {
@@ -1043,12 +1043,12 @@ legacy_void RsHighscoreEndHiscoreCheckScore(CEndScreenState *screen)
 legacy_void RsHighscoreEndHiscoreShowOpponent(CEndScreenState *screen)
 {
   CShape2D *temple_frame_shape_1612;
-  legacy_s16 temple_animation_width_1613;
-  legacy_s16 temple_animation_height_1614;
-  legacy_u32 temple_tmp_1615;
-  legacy_u32 temple_tmp_1616;
-  legacy_u32 temple_tmp_1617;
-  legacy_u32 temple_tmp_1618;
+  legacy_s16 noreg temple_animation_width_1613;
+  legacy_s16 noreg temple_animation_height_1614;
+  legacy_u32 noreg temple_tmp_1615;
+  legacy_u32 noreg temple_tmp_1616;
+  legacy_u32 noreg temple_tmp_1617;
+  legacy_u32 noreg temple_tmp_1618;
   (opponent_animation_frame_id[3]=TempleCastS8('1'));
   temple_frame_shape_1612=
       (RsLocateShapeFatal(screen->animation_resource,opponent_animation_frame_id))(CShape2D *);
@@ -1119,15 +1119,15 @@ legacy_void RsHighscoreEndHiscoreShowOpponent(CEndScreenState *screen)
 legacy_void RsHighscoreEndHiscoreEnterOpponentScore(CEndScreenState *screen)
 {
   CButtonArea temple_menu_areas_1619[5];
-  legacy_u16 temple_i_1621;
+  legacy_u16 noreg temple_i_1621;
   legacy_u16 *temple_tmp_1622;
-  legacy_u16 temple_tmp_1623;
-  legacy_u16 temple_text_resource_count_1624;
-  legacy_u32 temple_tmp_1625;
-  legacy_s16 temple_delta_1627;
-  legacy_u16 temple_input_1628;
-  legacy_s32 temple_tmp_1629;
-  legacy_s32 temple_tmp_1630;
+  legacy_u16 noreg temple_tmp_1623;
+  legacy_u16 noreg temple_text_resource_count_1624;
+  legacy_u32 noreg temple_tmp_1625;
+  legacy_s16 noreg temple_delta_1627;
+  legacy_u16 noreg temple_input_1628;
+  legacy_s32 noreg temple_tmp_1629;
+  legacy_s32 noreg temple_tmp_1630;
   (screen->score_status=TempleCastS8(0));
   (screen->evaluation_screen=TempleCastU8(1));
   RsDrawButton(RsLocateTextRes(screen->misc_resource,result_continue_button_id),
@@ -1203,7 +1203,7 @@ legacy_void RsHighscoreEndHiscoreEnterOpponentScore(CEndScreenState *screen)
 
 legacy_void RsHighscoreEndHiscoreDrawEvaluation(CEndScreenState *screen)
 {
-  legacy_s32 temple_tmp_1631;
+  legacy_s32 noreg temple_tmp_1631;
   temple_tmp_1631=!!((screen->opponent_active!=0));
   if(temple_tmp_1631) {
     temple_tmp_1631=!!((screen->score_status==2));
@@ -1245,13 +1245,13 @@ legacy_void RsHighscoreEndHiscoreDrawEvaluation(CEndScreenState *screen)
 
 legacy_void RsHighscoreEndHiscoreDrawMenu(CEndScreenState *screen)
 {
-  legacy_s16 temple_menu_offset_1632;
-  legacy_s32 temple_tmp_1633;
+  legacy_s16 noreg temple_menu_offset_1632;
+  legacy_s32 noreg temple_tmp_1633;
   legacy_s8 *temple_tmp_1634;
   legacy_s8 *temple_tmp_1635;
-  legacy_u16 temple_i_1637;
+  legacy_u16 noreg temple_i_1637;
   legacy_u16 *temple_tmp_1638;
-  legacy_u16 temple_tmp_1639;
+  legacy_u16 noreg temple_tmp_1639;
   (screen->selected=TempleCastU8(1));
   (screen->previous_selection=TempleCastU8(1));
   RsMenuResetAnimationTimers();
@@ -1350,8 +1350,8 @@ legacy_void RsHighscoreEndHiscoreRedrawSelection(CEndScreenState *screen)
 
 legacy_void RsHighscoreEndHiscoreSelectMouse(CEndScreenState *screen)
 {
-  legacy_s16 temple_hit_1640;
-  legacy_s32 temple_tmp_1641;
+  legacy_s16 noreg temple_hit_1640;
+  legacy_s32 noreg temple_tmp_1641;
   temple_tmp_1641=!!((screen->opponent_active==0));
   if(!temple_tmp_1641) {
     temple_tmp_1641=!!((screen->score_status==TempleCastS32((-(1)))));
@@ -1373,13 +1373,13 @@ legacy_void RsHighscoreEndHiscoreSelectMouse(CEndScreenState *screen)
 
 legacy_s16 RsHighscoreEndHiscoreNavigateMenu(CEndScreenState *screen,legacy_u16 input)
 {
-  legacy_s32 temple_tmp_1642;
-  legacy_u32 temple_tmp_1643;
-  legacy_u32 temple_tmp_1644;
+  legacy_s32 noreg temple_tmp_1642;
+  legacy_u32 noreg temple_tmp_1643;
+  legacy_u32 noreg temple_tmp_1644;
   legacy_u8 *temple_tmp_1645;
-  legacy_u8 temple_tmp_1646;
-  legacy_s32 temple_tmp_1647;
-  legacy_u32 temple_tmp_1648;
+  legacy_u8 noreg temple_tmp_1646;
+  legacy_s32 noreg temple_tmp_1647;
+  legacy_u32 noreg temple_tmp_1648;
   if((input==KEY_LEFT)) {
     temple_tmp_1642=!!((screen->opponent_active==0));
     if(!temple_tmp_1642) {
@@ -1427,8 +1427,8 @@ legacy_s16 RsHighscoreEndHiscoreNavigateMenu(CEndScreenState *screen,legacy_u16 
 
 legacy_s16 RsHighscoreEndHiscoreHandleMenuInput(CEndScreenState *screen,legacy_u16 input)
 {
-  legacy_s32 temple_tmp_1649;
-  legacy_s32 temple_tmp_1650;
+  legacy_s32 noreg temple_tmp_1649;
+  legacy_s32 noreg temple_tmp_1650;
   if((input==0)) {
     return TempleCastS16(0);
   }
@@ -1460,10 +1460,10 @@ legacy_s16 RsHighscoreEndHiscoreHandleMenuInput(CEndScreenState *screen,legacy_u
 
 legacy_s16 RsHighscoreEndHiscoreRunMenu(CEndScreenState *screen)
 {
-  legacy_s16 temple_delta_1652;
-  legacy_s32 temple_tmp_1653;
-  legacy_u16 temple_input_1654;
-  legacy_s16 temple_result_1655;
+  legacy_s16 noreg temple_delta_1652;
+  legacy_s32 noreg temple_tmp_1653;
+  legacy_u16 noreg temple_input_1654;
+  legacy_s16 noreg temple_result_1655;
   while(1) {
     if(!(1)) {
       break;

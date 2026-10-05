@@ -2,7 +2,7 @@
 
 legacy_s8 RsTrkutilLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_854;
+  legacy_s32 noreg temple_tmp_854;
   if((value<=127)) {
     temple_tmp_854=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsTrkutilLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsTrkutilLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_855;
+  legacy_s32 noreg temple_tmp_855;
   if((value<=32767)) {
     temple_tmp_855=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsTrkutilLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsTrkutilLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_856;
+  legacy_s32 noreg temple_tmp_856;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_856=TempleCastS32(TempleCastS32(value));
   } else {
@@ -71,8 +71,8 @@ legacy_s16 RsTrackObjectBaseZ(CTrackObject *track_object,legacy_u8 row)
 
 legacy_void RsOpponentRouteAdvance(legacy_s16 route_point)
 {
-  legacy_u16 temple_route_table_offset_857;
-  legacy_s16 temple_route_track_index_858;
+  legacy_u16 noreg temple_route_table_offset_857;
+  legacy_s16 noreg temple_route_track_index_858;
   temple_route_table_offset_857=TempleCastU16(TempleCastU16(
       TempleCastU32((TempleCastU32(TempleCastU16(state.opponentstate.car_route_index))*
           TempleCastU32(TempleCastU16(2))))));
@@ -91,12 +91,12 @@ legacy_void RsOpponentRouteAdvance(legacy_s16 route_point)
 
 legacy_u8 RsSubstHillroadTrack(legacy_u8 terrain,legacy_u8 track)
 {
-  legacy_s32 temple_tmp_859;
-  legacy_u16 temple_row_860;
-  legacy_u16 temple_piece_862;
-  legacy_u32 temple_tmp_863;
+  legacy_s32 noreg temple_tmp_859;
+  legacy_u16 noreg temple_row_860;
+  legacy_u16 noreg temple_piece_862;
+  legacy_u32 noreg temple_tmp_863;
   legacy_u16 *temple_tmp_864;
-  legacy_u16 temple_tmp_865;
+  legacy_u16 noreg temple_tmp_865;
   temple_tmp_859=!!((terrain<7));
   if(!temple_tmp_859) {
     temple_tmp_859=!!((terrain>10));

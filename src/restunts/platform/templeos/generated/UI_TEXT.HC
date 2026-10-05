@@ -2,7 +2,7 @@
 
 legacy_s8 RsUiTextLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_1162;
+  legacy_s32 noreg temple_tmp_1162;
   if((value<=127)) {
     temple_tmp_1162=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsUiTextLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsUiTextLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_1163;
+  legacy_s32 noreg temple_tmp_1163;
   if((value<=32767)) {
     temple_tmp_1163=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsUiTextLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsUiTextLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_1164;
+  legacy_s32 noreg temple_tmp_1164;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_1164=TempleCastS32(TempleCastS32(value));
   } else {
@@ -38,7 +38,7 @@ legacy_s32 RsUiTextLegacyS32FromBits(legacy_u32 value)
 
 legacy_s16 RsFontCenteredTextX(legacy_s8 *text)
 {
-  legacy_s16 temple_centered_1165;
+  legacy_s16 noreg temple_centered_1165;
   temple_centered_1165=TempleCastS16(
       RsUiTextLegacyS16FromBits(TempleCastU16(TempleCastU16(TempleCastU16(TempleCastU32((0-
           TempleCastU16(
@@ -51,7 +51,7 @@ legacy_s16 RsFontCenteredTextX(legacy_s8 *text)
 
 legacy_u16 RsLegacyNearStringLength(legacy_s8 *text)
 {
-  legacy_u16 temple_length_1166;
+  legacy_u16 noreg temple_length_1166;
   temple_length_1166=TempleCastU16(0);
   while(1) {
     if(!(((*((text++)))!=0))) {
@@ -66,31 +66,31 @@ legacy_u16 RsLegacyNearStringLength(legacy_s8 *text)
 legacy_void RsFormatInteger(
     legacy_s8 *destination,legacy_s16 value,legacy_s16 zero_pad,legacy_s16 width)
 {
-  legacy_s16 temple_signed_value_1168;
-  legacy_u16 temple_magnitude_1169;
-  legacy_s32 temple_tmp_1170;
+  legacy_s16 noreg temple_signed_value_1168;
+  legacy_u16 noreg temple_magnitude_1169;
+  legacy_s32 noreg temple_tmp_1170;
   legacy_s8 temple_digits_1171[5];
-  legacy_u16 temple_digit_count_1172;
+  legacy_u16 noreg temple_digit_count_1172;
   legacy_u16 *temple_tmp_1174;
-  legacy_u16 temple_tmp_1175;
-  legacy_u16 temple_index_1176;
+  legacy_u16 noreg temple_tmp_1175;
+  legacy_u16 noreg temple_index_1176;
   legacy_u16 *temple_tmp_1177;
-  legacy_u16 temple_tmp_1178;
+  legacy_u16 noreg temple_tmp_1178;
   legacy_u16 *temple_tmp_1180;
-  legacy_u16 temple_tmp_1181;
+  legacy_u16 noreg temple_tmp_1181;
   legacy_u16 *temple_tmp_1182;
-  legacy_u16 temple_tmp_1183;
-  legacy_u16 temple_length_1184;
+  legacy_u16 noreg temple_tmp_1183;
+  legacy_u16 noreg temple_length_1184;
   legacy_u16 *temple_tmp_1187;
-  legacy_u16 temple_tmp_1188;
+  legacy_u16 noreg temple_tmp_1188;
   legacy_u16 *temple_tmp_1189;
-  legacy_u16 temple_tmp_1190;
+  legacy_u16 noreg temple_tmp_1190;
   legacy_u16 *temple_tmp_1193;
-  legacy_u16 temple_tmp_1194;
+  legacy_u16 noreg temple_tmp_1194;
   legacy_u16 *temple_tmp_1195;
-  legacy_u16 temple_tmp_1196;
+  legacy_u16 noreg temple_tmp_1196;
   legacy_u16 *temple_tmp_1198;
-  legacy_u16 temple_tmp_1199;
+  legacy_u16 noreg temple_tmp_1199;
   temple_signed_value_1168=
       TempleCastS16(RsUiTextLegacyS16FromBits(TempleCastU16(TempleCastU16(TempleCastU16(value)))));
   if((temple_signed_value_1168<0)) {
@@ -209,14 +209,14 @@ legacy_s8 *RsUiTextLegacyNearStringCopy(legacy_s8 *destination,legacy_s8 *source
 legacy_void RsFormatFrameAsString(
     legacy_s8 *destination,legacy_s16 frame_count,legacy_s16 include_hundredths)
 {
-  legacy_u16 temple_frames_1201;
-  legacy_u16 temple_frame_rate_1202;
-  legacy_u16 temple_frames_per_minute_1203;
-  legacy_u16 temple_minutes_1204;
-  legacy_u16 temple_seconds_1205;
+  legacy_u16 noreg temple_frames_1201;
+  legacy_u16 noreg temple_frame_rate_1202;
+  legacy_u16 noreg temple_frames_per_minute_1203;
+  legacy_u16 noreg temple_minutes_1204;
+  legacy_u16 noreg temple_seconds_1205;
   legacy_s8 temple_number_1206[18];
   legacy_s8 *temple_output_1207;
-  legacy_u16 temple_hundredths_1208;
+  legacy_u16 noreg temple_hundredths_1208;
   temple_frames_1201=TempleCastU16(TempleCastU16(frame_count));
   temple_frame_rate_1202=TempleCastU16(TempleCastU16(framespersec));
   temple_frames_per_minute_1203=TempleCastU16(TempleCastU16(TempleCastU32(
@@ -258,16 +258,16 @@ legacy_void RsFormatFrameAsString(
 
 legacy_void RsParseFilepathSeparators(legacy_s8 *destination,legacy_s8 *path)
 {
-  legacy_u16 temple_path_index_1209;
-  legacy_s8 temple_current_1210;
-  legacy_s32 temple_tmp_1212;
+  legacy_u16 noreg temple_path_index_1209;
+  legacy_s8 noreg temple_current_1210;
+  legacy_s32 noreg temple_tmp_1212;
   legacy_u16 *temple_tmp_1213;
-  legacy_u16 temple_tmp_1214;
-  legacy_u16 temple_output_index_1215;
+  legacy_u16 noreg temple_tmp_1214;
+  legacy_u16 noreg temple_output_index_1215;
   legacy_u16 *temple_tmp_1217;
-  legacy_u16 temple_tmp_1218;
+  legacy_u16 noreg temple_tmp_1218;
   legacy_u16 *temple_tmp_1219;
-  legacy_u16 temple_tmp_1220;
+  legacy_u16 noreg temple_tmp_1220;
   temple_path_index_1209=TempleCastU16(RsLegacyNearStringLength(path));
   while(1) {
     if(!((temple_path_index_1209!=0))) {
@@ -345,15 +345,15 @@ CRectangle *RsIntroDrawText(
 
 legacy_s16 RsUiTextFontMeasure(legacy_s8 *text,legacy_u16 remaining,legacy_s16 bounded)
 {
-  legacy_s32 temple_tmp_1222;
+  legacy_s32 noreg temple_tmp_1222;
   legacy_u8 *temple_font_definition_1223;
-  legacy_u8 temple_has_glyph_widths_1224;
-  legacy_u16 temple_glyph_width_1225;
-  legacy_u8 temple_character_1226;
-  legacy_u16 temple_total_width_1227;
-  legacy_u16 temple_glyph_offset_1229;
+  legacy_u8 noreg temple_has_glyph_widths_1224;
+  legacy_u16 noreg temple_glyph_width_1225;
+  legacy_u8 noreg temple_character_1226;
+  legacy_u16 noreg temple_total_width_1227;
+  legacy_u16 noreg temple_glyph_offset_1229;
   legacy_u16 *temple_tmp_1230;
-  legacy_u16 temple_tmp_1231;
+  legacy_u16 noreg temple_tmp_1231;
   temple_tmp_1222=!!((bounded!=0));
   if(temple_tmp_1222) {
     temple_tmp_1222=!!((remaining==0));

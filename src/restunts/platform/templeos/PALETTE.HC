@@ -34,7 +34,7 @@ legacy_u64 TemplePaletteGeneration()
 legacy_u8 TemplePaletteNearest(legacy_u8 red,legacy_u8 green,legacy_u8 blue)
 {
   legacy_s64 best_distance=TEMPLE_PALETTE_DISTANCE_LIMIT;
-  legacy_u8 best=BLACK;
+  legacy_u8 noreg best=BLACK;
   legacy_s64 index;
   legacy_s64 offset;
   legacy_s64 red_delta;
@@ -160,10 +160,14 @@ legacy_u8 TemplePaletteColor(legacy_u8 source_index)
   return temple_palette_map[source_index&TEMPLE_BYTE_MASK];
 }
 
+/* A complete !eg0 resource has 256 packed pairs after its 16-byte shape header.
+ * This function accepts that payload, not the header. The caller must apply
+ * sprite transparency/AND/OR operations before converting a resulting color.
+ */
 legacy_u8 TemplePaletteEgaColor(
     legacy_u8 *pairs,legacy_u8 source_index,legacy_s64 x,legacy_s64 y)
 {
-  legacy_u8 pair;
+  legacy_u8 noreg pair;
   if(!pairs) {
     return TemplePaletteColor(source_index);
   }

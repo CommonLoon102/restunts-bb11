@@ -63,7 +63,4 @@ class CTemplePcVoice
   legacy_u8 note,volume,active;
 };
 
-extern legacy_void TempleAudioShutdown();
-extern legacy_void TempleAudioTick();
-
 #endif

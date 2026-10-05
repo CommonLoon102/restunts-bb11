@@ -63,7 +63,7 @@ CTempleFile *TempleFileHandle(legacy_u16 handle)
 
 legacy_u16 RsDosFileOpen(legacy_s8 *source,legacy_s16 create)
 {
-  legacy_u16 handle;
+  legacy_u16 noreg handle;
   legacy_s64 length=0;
   legacy_u8 *path;
   CTempleFile *file;
@@ -113,8 +113,8 @@ legacy_s16 RsDosFileClose(legacy_u16 handle)
 {
   CTempleFile *file=TempleFileHandle(handle);
   CDirEntry entry;
-  legacy_s16 result=0;
-  legacy_u8 found;
+  legacy_s16 noreg result=0;
+  legacy_u8 noreg found;
   if(!file) {
     return-1;
   }
@@ -220,7 +220,7 @@ legacy_s32 RsDosFileTell(legacy_u16 handle)
 
 legacy_s16 RsDosFileError()
 {
-  legacy_s16 result=temple_file_error;
+  legacy_s16 noreg result=temple_file_error;
   temple_file_error=0;
   return result;
 }
@@ -228,7 +228,7 @@ legacy_s16 RsDosFileError()
 legacy_s16 RsDosFileRemove(legacy_s8 *source)
 {
   legacy_u8 *path=TempleFilePath(source);
-  legacy_s16 result=-1;
+  legacy_s16 noreg result=-1;
   if(path) {
     // Do not pass DOS wildcards to a destructive filesystem operation.
     if(!StrOcc(path,'*')&&!StrOcc(path,'?')&&FileFind(path,NULL,FUF_JUST_FILES)) {
@@ -276,7 +276,7 @@ legacy_s8 *RsDosFileFindFirst(legacy_s8 *query)
 
 legacy_void TempleFileShutdown()
 {
-  legacy_u16 handle;
+  legacy_u16 noreg handle;
   for(handle=TEMPLE_FILE_FIRST_HANDLE;handle<TEMPLE_FILE_HANDLE_COUNT;handle++) {
     if(temple_files[handle].used) {
       RsDosFileClose(handle);

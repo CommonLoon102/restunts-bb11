@@ -2,7 +2,7 @@
 
 legacy_s8 RsTimingLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_1044;
+  legacy_s32 noreg temple_tmp_1044;
   if((value<=127)) {
     temple_tmp_1044=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsTimingLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsTimingLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_1045;
+  legacy_s32 noreg temple_tmp_1045;
   if((value<=32767)) {
     temple_tmp_1045=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsTimingLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsTimingLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_1046;
+  legacy_s32 noreg temple_tmp_1046;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_1046=TempleCastS32(TempleCastS32(value));
   } else {
@@ -50,7 +50,7 @@ legacy_void RsTimerRemoveCallback(legacy_u8 *callback)
 
 legacy_s16 RsTimerReadKeyUntilDeadline()
 {
-  legacy_s16 temple_key_1048;
+  legacy_s16 noreg temple_key_1048;
   while(1) {
     temple_key_1048=TempleCastS16(RsKbCallReadcharCallback());
     if((temple_key_1048!=0)) {
@@ -65,8 +65,8 @@ legacy_s16 RsTimerReadKeyUntilDeadline()
 
 legacy_s16 RsTimerReadKeyWithTimeout(legacy_u32 ticks)
 {
-  legacy_u32 temple_target_1049;
-  legacy_s16 temple_key_1051;
+  legacy_u32 noreg temple_target_1049;
+  legacy_s16 noreg temple_key_1051;
   temple_target_1049=TempleCastU32(TempleCastU32(TempleCastU32((RsTimerGetCounter()+ticks))));
   while(1) {
     temple_key_1051=TempleCastS16(RsKbCallReadcharCallback());
@@ -103,7 +103,7 @@ legacy_u32 RsTimerSetDeadline(legacy_u32 ticks)
 
 legacy_u32 RsTimerWaitForDeadline()
 {
-  legacy_u32 temple_res_1052;
+  legacy_u32 noreg temple_res_1052;
   while(1) {
     (temple_res_1052=TempleCastU32(RsTimerGetCounter()));
     if(!((temple_res_1052<rs_timing_timer_wait_target))) {
@@ -120,8 +120,8 @@ legacy_s16 RsTimerDeadlineReached()
 
 legacy_u32 RsTimerWaitTicks(legacy_u32 ticks)
 {
-  legacy_u32 temple_target_1054;
-  legacy_u32 temple_res_1055;
+  legacy_u32 noreg temple_target_1054;
+  legacy_u32 noreg temple_res_1055;
   temple_target_1054=TempleCastU32(TempleCastU32((RsTimerGetCounter()+ticks)));
   while(1) {
     (temple_res_1055=TempleCastU32(RsTimerGetCounter()));
@@ -140,7 +140,7 @@ legacy_u32 RsTimingSecondaryTimerTarget()
 
 legacy_s16 RsTimingSecondaryTimerTargetReached(legacy_u32 current,legacy_u32 target)
 {
-  legacy_s32 temple_tmp_1057;
+  legacy_s32 noreg temple_tmp_1057;
   temple_tmp_1057=!!((TempleCastU16(TempleCastU32((current>>16)))>=
       TempleCastU16(TempleCastU32((target>>16)))));
   if(temple_tmp_1057) {
@@ -151,7 +151,7 @@ legacy_s16 RsTimingSecondaryTimerTargetReached(legacy_u32 current,legacy_u32 tar
 
 legacy_u32 RsSlowTimerSetDeadline(legacy_u32 ticks)
 {
-  legacy_u32 temple_target_1058;
+  legacy_u32 noreg temple_target_1058;
   temple_target_1058=
       TempleCastU32(TempleCastU32(TempleCastU32((RsTimerGetSlowCounter()+ticks))));
   (slow_timer_deadline_low=TempleCastU16(TempleCastU16(temple_target_1058)));
@@ -168,8 +168,8 @@ legacy_s16 RsSlowTimerDeadlineReached()
 
 legacy_u32 RsSlowTimerWaitTicks(legacy_u32 ticks)
 {
-  legacy_u32 temple_target_1059;
-  legacy_u32 temple_current_1060;
+  legacy_u32 noreg temple_target_1059;
+  legacy_u32 noreg temple_current_1060;
   temple_target_1059=
       TempleCastU32(TempleCastU32(TempleCastU32((RsTimerGetSlowCounter()+ticks))));
   while(1) {

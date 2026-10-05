@@ -2,7 +2,7 @@
 
 legacy_s8 RsLegacyLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_236;
+  legacy_s32 noreg temple_tmp_236;
   if((value<=127)) {
     temple_tmp_236=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsLegacyLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsLegacyLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_237;
+  legacy_s32 noreg temple_tmp_237;
   if((value<=32767)) {
     temple_tmp_237=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsLegacyLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsLegacyLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_238;
+  legacy_s32 noreg temple_tmp_238;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_238=TempleCastS32(TempleCastS32(value));
   } else {
@@ -46,8 +46,8 @@ legacy_u16 RsLegacyU16DivOrZero(legacy_u16 numerator,legacy_u16 denominator)
 
 legacy_s16 RsLegacyS16DivOrZero(legacy_s16 numerator,legacy_s16 denominator)
 {
-  legacy_s32 temple_tmp_239;
-  legacy_s32 temple_tmp_240;
+  legacy_s32 noreg temple_tmp_239;
+  legacy_s32 noreg temple_tmp_240;
   temple_tmp_240=!!((denominator==0));
   if(!temple_tmp_240) {
     temple_tmp_239=!!((TempleCastU16(numerator)==32768));
@@ -72,8 +72,8 @@ legacy_u32 RsLegacyU32DivOrZero(legacy_u32 numerator,legacy_u32 denominator)
 
 legacy_s32 RsLegacyS32DivOrZero(legacy_s32 numerator,legacy_s32 denominator)
 {
-  legacy_s32 temple_tmp_241;
-  legacy_s32 temple_tmp_242;
+  legacy_s32 noreg temple_tmp_241;
+  legacy_s32 noreg temple_tmp_242;
   temple_tmp_242=!!((denominator==TempleCastS32(0)));
   if(!temple_tmp_242) {
     temple_tmp_241=!!((TempleCastU32(numerator)==TempleCastU32(2147483648)));

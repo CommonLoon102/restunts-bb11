@@ -32,6 +32,11 @@ legacy_void TempleTimerTestSleep(legacy_s64 milliseconds)
   no_warn milliseconds;
 }
 
+// HolyC has no #undef; these replacements stay in this disposable test task.
+#define tS temple_timer_test_time
+#define Sleep TempleTimerTestSleep
+#include "TIMER.HC"
+
 legacy_void TempleAudioTick()
 {
   temple_timer_test_audio++;
@@ -43,11 +48,6 @@ legacy_void TemplePump()
 {
   TempleTimerPump();
 }
-
-// HolyC has no #undef; these replacements stay in this disposable test task.
-#define tS temple_timer_test_time
-#define Sleep TempleTimerTestSleep
-#include "TIMER.HC"
 
 legacy_void TempleTimerTestCallback()
 {
@@ -88,8 +88,8 @@ legacy_void TempleTimerTestCounters(
 
 legacy_void TempleTimerTests()
 {
-  legacy_u16 round;
-  legacy_u32 interval=TEMPLE_TIMER_TEST_SUSPEND_TICKS-TEMPLE_TIMER_TEST_FORWARD_TICKS;
+  legacy_u16 noreg round;
+  legacy_u32 noreg interval=TEMPLE_TIMER_TEST_SUSPEND_TICKS-TEMPLE_TIMER_TEST_FORWARD_TICKS;
   TempleTimerTestReset();
   TempleTimerTestCounters(0,0,0,0);
   TempleTimerTestSample(TEMPLE_TIMER_TEST_TICKS_PER_SECOND);

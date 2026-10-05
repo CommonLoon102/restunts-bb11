@@ -2,7 +2,7 @@
 
 legacy_s8 RsGamestepLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_657;
+  legacy_s32 noreg temple_tmp_657;
   if((value<=127)) {
     temple_tmp_657=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsGamestepLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsGamestepLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_658;
+  legacy_s32 noreg temple_tmp_658;
   if((value<=32767)) {
     temple_tmp_658=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsGamestepLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsGamestepLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_659;
+  legacy_s32 noreg temple_tmp_659;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_659=TempleCastS32(TempleCastS32(value));
   } else {
@@ -39,23 +39,23 @@ legacy_s32 RsGamestepLegacyS32FromBits(legacy_u32 value)
 legacy_void RsGamestepUpdateTracksideCamera(
     legacy_u16 car_index,legacy_s16 car_x,legacy_s16 car_z)
 {
-  legacy_u16 temple_divisor_660;
-  legacy_u32 temple_tmp_661;
-  legacy_u32 temple_tmp_662;
-  legacy_u32 temple_tmp_663;
-  legacy_u32 temple_tmp_664;
-  legacy_s32 temple_tmp_665;
-  legacy_s16 temple_nearest_distance_666;
-  legacy_u8 temple_candidate_668;
-  legacy_s32 temple_delta_x_669;
-  legacy_s32 temple_delta_z_670;
-  legacy_s32 temple_absolute_x_671;
-  legacy_s32 temple_tmp_672;
-  legacy_s32 temple_absolute_z_673;
-  legacy_s32 temple_tmp_674;
-  legacy_s16 temple_distance_675;
+  legacy_u16 noreg temple_divisor_660;
+  legacy_u32 noreg temple_tmp_661;
+  legacy_u32 noreg temple_tmp_662;
+  legacy_u32 noreg temple_tmp_663;
+  legacy_u32 noreg temple_tmp_664;
+  legacy_s32 noreg temple_tmp_665;
+  legacy_s16 noreg temple_nearest_distance_666;
+  legacy_u8 noreg temple_candidate_668;
+  legacy_s32 noreg temple_delta_x_669;
+  legacy_s32 noreg temple_delta_z_670;
+  legacy_s32 noreg temple_absolute_x_671;
+  legacy_s32 noreg temple_tmp_672;
+  legacy_s32 noreg temple_absolute_z_673;
+  legacy_s32 noreg temple_tmp_674;
+  legacy_s16 noreg temple_distance_675;
   legacy_u8 *temple_tmp_676;
-  legacy_u8 temple_tmp_677;
+  legacy_u8 noreg temple_tmp_677;
   if((TempleCastU32((TempleCastU16(1)&31))==0)) {
     temple_tmp_664=TempleCastU32(TempleCastU16(framespersec));
   } else {
@@ -146,13 +146,13 @@ legacy_void RsGamestepUpdateTracksideCamera(
 legacy_s16 RsGamestepFollowCameraUsesCarTarget(
     CGameState *camera_state,legacy_u16 car_index,CCarState *carstate)
 {
-  legacy_s32 temple_tmp_678;
-  legacy_s32 temple_tmp_679;
-  legacy_s32 temple_tmp_680;
-  legacy_s32 temple_tmp_681;
-  legacy_s32 temple_tmp_682;
-  legacy_s32 temple_tmp_683;
-  legacy_s32 temple_tmp_684;
+  legacy_s32 noreg temple_tmp_678;
+  legacy_s32 noreg temple_tmp_679;
+  legacy_s32 noreg temple_tmp_680;
+  legacy_s32 noreg temple_tmp_681;
+  legacy_s32 noreg temple_tmp_682;
+  legacy_s32 noreg temple_tmp_683;
+  legacy_s32 noreg temple_tmp_684;
   temple_tmp_679=!!((car_index==PLAYER_CAR_INDEX));
   if(temple_tmp_679) {
     temple_tmp_678=!!((camera_state->game_player_route_status!=ROUTE_TRACKING_NORMAL));
@@ -186,8 +186,8 @@ legacy_s16 RsGamestepFollowCameraUsesCarTarget(
 
 legacy_s16 RsGamestepFollowCameraStep(legacy_s16 movement,legacy_u32 fraction20)
 {
-  legacy_u32 temple_tick_fraction_685;
-  legacy_u32 temple_tmp_686;
+  legacy_u32 noreg temple_tick_fraction_685;
+  legacy_u32 noreg temple_tmp_686;
   if((fraction20==TempleCastU32(0))) {
     return TempleCastS16(movement);
   }
@@ -207,9 +207,9 @@ legacy_s16 RsGamestepFollowCameraStep(legacy_s16 movement,legacy_u32 fraction20)
 legacy_void RsGamestepUpdateFollowCameraHeight(
     CGameState *camera_state,legacy_u16 car_index,legacy_s16 car_y,legacy_u32 fraction20)
 {
-  legacy_s16 temple_target_y_687;
-  legacy_s16 temple_delta_y_688;
-  legacy_s16 temple_limit_689;
+  legacy_s16 noreg temple_target_y_687;
+  legacy_s16 noreg temple_delta_y_688;
+  legacy_s16 noreg temple_limit_689;
   temple_target_y_687=TempleCastS16(RsGamestepLegacyS16FromBits(TempleCastU16(
       TempleCastU16(TempleCastU16(TempleCastS32((TempleCastU16(car_y)+TempleCastU16(270))))))));
   temple_delta_y_688=
@@ -240,21 +240,21 @@ legacy_void RsGamestepUpdateCarFollowCamera(
   CVector *temple_tmp_691;
   CCarState *temple_carstate_692;
   CCarState *temple_tmp_693;
-  legacy_s16 temple_car_x_694;
-  legacy_u32 temple_tmp_695;
-  legacy_u32 temple_tmp_696;
-  legacy_s16 temple_car_y_697;
-  legacy_u32 temple_tmp_698;
-  legacy_u32 temple_tmp_699;
-  legacy_s16 temple_car_z_700;
-  legacy_u32 temple_tmp_701;
-  legacy_u32 temple_tmp_702;
+  legacy_s16 noreg temple_car_x_694;
+  legacy_u32 noreg temple_tmp_695;
+  legacy_u32 noreg temple_tmp_696;
+  legacy_s16 noreg temple_car_y_697;
+  legacy_u32 noreg temple_tmp_698;
+  legacy_u32 noreg temple_tmp_699;
+  legacy_s16 noreg temple_car_z_700;
+  legacy_u32 noreg temple_tmp_701;
+  legacy_u32 noreg temple_tmp_702;
   CVector temple_target_703;
-  legacy_s16 temple_angle_704;
-  legacy_s16 temple_distance_705;
-  legacy_s16 temple_adjustment_706;
-  legacy_s16 temple_limit_707;
-  legacy_s32 temple_tmp_708;
+  legacy_s16 noreg temple_angle_704;
+  legacy_s16 noreg temple_distance_705;
+  legacy_s16 noreg temple_adjustment_706;
+  legacy_s16 noreg temple_limit_707;
+  legacy_s32 noreg temple_tmp_708;
   if((car_index==PLAYER_CAR_INDEX)) {
     temple_tmp_691=(&(camera_state->game_player_camera_previous));
   } else {
@@ -384,11 +384,11 @@ legacy_void RsGamestepUpdateCarFollowCamera(
 
 legacy_void RsUpdateFollowCameras()
 {
-  legacy_u16 temple_car_count_709;
-  legacy_u32 temple_tmp_710;
-  legacy_u16 temple_car_index_712;
+  legacy_u16 noreg temple_car_count_709;
+  legacy_u32 noreg temple_tmp_710;
+  legacy_u16 noreg temple_car_index_712;
   legacy_u16 *temple_tmp_713;
-  legacy_u16 temple_tmp_714;
+  legacy_u16 noreg temple_tmp_714;
   if((gameconfig.game_opponenttype==0)) {
     temple_tmp_710=TempleCastU32(1);
   } else {
@@ -411,11 +411,11 @@ legacy_void RsUpdateFollowCameras()
 
 legacy_void RsUpdateFollowCamerasFraction(CGameState *camera_state,legacy_u32 fraction20)
 {
-  legacy_u16 temple_car_count_715;
-  legacy_u32 temple_tmp_716;
-  legacy_u16 temple_car_index_718;
+  legacy_u16 noreg temple_car_count_715;
+  legacy_u32 noreg temple_tmp_716;
+  legacy_u16 noreg temple_car_index_718;
   legacy_u16 *temple_tmp_719;
-  legacy_u16 temple_tmp_720;
+  legacy_u16 noreg temple_tmp_720;
   if((fraction20==TempleCastU32(0))) {
     return;
   }
@@ -441,9 +441,9 @@ legacy_void RsUpdateFollowCamerasFraction(CGameState *camera_state,legacy_u32 fr
 
 legacy_void RsGamestepUpdateRaceEndTiming()
 {
-  legacy_s32 temple_tmp_721;
-  legacy_s32 temple_tmp_722;
-  legacy_s32 temple_tmp_723;
+  legacy_s32 noreg temple_tmp_721;
+  legacy_s32 noreg temple_tmp_722;
+  legacy_s32 noreg temple_tmp_723;
   temple_tmp_721=!!((state.game_end_event!=0));
   if(temple_tmp_721) {
     temple_tmp_721=!!((state.game_frame_in_sec<state.game_frames_per_sec));
@@ -476,12 +476,12 @@ legacy_void RsGamestepUpdateRaceEndTiming()
 
 legacy_void RsGamestepUpdateRaceStartSequence()
 {
-  legacy_s32 temple_tmp_724;
-  legacy_s16 temple_start_line_distance_725;
-  legacy_u32 temple_tmp_726;
-  legacy_u32 temple_tmp_727;
-  legacy_u32 temple_tmp_728;
-  legacy_u32 temple_tmp_729;
+  legacy_s32 noreg temple_tmp_724;
+  legacy_s16 noreg temple_start_line_distance_725;
+  legacy_u32 noreg temple_tmp_726;
+  legacy_u32 noreg temple_tmp_727;
+  legacy_u32 noreg temple_tmp_728;
+  legacy_u32 noreg temple_tmp_729;
   if((race_start_sequence_state!=RACE_START_SEQUENCE_INACTIVE)) {
     if((start_flag_animation<450)) {
       (start_flag_animation=
@@ -569,9 +569,9 @@ legacy_void RsGamestepUpdateRaceStartSequence()
 legacy_void RsGamestepUpdateGamestateImpl(
     legacy_s16 caller_si,legacy_s16 update_audio,legacy_s16 store_checkpoints)
 {
-  legacy_s8 temple_car_input_730;
-  legacy_s32 temple_tmp_731;
-  legacy_u16 temple_checkpoint_index_732;
+  legacy_s8 noreg temple_car_input_730;
+  legacy_s32 noreg temple_tmp_731;
+  legacy_u16 noreg temple_checkpoint_index_732;
   temple_car_input_730=TempleCastS8(replay_input_buffer[TempleCastU16(state.game_frame)]);
   if((TempleCastU32(temple_car_input_730)!=0)) {
     (state.game_inputmode=TempleCastS8(GAME_INPUT_MODE_ACTIVE));

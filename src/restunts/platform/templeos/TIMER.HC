@@ -16,7 +16,7 @@ legacy_u8 temple_timer_dispatching=FALSE;
 legacy_void TempleTimerPump()
 {
   legacy_u64 now;
-  legacy_u16 index;
+  legacy_u16 noreg index;
   legacy_u8 *pending[TEMPLE_TIMER_CALLBACK_COUNT];
   if(!temple_timer_initialized||temple_timer_dispatching) {
     return;
@@ -49,7 +49,7 @@ legacy_void TempleTimerPump()
 
 legacy_s16 RsDosTimerRegisterCallback(legacy_u8 *callback)
 {
-  legacy_u16 index;
+  legacy_u16 noreg index;
   for(index=0;index<TEMPLE_TIMER_CALLBACK_COUNT;index++) {
     if(!temple_timer_callbacks[index]) {
       temple_timer_callbacks[index]=callback;
@@ -61,7 +61,7 @@ legacy_s16 RsDosTimerRegisterCallback(legacy_u8 *callback)
 
 legacy_void RsDosTimerUnregisterCallback(legacy_u8 *callback)
 {
-  legacy_u16 index;
+  legacy_u16 noreg index;
   for(index=0;index<TEMPLE_TIMER_CALLBACK_COUNT;index++) {
     if(temple_timer_callbacks[index]==callback) {
       RsMemmove(temple_timer_callbacks+index,temple_timer_callbacks+index+1,
@@ -116,7 +116,7 @@ legacy_u32 RsDosTimerGetRealtimeCounter()
 
 legacy_u32 RsTimerGetCounter()
 {
-  legacy_u32 previous=temple_timer_counter;
+  legacy_u32 noreg previous=temple_timer_counter;
   TemplePump();
   if(!temple_timer_dispatching&&temple_timer_initialized&&previous==temple_timer_counter) {
     Sleep(TEMPLE_TIMER_POLL_MS);
@@ -127,8 +127,8 @@ legacy_u32 RsTimerGetCounter()
 
 legacy_u32 RsTimerGetDelta()
 {
-  legacy_u32 current=RsTimerGetCounter();
-  legacy_u32 delta=current-temple_timer_previous;
+  legacy_u32 noreg current=RsTimerGetCounter();
+  legacy_u32 noreg delta=current-temple_timer_previous;
   temple_timer_previous=current;
   return delta;
 }

@@ -2,7 +2,7 @@
 
 legacy_s8 RsReplayRecordLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_1658;
+  legacy_s32 noreg temple_tmp_1658;
   if((value<=127)) {
     temple_tmp_1658=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsReplayRecordLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsReplayRecordLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_1659;
+  legacy_s32 noreg temple_tmp_1659;
   if((value<=32767)) {
     temple_tmp_1659=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsReplayRecordLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsReplayRecordLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_1660;
+  legacy_s32 noreg temple_tmp_1660;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_1660=TempleCastS32(TempleCastS32(value));
   } else {
@@ -41,9 +41,9 @@ MemSet(&temple_chunk_name_1661,0,sizeof(temple_chunk_name_1661));
 legacy_void RsAudioAllocateCarStateRecords()
 {
   legacy_u8 *temple_bytes_1662;
-  legacy_u16 temple_index_1664;
+  legacy_u16 noreg temple_index_1664;
   legacy_u16 *temple_tmp_1665;
-  legacy_u16 temple_tmp_1666;
+  legacy_u16 noreg temple_tmp_1666;
   (audio_car_state_records=(RsMmgrAllocResbytes(temple_chunk_name_1661,
       TempleCastS32(TempleCastU32((TempleCastU32(TempleCastS32(40))*34)))))(CAudioCarState *));
   temple_bytes_1662=(audio_car_state_records)(legacy_u8 *);
@@ -75,7 +75,7 @@ legacy_void RsRemoveFrameCallback()
 
 legacy_void RsReplayRecordFrameCallbackPlayAudio()
 {
-  legacy_s32 temple_tmp_1667;
+  legacy_s32 noreg temple_tmp_1667;
   (audio_car_state_interval=
           TempleCastS16(RsReplayRecordLegacyS16FromBits(TempleCastU16(TempleCastU16(TempleCastU16(
               TempleCastS32((TempleCastU16(audio_car_state_interval)+TempleCastU16(1)))))))));
@@ -99,8 +99,8 @@ legacy_void RsReplayRecordFrameCallbackPlayAudio()
 
 legacy_void RsReplayRecordFrameCallbackAdvanceRecording()
 {
-  legacy_s32 temple_tmp_1668;
-  legacy_s32 temple_tmp_1669;
+  legacy_s32 noreg temple_tmp_1668;
+  legacy_s32 noreg temple_tmp_1669;
   (frame_callback_countdown=
           TempleCastU8(TempleCastU8(TempleCastU32((frame_callback_countdown-1)))));
   if((frame_callback_countdown==0)) {
@@ -135,13 +135,13 @@ legacy_void RsReplayRecordFrameCallbackAdvanceRecording()
 
 legacy_void RsFrameCallback()
 {
-  legacy_s32 temple_tmp_1670;
-  legacy_s32 temple_tmp_1671;
-  legacy_s32 temple_tmp_1672;
-  legacy_s32 temple_tmp_1673;
-  legacy_s32 temple_tmp_1674;
+  legacy_s32 noreg temple_tmp_1670;
+  legacy_s32 noreg temple_tmp_1671;
+  legacy_s32 noreg temple_tmp_1672;
+  legacy_s32 noreg temple_tmp_1673;
+  legacy_s32 noreg temple_tmp_1674;
   legacy_u8 *temple_tmp_1675;
-  legacy_u8 temple_tmp_1676;
+  legacy_u8 noreg temple_tmp_1676;
   temple_tmp_1670=!!((RsDosDataStackSegmentsMatch()==0));
   if(!temple_tmp_1670) {
     temple_tmp_1670=!!((rs_replay_record_frame_callback_active!=0));
@@ -186,9 +186,9 @@ legacy_void RsFrameCallback()
 
 legacy_s16 RsReplayRecordReplayReadMouseInput()
 {
-  legacy_s16 temple_steering_1677;
-  legacy_s32 temple_tmp_1678;
-  legacy_s16 temple_input_flags_1679;
+  legacy_s16 noreg temple_steering_1677;
+  legacy_s32 noreg temple_tmp_1678;
+  legacy_s16 noreg temple_input_flags_1679;
   RsDosMouseGetState((&(mouse_butstate)),(&(mouse_xpos)),(&(mouse_ypos)));
   temple_steering_1677=TempleCastS16(RsReplayRecordLegacyS16FromBits(TempleCastU16(TempleCastU16(
       TempleCastU16(TempleCastS32((TempleCastU16(mouse_xpos)-TempleCastU16(160))))))));
@@ -225,8 +225,8 @@ legacy_s16 RsReplayRecordReplayReadMouseInput()
 
 legacy_s16 RsReplayRecordReplayReadJoystickInput()
 {
-  legacy_s8 temple_mapped_steering_1680;
-  legacy_s16 temple_input_flags_1681;
+  legacy_s8 noreg temple_mapped_steering_1680;
+  legacy_s16 noreg temple_input_flags_1681;
   temple_mapped_steering_1680=TempleCastS8(
       RsReplayRecordLegacyS8FromBits(TempleCastU8(TempleCastU8(RsJoystickGetScaledX()))));
   (rs_replay_record_input_steering_value=TempleCastS8(temple_mapped_steering_1680));
@@ -249,11 +249,11 @@ legacy_s16 RsReplayRecordReplayReadJoystickInput()
 
 legacy_s16 RsReplayRecordReplayReadLiveInput()
 {
-  legacy_s32 temple_tmp_1682;
-  legacy_s32 temple_tmp_1683;
-  legacy_s16 temple_input_flags_1684;
-  legacy_s32 temple_tmp_1685;
-  legacy_u16 temple_history_index_1686;
+  legacy_s32 noreg temple_tmp_1682;
+  legacy_s32 noreg temple_tmp_1683;
+  legacy_s16 noreg temple_input_flags_1684;
+  legacy_s32 noreg temple_tmp_1685;
+  legacy_u16 noreg temple_history_index_1686;
   temple_tmp_1682=!!((passed_security==0));
   if(temple_tmp_1682) {
     temple_tmp_1682=!!((race_start_sequence_state==RACE_START_SEQUENCE_INACTIVE));
@@ -297,14 +297,14 @@ legacy_s16 RsReplayRecordReplayReadLiveInput()
 
 legacy_void RsReplayRecordReplayShiftRecordingHistory()
 {
-  legacy_u16 temple_recording_chunk_1687;
-  legacy_s16 temple_snapshot_count_1688;
-  legacy_s16 temple_snapshot_index_1690;
+  legacy_u16 noreg temple_recording_chunk_1687;
+  legacy_s16 noreg temple_snapshot_count_1688;
+  legacy_s16 noreg temple_snapshot_index_1690;
   legacy_s16 *temple_tmp_1691;
-  legacy_s16 temple_tmp_1692;
-  legacy_u16 temple_input_index_1694;
+  legacy_s16 noreg temple_tmp_1692;
+  legacy_u16 noreg temple_input_index_1694;
   legacy_u16 *temple_tmp_1695;
-  legacy_u16 temple_tmp_1696;
+  legacy_u16 noreg temple_tmp_1696;
   temple_recording_chunk_1687=TempleCastU16(TempleCastU16(TempleCastU32(
       (TempleCastU32(TempleCastU16(30))*TempleCastU32(TempleCastU16(framespersec))))));
   temple_snapshot_count_1688=
@@ -357,18 +357,18 @@ legacy_void RsReplayRecordReplayShiftRecordingHistory()
 
 legacy_void RsReplayUpdateInputTick(legacy_s16 force_neutral_input)
 {
-  legacy_s16 temple_input_flags_1697;
+  legacy_s16 noreg temple_input_flags_1697;
   legacy_u16 *temple_tmp_1698;
-  legacy_u16 temple_tmp_1699;
-  legacy_s32 temple_tmp_1700;
-  legacy_s32 temple_tmp_1701;
-  legacy_u16 temple_recording_limit_1702;
-  legacy_u16 temple_elapsed_total_1703;
-  legacy_s32 temple_tmp_1704;
+  legacy_u16 noreg temple_tmp_1699;
+  legacy_s32 noreg temple_tmp_1700;
+  legacy_s32 noreg temple_tmp_1701;
+  legacy_u16 noreg temple_recording_limit_1702;
+  legacy_u16 noreg temple_elapsed_total_1703;
+  legacy_s32 noreg temple_tmp_1704;
   legacy_u16 *temple_tmp_1705;
-  legacy_u16 temple_tmp_1706;
+  legacy_u16 noreg temple_tmp_1706;
   legacy_u16 *temple_tmp_1707;
-  legacy_u16 temple_tmp_1708;
+  legacy_u16 noreg temple_tmp_1708;
   if((force_neutral_input!=0)) {
     (temple_input_flags_1697=TempleCastS16(0));
   } else {
@@ -440,18 +440,18 @@ legacy_void RsReplayUpdateInputTick(legacy_s16 force_neutral_input)
 
 legacy_void RsReplayApplyAnalogSteeringHistory()
 {
-  legacy_u16 temple_frame_1709;
-  legacy_u16 temple_history_index_1710;
-  legacy_s16 temple_target_angle_1711;
-  legacy_s16 temple_steering_angle_1712;
-  legacy_u16 temple_speed_index_1713;
+  legacy_u16 noreg temple_frame_1709;
+  legacy_u16 noreg temple_history_index_1710;
+  legacy_s16 noreg temple_target_angle_1711;
+  legacy_s16 noreg temple_steering_angle_1712;
+  legacy_u16 noreg temple_speed_index_1713;
   legacy_s8 *temple_response_table_1714;
-  legacy_s16 temple_response_1715;
-  legacy_s32 temple_tmp_1716;
-  legacy_s32 temple_tmp_1717;
-  legacy_s32 temple_tmp_1718;
-  legacy_s16 temple_adjusted_angle_1719;
-  legacy_u8 temple_action_1720;
+  legacy_s16 noreg temple_response_1715;
+  legacy_s32 noreg temple_tmp_1716;
+  legacy_s32 noreg temple_tmp_1717;
+  legacy_s32 noreg temple_tmp_1718;
+  legacy_s16 noreg temple_adjusted_angle_1719;
+  legacy_u8 noreg temple_action_1720;
   legacy_s8 *temple_tmp_1721;
   temple_frame_1709=TempleCastU16(state.game_frame);
   temple_history_index_1710=TempleCastU16(TempleCastU32((temple_frame_1709&63)));

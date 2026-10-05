@@ -2,7 +2,7 @@
 
 legacy_s8 RsTrackresLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_866;
+  legacy_s32 noreg temple_tmp_866;
   if((value<=127)) {
     temple_tmp_866=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsTrackresLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsTrackresLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_867;
+  legacy_s32 noreg temple_tmp_867;
   if((value<=32767)) {
     temple_tmp_867=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsTrackresLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsTrackresLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_868;
+  legacy_s32 noreg temple_tmp_868;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_868=TempleCastS32(TempleCastS32(value));
   } else {
@@ -56,7 +56,7 @@ legacy_void RsLoadTrackCollisionResources()
 
 legacy_s16 RsTrackresTrackResourceNextS16(CTrackResourceReader *reader)
 {
-  legacy_s16 temple_value_874;
+  legacy_s16 noreg temple_value_874;
   temple_value_874=
       TempleCastS16(RsTrackresLegacyS16FromBits(TempleCastU16(TempleCastU16(TempleCastU16(
           TempleCastS32((TempleCastU16(TempleCastU8((reader->source+reader->offset)[0]))|
@@ -77,17 +77,17 @@ legacy_void RsTrackresTrackResourceNextVector(CTrackResourceReader *reader,CVect
 legacy_void RsTrackCollisionResourcesDecode(legacy_u8 *plane_source,legacy_u8 *wall_source)
 {
   CTrackResourceReader temple_reader_875;
-  legacy_u16 temple_index_877;
+  legacy_u16 noreg temple_index_877;
   CPlane *temple_plane_878;
-  legacy_u16 temple_component_880;
+  legacy_u16 noreg temple_component_880;
   legacy_u16 *temple_tmp_881;
-  legacy_u16 temple_tmp_882;
+  legacy_u16 noreg temple_tmp_882;
   legacy_u16 *temple_tmp_883;
-  legacy_u16 temple_tmp_884;
-  legacy_u16 temple_index_886;
+  legacy_u16 noreg temple_tmp_884;
+  legacy_u16 noreg temple_index_886;
   CTrackWall *temple_wall_887;
   legacy_u16 *temple_tmp_888;
-  legacy_u16 temple_tmp_889;
+  legacy_u16 noreg temple_tmp_889;
   (temple_reader_875.source=plane_source);
   (temple_reader_875.offset=TempleCastU16(0));
   temple_index_877=TempleCastU16(0);

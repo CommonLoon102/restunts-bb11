@@ -2,7 +2,7 @@
 
 legacy_s8 RsMenuCarLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_2576;
+  legacy_s32 noreg temple_tmp_2576;
   if((value<=127)) {
     temple_tmp_2576=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsMenuCarLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsMenuCarLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_2577;
+  legacy_s32 noreg temple_tmp_2577;
   if((value<=32767)) {
     temple_tmp_2577=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsMenuCarLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsMenuCarLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_2578;
+  legacy_s32 noreg temple_tmp_2578;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_2578=TempleCastS32(TempleCastS32(value));
   } else {
@@ -50,23 +50,23 @@ legacy_void RsMenuCarCarMenuDrawStandardButton(legacy_s8 *text,legacy_u16 button
 legacy_s16 RsMenuCarCarMenuFindCars(CCarMenuState *menu,legacy_s8 *car_id)
 {
   legacy_s8 *temple_found_path_2579;
-  legacy_u16 temple_i_2582;
+  legacy_u16 noreg temple_i_2582;
   legacy_u16 *temple_tmp_2583;
-  legacy_u16 temple_tmp_2584;
+  legacy_u16 noreg temple_tmp_2584;
   legacy_u8 *temple_tmp_2585;
-  legacy_u8 temple_tmp_2586;
-  legacy_u16 temple_j_2587;
+  legacy_u8 noreg temple_tmp_2586;
+  legacy_u16 noreg temple_j_2587;
   legacy_s8 temple_swap_id_2588[(4+1)];
-  legacy_u16 temple_i_2590;
+  legacy_u16 noreg temple_i_2590;
   legacy_u16 *temple_tmp_2592;
-  legacy_u16 temple_tmp_2593;
+  legacy_u16 noreg temple_tmp_2593;
   legacy_u16 *temple_tmp_2594;
-  legacy_u16 temple_tmp_2595;
-  legacy_u16 temple_i_2597;
+  legacy_u16 noreg temple_tmp_2595;
+  legacy_u16 noreg temple_i_2597;
   legacy_u16 *temple_tmp_2599;
-  legacy_u16 temple_tmp_2600;
+  legacy_u16 noreg temple_tmp_2600;
   legacy_u16 *temple_tmp_2601;
-  legacy_u16 temple_tmp_2602;
+  legacy_u16 noreg temple_tmp_2602;
   RsEnsureFileExists(TempleCastS16(2));
   temple_found_path_2579=RsFileCombineAndFind(0,car_resource_wildcard,car_resource_extension);
   if((temple_found_path_2579==0)) {
@@ -157,8 +157,8 @@ legacy_s16 RsMenuCarCarMenuFindCars(CCarMenuState *menu,legacy_s8 *car_id)
 legacy_void RsMenuCarCarMenuInitialize(CCarMenuState *menu)
 {
   CShape2D *temple_opponent_shape_2603;
-  legacy_u16 temple_height_2604;
-  legacy_u16 temple_width_2605;
+  legacy_u16 noreg temple_height_2604;
+  legacy_u16 noreg temple_width_2605;
   (waitflag=TempleCastS16(90));
   (menu->blit_mode=TempleCastU8(MENU_BLIT_MODE_INITIAL));
   (backlights_paint_override=TempleCastS8(BACKLIGHT_PAINT_DEFAULT));
@@ -198,13 +198,13 @@ legacy_void RsMenuCarCarMenuInitialize(CCarMenuState *menu)
 
 legacy_void RsMenuCarCarMenuDrawGraph()
 {
-  legacy_u16 temple_old_frame_rate_2606;
-  legacy_u16 temple_graph_step_2607;
-  legacy_u16 temple_speed_2609;
-  legacy_u16 temple_graph_y_2610;
-  legacy_u16 temple_graph_x_2611;
+  legacy_u16 noreg temple_old_frame_rate_2606;
+  legacy_u16 noreg temple_graph_step_2607;
+  legacy_u16 noreg temple_speed_2609;
+  legacy_u16 noreg temple_graph_y_2610;
+  legacy_u16 noreg temple_graph_x_2611;
   legacy_u16 *temple_tmp_2612;
-  legacy_u16 temple_tmp_2613;
+  legacy_u16 noreg temple_tmp_2613;
   temple_old_frame_rate_2606=TempleCastU16(TempleCastU16(framespersec));
   (framespersec=TempleCastU16(GAME_FRAME_RATE_NORMAL));
   RsInitGameState(TempleCastS16(GAMESTATE_INIT_SKIP_ROUTE_SETUP));
@@ -248,11 +248,11 @@ legacy_void RsMenuCarCarMenuDrawGraph()
 legacy_void RsMenuCarCarMenuDrawDescription(CCarMenuState *menu)
 {
   legacy_s8 *temple_description_2614;
-  legacy_s16 temple_text_y_2615;
-  legacy_u16 temple_line_length_2616;
-  legacy_u8 temple_character_2618;
+  legacy_s16 noreg temple_text_y_2615;
+  legacy_u16 noreg temple_line_length_2616;
+  legacy_u8 noreg temple_character_2618;
   legacy_u16 *temple_tmp_2619;
-  legacy_u16 temple_tmp_2620;
+  legacy_u16 noreg temple_tmp_2620;
   RsFontSetFontdef2(fontnptr);
   temple_description_2614=RsLocateTextRes(menu->car_resource,car_description_id);
   temple_text_y_2615=TempleCastS16(116);
@@ -283,9 +283,9 @@ legacy_void RsMenuCarCarMenuDrawDescription(CCarMenuState *menu)
 
 legacy_void RsMenuCarCarMenuLoadCar(CCarMenuState *menu)
 {
-  legacy_u16 temple_i_2622;
+  legacy_u16 noreg temple_i_2622;
   legacy_u16 *temple_tmp_2623;
-  legacy_u16 temple_tmp_2624;
+  legacy_u16 noreg temple_tmp_2624;
   CShape2D *temple_shape_2625;
   legacy_s8 *temple_transmission_text_2626;
   legacy_s8 *temple_tmp_2627;
@@ -359,11 +359,11 @@ legacy_void RsMenuCarCarMenuLoadCar(CCarMenuState *menu)
 
 legacy_void RsMenuCarCarMenuPreparePreview(CCarMenuState *menu)
 {
-  legacy_s16 temple_visual_rotation_2628;
-  legacy_s32 temple_tmp_2629;
-  legacy_s16 temple_car_position_angle_2630;
+  legacy_s16 noreg temple_visual_rotation_2628;
+  legacy_s32 noreg temple_tmp_2629;
+  legacy_s16 noreg temple_car_position_angle_2630;
   CRectangle temple_tmp_2631;
-  legacy_s32 temple_tmp_2632;
+  legacy_s32 noreg temple_tmp_2632;
   (menu->rotation=TempleCastS16(
       RsMenuCarLegacyS16FromBits(TempleCastU16(TempleCastU16(TempleCastU16(TempleCastS32(
           (TempleCastU16(menu->rotation)+TempleCastU16(menu->rotation_delta)))))))));
@@ -407,12 +407,12 @@ legacy_void RsMenuCarCarMenuPreparePreview(CCarMenuState *menu)
 
 legacy_void RsMenuCarCarMenuRenderPreview(CCarMenuState *menu)
 {
-  legacy_s32 temple_tmp_2633;
-  legacy_s32 temple_tmp_2634;
+  legacy_s32 noreg temple_tmp_2633;
+  legacy_s32 noreg temple_tmp_2634;
   CShape2D *temple_background_2635;
   CRectangle *temple_fps_rect_2636;
-  legacy_u8 temple_redraw_portrait_2637;
-  legacy_s32 temple_tmp_2638;
+  legacy_u8 noreg temple_redraw_portrait_2637;
+  legacy_s32 noreg temple_tmp_2638;
   temple_tmp_2634=!!((menu->render_deferred==0));
   if(temple_tmp_2634) {
     temple_tmp_2633=!!((menu->render_phase==CAR_RENDER_DRAW_PHASE));
@@ -503,9 +503,9 @@ legacy_void RsMenuCarCarMenuDrawSelection(CCarMenuState *menu)
 
 legacy_u16 RsMenuCarCarMenuReadInput(CCarMenuState *menu)
 {
-  legacy_s16 temple_input_delta_2639;
-  legacy_u16 temple_input_2640;
-  legacy_s16 temple_mouse_hit_2641;
+  legacy_s16 noreg temple_input_delta_2639;
+  legacy_u16 noreg temple_input_2640;
+  legacy_s16 noreg temple_mouse_hit_2641;
   RsSpriteSelectScreenCompat();
   (menu->rotation_delta=TempleCastS16(TempleCastS16(RsMenuAnimateButtonHighlight(
       TempleCastS16(menu->selected),carmenu_buttons,TempleCastS16(menu_highlight_second_color),
@@ -529,8 +529,8 @@ legacy_u16 RsMenuCarCarMenuReadInput(CCarMenuState *menu)
 legacy_s16 RsMenuCarCarMenuActivateSelection(CCarMenuState *menu)
 {
   legacy_u8 *temple_tmp_2642;
-  legacy_u8 temple_tmp_2643;
-  legacy_s32 temple_tmp_2644;
+  legacy_u8 noreg temple_tmp_2643;
+  legacy_s32 noreg temple_tmp_2644;
   legacy_s8 *temple_transmission_text_2645;
   legacy_s8 *temple_tmp_2646;
   if((menu->selected==CAR_MENU_DONE_BUTTON)) {
@@ -593,11 +593,11 @@ legacy_s16 RsMenuCarCarMenuActivateSelection(CCarMenuState *menu)
 
 legacy_s16 RsMenuCarCarMenuHandleInput(CCarMenuState *menu,legacy_u16 input)
 {
-  legacy_s32 temple_tmp_2647;
-  legacy_s32 temple_tmp_2648;
-  legacy_s32 temple_tmp_2649;
-  legacy_s32 temple_tmp_2650;
-  legacy_s32 temple_tmp_2651;
+  legacy_s32 noreg temple_tmp_2647;
+  legacy_s32 noreg temple_tmp_2648;
+  legacy_s32 noreg temple_tmp_2649;
+  legacy_s32 noreg temple_tmp_2650;
+  legacy_s32 noreg temple_tmp_2651;
   temple_tmp_2647=!!((input==TempleCastU16(KEY_F11)));
   if(!temple_tmp_2647) {
     temple_tmp_2647=!!((input==TempleCastU16(KEY_F12)));
@@ -645,10 +645,10 @@ legacy_s16 RsMenuCarCarMenuHandleInput(CCarMenuState *menu,legacy_u16 input)
 
 legacy_void RsMenuCarCarMenuRelease(CCarMenuState *menu,legacy_s8 *car_id)
 {
-  legacy_s32 temple_tmp_2652;
-  legacy_u16 temple_i_2654;
+  legacy_s32 noreg temple_tmp_2652;
+  legacy_u16 noreg temple_i_2654;
   legacy_u16 *temple_tmp_2655;
-  legacy_u16 temple_tmp_2656;
+  legacy_u16 noreg temple_tmp_2656;
   RsSpriteFreeWnd(render_window_sprite);
   RsUnloadResource(menu->car_resource);
   RsShape3dFreeCarShapes();
@@ -683,7 +683,7 @@ legacy_void RsRunCarMenu(
 {
   CCarMenuState temple_menu_state_2657;
   CCarMenuState *temple_menu_2658;
-  legacy_u16 temple_input_2660;
+  legacy_u16 noreg temple_input_2660;
   temple_menu_2658=(&(temple_menu_state_2657));
   (temple_menu_2658->material=material);
   (temple_menu_2658->transmission=transmission);

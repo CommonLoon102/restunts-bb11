@@ -2,7 +2,7 @@
 
 legacy_s8 RsKevinrndLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_591;
+  legacy_s32 noreg temple_tmp_591;
   if((value<=127)) {
     temple_tmp_591=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsKevinrndLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsKevinrndLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_592;
+  legacy_s32 noreg temple_tmp_592;
   if((value<=32767)) {
     temple_tmp_592=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsKevinrndLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsKevinrndLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_593;
+  legacy_s32 noreg temple_tmp_593;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_593=TempleCastS32(TempleCastS32(value));
   } else {
@@ -38,9 +38,9 @@ legacy_s32 RsKevinrndLegacyS32FromBits(legacy_u32 value)
 
 legacy_void RsInitKevinrandom(legacy_s8 *seed)
 {
-  legacy_s16 temple_i_595;
+  legacy_s16 noreg temple_i_595;
   legacy_s16 *temple_tmp_596;
-  legacy_s16 temple_tmp_597;
+  legacy_s16 noreg temple_tmp_597;
   temple_i_595=TempleCastS16(0);
   while(1) {
     if(!((temple_i_595<6))) {
@@ -56,9 +56,9 @@ legacy_void RsInitKevinrandom(legacy_s8 *seed)
 
 legacy_void RsGetKevinrandomSeed(legacy_s8 *seed)
 {
-  legacy_s16 temple_i_599;
+  legacy_s16 noreg temple_i_599;
   legacy_s16 *temple_tmp_600;
-  legacy_s16 temple_tmp_601;
+  legacy_s16 noreg temple_tmp_601;
   temple_i_599=TempleCastS16(0);
   while(1) {
     if(!((temple_i_599<6))) {
@@ -74,15 +74,15 @@ legacy_void RsGetKevinrandomSeed(legacy_s8 *seed)
 
 legacy_s16 RsGetKevinrandom()
 {
-  legacy_s16 temple_i_603;
+  legacy_s16 noreg temple_i_603;
   legacy_u8 *temple_tmp_604;
   legacy_s16 *temple_tmp_605;
-  legacy_s16 temple_tmp_606;
-  legacy_s16 temple_i_608;
+  legacy_s16 noreg temple_tmp_606;
+  legacy_s16 noreg temple_i_608;
   legacy_u8 *temple_tmp_609;
-  legacy_u8 temple_tmp_610;
+  legacy_u8 noreg temple_tmp_610;
   legacy_s16 *temple_tmp_611;
-  legacy_s16 temple_tmp_612;
+  legacy_s16 noreg temple_tmp_612;
   temple_i_603=TempleCastS16(TempleCastS32((6-2)));
   while(1) {
     if(!((temple_i_603>=0))) {

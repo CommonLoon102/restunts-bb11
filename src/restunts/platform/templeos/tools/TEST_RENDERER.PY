@@ -135,10 +135,33 @@ prefix = prefix.replace("RESTUNTS_LEGACY_INCLUDE", str(root.parents[1] / "c" / "
 # the single mapping between shared C and native HolyC symbols.
 prefix = style["rename_identifiers"](prefix, fixture_names)
 tests = style["rename_identifiers"](tests, fixture_names)
+
+
+def host_storage_keywords(text):
+    ignoring = False
+
+    def replace(token):
+        nonlocal ignoring
+        # C scalar locals already keep their declared width without noreg.
+        if token.lastgroup == "word" and token[0] == "noreg":
+            return ""
+        if token.lastgroup == "word" and token[0] == "no_warn":
+            ignoring = True
+            return "(legacy_void)"
+        if ignoring and token[0] == ",":
+            return ",(legacy_void)"
+        if token[0] == ";":
+            ignoring = False
+        return token[0]
+
+    return style["TOKEN"].sub(replace, text)
+
+
+host_source = host_storage_keywords(prefix + s + polygon_tests + line_tests + material_tests + tests)
 with tempfile.TemporaryDirectory(prefix="restunts-raster-") as directory:
     source = Path(directory) / "TEST.C"
     program = Path(directory) / "TEST"
-    source.write_text(prefix + s + polygon_tests + line_tests + material_tests + tests, encoding="ascii")
+    source.write_text(host_source, encoding="ascii")
     subprocess.run([
         os.environ.get("CC", "cc"), "-x", "c", "-std=c99",
         "-fsanitize=address,undefined", "-g", "-O1", str(source), "-lm", "-o", str(program),

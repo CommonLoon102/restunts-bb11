@@ -2,7 +2,7 @@
 
 legacy_s8 RsDashboardLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_2078;
+  legacy_s32 noreg temple_tmp_2078;
   if((value<=127)) {
     temple_tmp_2078=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsDashboardLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsDashboardLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_2079;
+  legacy_s32 noreg temple_tmp_2079;
   if((value<=32767)) {
     temple_tmp_2079=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsDashboardLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsDashboardLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_2080;
+  legacy_s32 noreg temple_tmp_2080;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_2080=TempleCastS32(TempleCastS32(value));
   } else {
@@ -38,14 +38,14 @@ legacy_s32 RsDashboardLegacyS32FromBits(legacy_u32 value)
 
 legacy_s16 RsDashboardDashboardSteeringPosition(legacy_s16 angle)
 {
-  legacy_s16 temple_magnitude_2081;
-  legacy_s32 temple_tmp_2082;
-  legacy_u16 temple_bits_2083;
-  legacy_u32 temple_tmp_2084;
-  legacy_u32 temple_tmp_2085;
-  legacy_u32 temple_tmp_2086;
-  legacy_u32 temple_tmp_2087;
-  legacy_s32 temple_tmp_2088;
+  legacy_s16 noreg temple_magnitude_2081;
+  legacy_s32 noreg temple_tmp_2082;
+  legacy_u16 noreg temple_bits_2083;
+  legacy_u32 noreg temple_tmp_2084;
+  legacy_u32 noreg temple_tmp_2085;
+  legacy_u32 noreg temple_tmp_2086;
+  legacy_u32 noreg temple_tmp_2087;
+  legacy_s32 noreg temple_tmp_2088;
   if((angle<0)) {
     temple_tmp_2082=TempleCastS32(RsDashboardLegacyS16FromBits(
         TempleCastU16(TempleCastU16(TempleCastU16(TempleCastU32((0-TempleCastU16(angle))))))));
@@ -112,9 +112,9 @@ legacy_void RsDashboardDashboardSetViewport()
 
 legacy_void RsDashboardDashboardLoadResources()
 {
-  legacy_u16 temple_index_2090;
+  legacy_u16 noreg temple_index_2090;
   legacy_u16 *temple_tmp_2091;
-  legacy_u16 temple_tmp_2092;
+  legacy_u16 noreg temple_tmp_2092;
   temple_index_2090=TempleCastU16(0);
   while(1) {
     if(!((temple_index_2090<4))) {
@@ -151,14 +151,14 @@ legacy_void RsDashboardDashboardCreateSprites()
 {
   CShape2D *temple_instrument_shape_2093;
   CShape2D *temple_gearbox_shape_2094;
-  legacy_u16 temple_instrument_width_2095;
-  legacy_u16 temple_instrument_height_2096;
-  legacy_u16 temple_gearbox_width_2097;
-  legacy_u16 temple_gearbox_height_2098;
-  legacy_u16 temple_scratch_width_2099;
-  legacy_u16 temple_scratch_height_2100;
-  legacy_s32 temple_tmp_2101;
-  legacy_s32 temple_tmp_2102;
+  legacy_u16 noreg temple_instrument_width_2095;
+  legacy_u16 noreg temple_instrument_height_2096;
+  legacy_u16 noreg temple_gearbox_width_2097;
+  legacy_u16 noreg temple_gearbox_height_2098;
+  legacy_u16 noreg temple_scratch_width_2099;
+  legacy_u16 noreg temple_scratch_height_2100;
+  legacy_s32 noreg temple_tmp_2101;
+  legacy_s32 noreg temple_tmp_2102;
   CShape2D *temple_dashboard_shape_2103;
   temple_instrument_shape_2093=whlshapes[DASHBOARD_INSTRUMENT_PANEL_SHAPE];
   temple_gearbox_shape_2094=whlshapes[DASHBOARD_GEARBOX_SHAPE];
@@ -206,15 +206,15 @@ legacy_void RsDashboardDashboardSelectPanelTarget(CSprite *sprite,CShape2D *shap
 
 legacy_void RsDashboardDashboardCopyPanel(CSprite *sprite,CShape2D *shape)
 {
-  legacy_s16 temple_x_2104;
-  legacy_s16 temple_y_2105;
-  legacy_s16 temple_left_2106;
-  legacy_s32 temple_tmp_2107;
-  legacy_s16 temple_top_2108;
-  legacy_s32 temple_tmp_2109;
-  legacy_s32 temple_right_2110;
-  legacy_s32 temple_bottom_2111;
-  legacy_s32 temple_tmp_2112;
+  legacy_s16 noreg temple_x_2104;
+  legacy_s16 noreg temple_y_2105;
+  legacy_s16 noreg temple_left_2106;
+  legacy_s32 noreg temple_tmp_2107;
+  legacy_s16 noreg temple_top_2108;
+  legacy_s32 noreg temple_tmp_2109;
+  legacy_s32 noreg temple_right_2110;
+  legacy_s32 noreg temple_bottom_2111;
+  legacy_s32 noreg temple_tmp_2112;
   temple_x_2104=TempleCastS16(TempleCastS16(RsShape2dGetPosX(shape)));
   temple_y_2105=TempleCastS16(TempleCastS16(RsShape2dGetPosY(shape)));
   if((temple_x_2104<0)) {
@@ -285,7 +285,7 @@ legacy_void RsDashboardDashboardLoad()
 legacy_void RsDashboardDashboardRedrawStatic()
 {
   CShape2D *temple_shape_2114;
-  legacy_u16 temple_buffer_index_2115;
+  legacy_u16 noreg temple_buffer_index_2115;
   RsMouseDrawOpaqueCheck();
   temple_shape_2114=(RsLocateShapeNofatal(stdaresptr,dashboard_roof_shape_id))(CShape2D *);
   if((temple_shape_2114!=0)) {
@@ -345,12 +345,12 @@ legacy_void RsDashboardDashboardRebuildGearboxBackground()
 
 legacy_void RsDashboardDashboardUpdateGear(legacy_u16 buffer_index)
 {
-  legacy_s32 temple_tmp_2119;
-  legacy_s32 temple_tmp_2120;
-  legacy_s32 temple_tmp_2121;
-  legacy_s32 temple_tmp_2122;
-  legacy_s32 temple_tmp_2123;
-  legacy_s32 temple_tmp_2124;
+  legacy_s32 noreg temple_tmp_2119;
+  legacy_s32 noreg temple_tmp_2120;
+  legacy_s32 noreg temple_tmp_2121;
+  legacy_s32 noreg temple_tmp_2122;
+  legacy_s32 noreg temple_tmp_2123;
+  legacy_s32 noreg temple_tmp_2124;
   temple_tmp_2119=!!((state.playerstate.car_gear_change_delay==0));
   if(temple_tmp_2119) {
     temple_tmp_2119=!!((state.playerstate.car_changing_gear==CAR_GEAR_CHANGE_INACTIVE));
@@ -411,7 +411,7 @@ legacy_void RsDashboardDashboardUpdateGear(legacy_u16 buffer_index)
 
 legacy_void RsDashboardDashboardUpdateWheel(CDashboardUpdate *update)
 {
-  legacy_s32 temple_tmp_2125;
+  legacy_s32 noreg temple_tmp_2125;
   (update->steering_position=TempleCastS16(
       RsDashboardDashboardSteeringPosition(TempleCastS16(state.playerstate.car_steering_angle))));
   (update->wheel_state=TempleCastU8(DASHBOARD_WHEEL_STATE_CENTER));
@@ -471,12 +471,12 @@ legacy_void RsDashboardDashboardSelectGauges(CDashboardUpdate *update)
 
 legacy_void RsDashboardDashboardDrawDigitalSpeed(legacy_u16 speed_index)
 {
-  legacy_u16 temple_digit_group_2126;
+  legacy_u16 noreg temple_digit_group_2126;
   legacy_u16 *temple_tmp_2127;
   legacy_u16 *temple_tmp_2128;
-  legacy_u8 temple_digit_started_2129;
-  legacy_u16 temple_digit_2130;
-  legacy_s32 temple_tmp_2131;
+  legacy_u8 noreg temple_digit_started_2129;
+  legacy_u16 noreg temple_digit_2130;
+  legacy_s32 noreg temple_tmp_2131;
   legacy_u16 *temple_tmp_2132;
   temple_digit_group_2126=TempleCastU16(0);
   if((speed_index>=200)) {
@@ -537,13 +537,13 @@ legacy_void RsDashboardDashboardDrawWheelMask(legacy_u8 wheel_state)
 
 legacy_void RsDashboardDashboardUpdateInstruments(CDashboardUpdate *update)
 {
-  legacy_u16 temple_dot_index_2133;
-  legacy_s32 temple_tmp_2134;
-  legacy_s32 temple_tmp_2135;
-  legacy_s32 temple_tmp_2136;
-  legacy_u16 temple_needle_colors_2137;
-  legacy_u8 temple_speed_color_2138;
-  legacy_u8 temple_rpm_color_2139;
+  legacy_u16 noreg temple_dot_index_2133;
+  legacy_s32 noreg temple_tmp_2134;
+  legacy_s32 noreg temple_tmp_2135;
+  legacy_s32 noreg temple_tmp_2136;
+  legacy_u16 noreg temple_needle_colors_2137;
+  legacy_u8 noreg temple_speed_color_2138;
+  legacy_u8 noreg temple_rpm_color_2139;
   temple_tmp_2134=!!((update->wheel_redrawn!=0));
   if(!temple_tmp_2134) {
     temple_tmp_2134=!!((full_redraw_frames_remaining!=0));
@@ -613,13 +613,13 @@ legacy_void RsDashboardDashboardUpdateInstruments(CDashboardUpdate *update)
 
 legacy_void RsDashboardDashboardUpdateSteeringDot(CDashboardUpdate *update)
 {
-  legacy_s32 temple_tmp_2140;
-  legacy_s32 temple_tmp_2141;
+  legacy_s32 noreg temple_tmp_2140;
+  legacy_s32 noreg temple_tmp_2141;
   legacy_u8 *temple_steering_dots_2142;
-  legacy_u16 temple_dot_index_2143;
-  legacy_s32 temple_tmp_2144;
-  legacy_s16 temple_dot_x_2145;
-  legacy_s16 temple_dot_y_2146;
+  legacy_u16 noreg temple_dot_index_2143;
+  legacy_s32 noreg temple_tmp_2144;
+  legacy_s16 noreg temple_dot_x_2145;
+  legacy_s16 noreg temple_dot_y_2146;
   temple_tmp_2140=
       !!((dashboard_steering_position_cache[update->buffer_index]!=update->steering_position));
   if(!temple_tmp_2140) {

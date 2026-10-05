@@ -2,7 +2,7 @@
 
 legacy_s8 RsAudioSequenceLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_3041;
+  legacy_s32 noreg temple_tmp_3041;
   if((value<=127)) {
     temple_tmp_3041=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsAudioSequenceLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsAudioSequenceLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_3042;
+  legacy_s32 noreg temple_tmp_3042;
   if((value<=32767)) {
     temple_tmp_3042=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsAudioSequenceLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsAudioSequenceLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_3043;
+  legacy_s32 noreg temple_tmp_3043;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_3043=TempleCastS32(TempleCastS32(value));
   } else {
@@ -56,8 +56,8 @@ legacy_s16 RsAudioSequenceCommandHasByteArgument(legacy_u8 command_index)
 
 legacy_u32 RsAudioSequenceAudioParseVariableLength(legacy_u8 *source,legacy_u16 *size)
 {
-  legacy_u8 temple_byte_value_3044;
-  legacy_u32 temple_value_3045;
+  legacy_u8 noreg temple_byte_value_3044;
+  legacy_u32 noreg temple_value_3045;
   temple_value_3045=TempleCastU32(0);
   while(1) {
     (temple_byte_value_3044=TempleCastU8(source[(*(size))]));
@@ -75,27 +75,27 @@ legacy_u32 RsAudioSequenceAudioParseVariableLength(legacy_u8 *source,legacy_u16 
 
 legacy_void RsAudioSequenceAudioParseSequenceEvent(legacy_u8 *source,CAudioSequenceEvent *event)
 {
-  legacy_u16 temple_size_3047;
+  legacy_u16 noreg temple_size_3047;
   legacy_u16 *temple_tmp_3048;
-  legacy_u16 temple_tmp_3049;
-  legacy_u16 temple_payload_size_3050;
-  legacy_s32 temple_tmp_3051;
-  legacy_u8 temple_command_index_3052;
+  legacy_u16 noreg temple_tmp_3049;
+  legacy_u16 noreg temple_payload_size_3050;
+  legacy_s32 noreg temple_tmp_3051;
+  legacy_u8 noreg temple_command_index_3052;
   legacy_u16 *temple_tmp_3053;
-  legacy_u16 temple_tmp_3054;
+  legacy_u16 noreg temple_tmp_3054;
   legacy_u16 *temple_tmp_3055;
-  legacy_u16 temple_tmp_3056;
+  legacy_u16 noreg temple_tmp_3056;
   legacy_u16 *temple_tmp_3057;
-  legacy_u16 temple_tmp_3058;
+  legacy_u16 noreg temple_tmp_3058;
   legacy_u16 *temple_tmp_3059;
-  legacy_u16 temple_tmp_3060;
+  legacy_u16 noreg temple_tmp_3060;
   legacy_u16 *temple_tmp_3061;
-  legacy_u16 temple_tmp_3062;
-  legacy_u16 temple_index_3064;
+  legacy_u16 noreg temple_tmp_3062;
+  legacy_u16 noreg temple_index_3064;
   legacy_u16 *temple_tmp_3065;
-  legacy_u16 temple_tmp_3066;
+  legacy_u16 noreg temple_tmp_3066;
   legacy_u16 *temple_tmp_3067;
-  legacy_u16 temple_tmp_3068;
+  legacy_u16 noreg temple_tmp_3068;
   temple_size_3047=TempleCastU16(0);
   (event->delay=
           TempleCastU32(RsAudioSequenceAudioParseVariableLength(source,(&(temple_size_3047)))));
@@ -210,8 +210,8 @@ legacy_void RsAudioSequenceAudioSequenceBindInstrument(
     legacy_s16 channel,CAudioChannel *chunk,legacy_u8 instrument)
 {
   legacy_u8 *temple_resource_3070;
-  legacy_s32 temple_tmp_3071;
-  legacy_u8 temple_driver_channel_3072;
+  legacy_s32 noreg temple_tmp_3071;
+  legacy_u8 noreg temple_driver_channel_3072;
   temple_resource_3070=RsAudioSequenceAudioSequenceInstrument(chunk,TempleCastU8(instrument));
   RsAudioWriteFarPointer(((&(chunk->resource)))(legacy_u8 *),temple_resource_3070);
   temple_tmp_3071=!!((temple_resource_3070==0));
@@ -237,11 +237,11 @@ legacy_void RsAudioSequenceAudioSequenceSetControl(
     CAudioChannel *chunk,legacy_u8 control,legacy_u16 value)
 {
   CAudioContext *temple_context_3073;
-  legacy_u16 temple_context_index_3075;
-  legacy_s32 temple_tmp_3076;
-  legacy_s32 temple_tmp_3077;
+  legacy_u16 noreg temple_context_index_3075;
+  legacy_s32 noreg temple_tmp_3076;
+  legacy_s32 noreg temple_tmp_3077;
   legacy_u16 *temple_tmp_3078;
-  legacy_u16 temple_tmp_3079;
+  legacy_u16 noreg temple_tmp_3079;
   if((control==64)) {
     (chunk->sustain=TempleCastU8(TempleCastU8(value)));
   }
@@ -282,8 +282,8 @@ legacy_void RsAudioSequenceAudioSequenceSetControl(
 
 legacy_void RsAudioSequenceAudioSequenceSetPitch(CAudioChannel *chunk,legacy_u16 value)
 {
-  legacy_s16 temple_low_value_3080;
-  legacy_s16 temple_pitch_3081;
+  legacy_s16 noreg temple_low_value_3080;
+  legacy_s16 noreg temple_pitch_3081;
   if((TempleCastU32((value&256))!=TempleCastU32(0))) {
     (value=TempleCastU16(
         TempleCastU16(TempleCastU32((TempleCastU32((TempleCastU16(value)&65280))|
@@ -327,19 +327,19 @@ legacy_void RsAudioSequenceAudioSequenceFinishChannel(
 legacy_s16 RsAudioSequenceAudioSequenceFlowCommand(
     legacy_s16 channel,CAudioChannel *chunk,CAudioSequenceEvent *event)
 {
-  legacy_u8 temple_depth_3084;
+  legacy_u8 noreg temple_depth_3084;
   legacy_u8 *temple_pointer_3085;
   legacy_u8 *temple_tmp_3086;
-  legacy_u8 temple_tmp_3087;
+  legacy_u8 noreg temple_tmp_3087;
   legacy_u8 *temple_tmp_3088;
-  legacy_u8 temple_tmp_3089;
-  legacy_u8 temple_count_3090;
+  legacy_u8 noreg temple_tmp_3089;
+  legacy_u8 noreg temple_count_3090;
   legacy_u8 *temple_tmp_3091;
-  legacy_u8 temple_tmp_3092;
+  legacy_u8 noreg temple_tmp_3092;
   legacy_u8 *temple_tmp_3093;
-  legacy_u8 temple_tmp_3094;
+  legacy_u8 noreg temple_tmp_3094;
   legacy_u8 *temple_tmp_3095;
-  legacy_u8 temple_tmp_3096;
+  legacy_u8 noreg temple_tmp_3096;
   switch(TempleCastU8(TempleCastU32((event->command-217)))) {
     case 0:
       (temple_depth_3084=TempleCastU8(chunk->call_depth));
@@ -417,7 +417,7 @@ legacy_s16 RsAudioSequenceAudioSequenceFlowCommand(
 legacy_void RsAudioSequenceAudioSequenceApplyCommand(
     legacy_s16 channel,CAudioChannel *chunk,CAudioSequenceEvent *event)
 {
-  legacy_u16 temple_offset_3097;
+  legacy_u16 noreg temple_offset_3097;
   switch(TempleCastU8(TempleCastU32((event->command-217)))) {
     case 3:
       RsAudioSequenceAudioSequenceBindInstrument(
@@ -469,7 +469,7 @@ legacy_void RsAudioSequenceAudioServiceSequenceChannel(legacy_s16 channel)
   CAudioChannel *temple_chunk_3098;
   CAudioSequenceEvent temple_next_event_3099;
   CAudioSequenceEvent temple_event_3100;
-  legacy_u32 temple_delay_3102;
+  legacy_u32 noreg temple_delay_3102;
   legacy_u8 *temple_pointer_3103;
   legacy_u8 *temple_tmp_3104;
   temple_chunk_3098=(&(audio_channels[channel]));
@@ -520,10 +520,10 @@ legacy_void RsAudioSequenceAudioServiceSequenceChannel(legacy_s16 channel)
 legacy_void RsAudioSequenceAudioAdvanceMusicContexts()
 {
   CAudioContext *temple_context_3105;
-  legacy_u16 temple_context_index_3107;
-  legacy_s32 temple_tmp_3108;
+  legacy_u16 noreg temple_context_index_3107;
+  legacy_s32 noreg temple_tmp_3108;
   legacy_u16 *temple_tmp_3109;
-  legacy_u16 temple_tmp_3110;
+  legacy_u16 noreg temple_tmp_3110;
   temple_context_3105=dos_audio_contexts;
   temple_context_index_3107=TempleCastU16(0);
   while(1) {
@@ -547,17 +547,17 @@ legacy_void RsAudioSequenceAudioAdvanceMusicContexts()
 
 legacy_void RsAudioSequenceTimer()
 {
-  legacy_s32 temple_tmp_3111;
-  legacy_s32 temple_tmp_3112;
-  legacy_s32 temple_tmp_3113;
-  legacy_s32 temple_tmp_3114;
-  legacy_s32 temple_tmp_3115;
-  legacy_u16 temple_channel_3118;
+  legacy_s32 noreg temple_tmp_3111;
+  legacy_s32 noreg temple_tmp_3112;
+  legacy_s32 noreg temple_tmp_3113;
+  legacy_s32 noreg temple_tmp_3114;
+  legacy_s32 noreg temple_tmp_3115;
+  legacy_u16 noreg temple_channel_3118;
   legacy_u16 *temple_tmp_3119;
-  legacy_u16 temple_tmp_3120;
-  legacy_u16 temple_channel_3122;
+  legacy_u16 noreg temple_tmp_3120;
+  legacy_u16 noreg temple_channel_3122;
   legacy_u16 *temple_tmp_3123;
-  legacy_u16 temple_tmp_3124;
+  legacy_u16 noreg temple_tmp_3124;
   temple_tmp_3111=!!((RsDosDataStackSegmentsMatch()==0));
   if(!temple_tmp_3111) {
     temple_tmp_3111=!!((dos_audio_driver_binary==0));

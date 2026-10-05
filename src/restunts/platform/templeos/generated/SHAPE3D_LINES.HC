@@ -2,7 +2,7 @@
 
 legacy_s8 RsShape3dLinesLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_3833;
+  legacy_s32 noreg temple_tmp_3833;
   if((value<=127)) {
     temple_tmp_3833=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsShape3dLinesLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsShape3dLinesLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_3834;
+  legacy_s32 noreg temple_tmp_3834;
   if((value<=32767)) {
     temple_tmp_3834=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsShape3dLinesLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsShape3dLinesLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_3835;
+  legacy_s32 noreg temple_tmp_3835;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_3835=TempleCastS32(TempleCastS32(value));
   } else {
@@ -39,10 +39,10 @@ legacy_s32 RsShape3dLinesLegacyS32FromBits(legacy_u32 value)
 legacy_void RsShape3dLinesDrawLineAdvanceEnd(
     legacy_u16 *line,legacy_u16 steps,legacy_u16 span_index)
 {
-  legacy_u32 temple_value32_3836;
+  legacy_u32 noreg temple_value32_3836;
   legacy_u32 *temple_tmp_3837;
   legacy_u32 *temple_tmp_3838;
-  legacy_u16 temple_old_value_3839;
+  legacy_u16 noreg temple_old_value_3839;
   temple_value32_3836=TempleCastU32(
       TempleCastU32((TempleCastU32((TempleCastU32(line[DRAW_LINE_START_Y_INDEX])<<16))|
           line[DRAW_LINE_START_Y_FRACTION_INDEX])));
@@ -60,11 +60,11 @@ legacy_void RsShape3dLinesDrawLineAdvanceEnd(
 
 legacy_u16 RsShape3dLinesDrawLineRoundDiv(legacy_u32 numerator,legacy_u16 divisor)
 {
-  legacy_u32 temple_quotient_3840;
-  legacy_u16 temple_remainder_3841;
-  legacy_u32 temple_tmp_3842;
+  legacy_u32 noreg temple_quotient_3840;
+  legacy_u16 noreg temple_remainder_3841;
+  legacy_u32 noreg temple_tmp_3842;
   legacy_u32 *temple_tmp_3843;
-  legacy_u32 temple_tmp_3844;
+  legacy_u32 noreg temple_tmp_3844;
   temple_quotient_3840=TempleCastU32(RsLegacyU32DivOrZero(
       TempleCastU32(TempleCastU32(numerator)),TempleCastU32(TempleCastU32(divisor))));
   if((divisor==0)) {
@@ -99,10 +99,10 @@ legacy_u16 RsShape3dLinesDrawLineStep(legacy_u16 minor,legacy_u16 major)
 
 legacy_u16 RsShape3dLinesDrawLineReject(legacy_u16 *line,legacy_u16 reject)
 {
-  legacy_u16 temple_clip_3845;
-  legacy_u16 temple_bottom_3846;
-  legacy_u32 temple_value32_3847;
-  legacy_u16 temple_top_3848;
+  legacy_u16 noreg temple_clip_3845;
+  legacy_u16 noreg temple_bottom_3846;
+  legacy_u32 noreg temple_value32_3847;
+  legacy_u16 noreg temple_top_3848;
   temple_clip_3845=TempleCastU16(TempleCastU32((reject&255)));
   (line[DRAW_LINE_MODE_AND_CLIP_INDEX]=TempleCastU16(
       TempleCastU16(TempleCastU32((TempleCastU32((line[DRAW_LINE_MODE_AND_CLIP_INDEX]&255))|
@@ -155,9 +155,9 @@ legacy_u16 RsShape3dLinesDrawLineHorizontal(
     legacy_u16 y,legacy_u16 start_x,legacy_u16 end_x,legacy_u16 *line,legacy_u16 unclipped)
 {
   legacy_u16 *temple_tmp_3849;
-  legacy_u16 temple_temporary_3850;
-  legacy_u16 temple_reject_3851;
-  legacy_u16 temple_amount_3852;
+  legacy_u16 noreg temple_temporary_3850;
+  legacy_u16 noreg temple_reject_3851;
+  legacy_u16 noreg temple_amount_3852;
   (line[DRAW_LINE_MODE_AND_CLIP_INDEX]=TempleCastU16(
       TempleCastU16(TempleCastU32((TempleCastU32((line[DRAW_LINE_MODE_AND_CLIP_INDEX]&65280))|
           TempleCastU32(DRAW_LINE_MODE_HORIZONTAL))))));
@@ -245,9 +245,9 @@ legacy_u16 RsShape3dLinesDrawLineHorizontal(
 legacy_void RsShape3dLinesDrawLineClipTopXMajor(legacy_u16 *line,legacy_u16 mode,
     legacy_u16 top_bound_or_clip_count,legacy_u16 original_start_y)
 {
-  legacy_u16 temple_advance_3853;
-  legacy_u32 temple_product_3854;
-  legacy_u32 temple_value32_3855;
+  legacy_u16 noreg temple_advance_3853;
+  legacy_u32 noreg temple_product_3854;
+  legacy_u32 noreg temple_value32_3855;
   legacy_u32 *temple_tmp_3856;
   (line[DRAW_LINE_START_Y_INDEX]=TempleCastU16(original_start_y));
   temple_advance_3853=TempleCastU16(RsShape3dLinesDrawLineRoundDiv(
@@ -283,11 +283,11 @@ legacy_void RsShape3dLinesDrawLineClipTopXMajor(legacy_u16 *line,legacy_u16 mode
 
 legacy_u8 RsShape3dLinesDrawLineClipTop(legacy_u16 *line)
 {
-  legacy_u16 temple_original_start_y_3857;
-  legacy_u16 temple_top_bound_or_clip_count_3858;
-  legacy_u16 temple_mode_3859;
-  legacy_u32 temple_product_3860;
-  legacy_u32 temple_value32_3861;
+  legacy_u16 noreg temple_original_start_y_3857;
+  legacy_u16 noreg temple_top_bound_or_clip_count_3858;
+  legacy_u16 noreg temple_mode_3859;
+  legacy_u32 noreg temple_product_3860;
+  legacy_u32 noreg temple_value32_3861;
   legacy_u32 *temple_tmp_3862;
   legacy_u32 *temple_tmp_3863;
   temple_original_start_y_3857=TempleCastU16(line[DRAW_LINE_START_Y_INDEX]);
@@ -346,12 +346,12 @@ legacy_u8 RsShape3dLinesDrawLineClipTop(legacy_u16 *line)
 
 legacy_u8 RsShape3dLinesDrawLineClipBottom(legacy_u16 *line)
 {
-  legacy_u16 temple_end_y_or_clip_count_3864;
-  legacy_u16 temple_clip_bottom_3865;
-  legacy_u16 temple_mode_3866;
-  legacy_u32 temple_product_3867;
-  legacy_u16 temple_advance_3868;
-  legacy_u32 temple_value32_3869;
+  legacy_u16 noreg temple_end_y_or_clip_count_3864;
+  legacy_u16 noreg temple_clip_bottom_3865;
+  legacy_u16 noreg temple_mode_3866;
+  legacy_u32 noreg temple_product_3867;
+  legacy_u16 noreg temple_advance_3868;
+  legacy_u32 noreg temple_value32_3869;
   legacy_u32 *temple_tmp_3870;
   legacy_u32 *temple_tmp_3871;
   legacy_u32 *temple_tmp_3872;
@@ -432,10 +432,10 @@ legacy_u8 RsShape3dLinesDrawLineClipBottom(legacy_u16 *line)
 legacy_void RsShape3dLinesDrawLineAdvanceSecondary(
     legacy_u16 *line,legacy_u16 advance,legacy_u16 counter_index)
 {
-  legacy_u32 temple_value32_3873;
-  legacy_u16 temple_old_value_3874;
+  legacy_u32 noreg temple_value32_3873;
+  legacy_u16 noreg temple_old_value_3874;
   legacy_u32 *temple_tmp_3875;
-  legacy_u16 temple_new_value_3876;
+  legacy_u16 noreg temple_new_value_3876;
   temple_value32_3873=TempleCastU32(
       TempleCastU32((TempleCastU32((TempleCastU32(line[DRAW_LINE_START_Y_INDEX])<<16))|
           line[DRAW_LINE_START_Y_FRACTION_INDEX])));
@@ -455,11 +455,11 @@ legacy_void RsShape3dLinesDrawLineAdvanceSecondary(
 
 legacy_s16 RsShape3dLinesDrawLineClipLeftYMajor(legacy_u16 *line,legacy_u16 mode)
 {
-  legacy_u32 temple_product_3877;
-  legacy_s32 temple_difference_3878;
-  legacy_u16 temple_advance_3879;
-  legacy_u16 temple_original_count_3880;
-  legacy_u32 temple_value32_3881;
+  legacy_u32 noreg temple_product_3877;
+  legacy_s32 noreg temple_difference_3878;
+  legacy_u16 noreg temple_advance_3879;
+  legacy_u16 noreg temple_original_count_3880;
+  legacy_u32 noreg temple_value32_3881;
   legacy_u32 *temple_tmp_3882;
   switch(mode) {
     case 5:
@@ -527,12 +527,12 @@ legacy_s16 RsShape3dLinesDrawLineClipLeftYMajor(legacy_u16 *line,legacy_u16 mode
 
 legacy_s16 RsShape3dLinesDrawLineClipLeft(legacy_u16 *line)
 {
-  legacy_u16 temple_mode_3883;
-  legacy_u16 temple_advance_3884;
-  legacy_u16 temple_x_or_remaining_span_3885;
-  legacy_u16 temple_left_bound_or_clip_count_3886;
-  legacy_u16 temple_clip_left_3887;
-  legacy_u16 temple_old_value_3888;
+  legacy_u16 noreg temple_mode_3883;
+  legacy_u16 noreg temple_advance_3884;
+  legacy_u16 noreg temple_x_or_remaining_span_3885;
+  legacy_u16 noreg temple_left_bound_or_clip_count_3886;
+  legacy_u16 noreg temple_clip_left_3887;
+  legacy_u16 noreg temple_old_value_3888;
   temple_mode_3883=TempleCastU16(TempleCastU32((line[DRAW_LINE_MODE_AND_CLIP_INDEX]&255)));
   switch(temple_mode_3883) {
     case 2:
@@ -597,10 +597,10 @@ legacy_s16 RsShape3dLinesDrawLineClipLeft(legacy_u16 *line)
 
 legacy_u16 RsShape3dLinesDrawLineClipRightYMajor(legacy_u16 *line,legacy_u16 mode)
 {
-  legacy_u32 temple_value32_3889;
-  legacy_u32 temple_product_3890;
-  legacy_u16 temple_advance_3891;
-  legacy_u16 temple_original_count_3892;
+  legacy_u32 noreg temple_value32_3889;
+  legacy_u32 noreg temple_product_3890;
+  legacy_u16 noreg temple_advance_3891;
+  legacy_u16 noreg temple_original_count_3892;
   legacy_u32 *temple_tmp_3893;
   legacy_u32 *temple_tmp_3894;
   switch(mode) {
@@ -664,10 +664,10 @@ legacy_u16 RsShape3dLinesDrawLineClipRightYMajor(legacy_u16 *line,legacy_u16 mod
 
 legacy_u16 RsShape3dLinesDrawLineClipRight(legacy_u16 *line)
 {
-  legacy_u16 temple_mode_3895;
-  legacy_u16 temple_advance_3896;
-  legacy_u16 temple_x_or_span_count_3897;
-  legacy_u16 temple_right_bound_or_clip_count_3898;
+  legacy_u16 noreg temple_mode_3895;
+  legacy_u16 noreg temple_advance_3896;
+  legacy_u16 noreg temple_x_or_span_count_3897;
+  legacy_u16 noreg temple_right_bound_or_clip_count_3898;
   temple_mode_3895=TempleCastU16(TempleCastU32((line[DRAW_LINE_MODE_AND_CLIP_INDEX]&255)));
   switch(temple_mode_3895) {
     case 2:
@@ -738,9 +738,9 @@ legacy_u16 RsShape3dLinesDrawLineClipRight(legacy_u16 *line)
 legacy_void RsShape3dLinesDrawLineSubdivideAdvanceStart(
     legacy_u16 *line,legacy_u16 vertical_step,legacy_u16 horizontal_step)
 {
-  legacy_u16 temple_start_y_or_visible_step_3899;
-  legacy_u16 temple_start_y_or_bottom_overflow_3900;
-  legacy_u8 temple_update_counter_3901;
+  legacy_u16 noreg temple_start_y_or_visible_step_3899;
+  legacy_u16 noreg temple_start_y_or_bottom_overflow_3900;
+  legacy_u8 noreg temple_update_counter_3901;
   temple_start_y_or_visible_step_3899=
       TempleCastU16(TempleCastU16(TempleCastS32((line[DRAW_LINE_START_Y_INDEX]+vertical_step))));
   (line[DRAW_LINE_START_Y_INDEX]=TempleCastU16(temple_start_y_or_visible_step_3899));
@@ -787,9 +787,9 @@ legacy_void RsShape3dLinesDrawLineSubdivideAdvanceStart(
 legacy_void RsShape3dLinesDrawLineSubdivideAdvanceEnd(
     legacy_u16 *line,legacy_u16 vertical_step,legacy_u16 horizontal_step)
 {
-  legacy_u16 temple_end_y_or_visible_step_3902;
-  legacy_u16 temple_end_y_or_top_overflow_3903;
-  legacy_u8 temple_update_counter_3904;
+  legacy_u16 noreg temple_end_y_or_visible_step_3902;
+  legacy_u16 noreg temple_end_y_or_top_overflow_3903;
+  legacy_u8 noreg temple_update_counter_3904;
   temple_end_y_or_visible_step_3902=
       TempleCastU16(TempleCastU16(TempleCastS32((line[DRAW_LINE_END_Y_INDEX]-vertical_step))));
   (line[DRAW_LINE_END_Y_INDEX]=TempleCastU16(temple_end_y_or_visible_step_3902));
@@ -836,11 +836,11 @@ legacy_void RsShape3dLinesDrawLineSubdivideAdvanceEnd(
 
 legacy_void RsShape3dLinesDrawLineSubdivide(legacy_u16 *line)
 {
-  legacy_u16 temple_vertical_step_3905;
-  legacy_u16 temple_half_start_coordinate_3906;
-  legacy_u16 temple_horizontal_step_3907;
-  legacy_s32 temple_tmp_3910;
-  legacy_s32 temple_tmp_3911;
+  legacy_u16 noreg temple_vertical_step_3905;
+  legacy_u16 noreg temple_half_start_coordinate_3906;
+  legacy_u16 noreg temple_horizontal_step_3907;
+  legacy_s32 noreg temple_tmp_3910;
+  legacy_s32 noreg temple_tmp_3911;
   temple_vertical_step_3905=TempleCastU16(RsSar1Word(TempleCastU16(line[DRAW_LINE_END_Y_INDEX])));
   temple_half_start_coordinate_3906=
       TempleCastU16(RsSar1Word(TempleCastU16(line[DRAW_LINE_START_Y_INDEX])));
@@ -913,10 +913,10 @@ legacy_u16 RsLinePrepareUnclipped(
 
 legacy_u16 RsShape3dLinesDrawLineFindInitialClip(legacy_u16 *line,legacy_u16 *clip)
 {
-  legacy_u16 temple_coordinate_3912;
-  legacy_u16 temple_boundary_or_swap_3913;
-  legacy_u16 temple_extent_or_major_delta_3914;
-  legacy_u16 temple_clip_or_minor_delta_3915;
+  legacy_u16 noreg temple_coordinate_3912;
+  legacy_u16 noreg temple_boundary_or_swap_3913;
+  legacy_u16 noreg temple_extent_or_major_delta_3914;
+  legacy_u16 noreg temple_clip_or_minor_delta_3915;
   legacy_u16 *temple_tmp_3916;
   legacy_u16 *temple_tmp_3917;
   legacy_u16 *temple_tmp_3918;
@@ -999,13 +999,13 @@ legacy_u16 RsShape3dLinesDrawLineFindInitialClip(legacy_u16 *line,legacy_u16 *cl
 legacy_u16 RsShape3dLinesDrawLineSetSlopeMode(
     legacy_u16 *line,legacy_u16 extent_or_major_delta,legacy_u16 clip_or_minor_delta)
 {
-  legacy_u16 temple_mode_3922;
-  legacy_u8 temple_compute_step_3923;
-  legacy_u8 temple_left_3924;
-  legacy_s32 temple_tmp_3925;
-  legacy_s32 temple_tmp_3926;
-  legacy_s32 temple_tmp_3927;
-  legacy_u16 temple_boundary_or_swap_3928;
+  legacy_u16 noreg temple_mode_3922;
+  legacy_u8 noreg temple_compute_step_3923;
+  legacy_u8 noreg temple_left_3924;
+  legacy_s32 noreg temple_tmp_3925;
+  legacy_s32 noreg temple_tmp_3926;
+  legacy_s32 noreg temple_tmp_3927;
+  legacy_u16 noreg temple_boundary_or_swap_3928;
   temple_compute_step_3923=TempleCastU8(0);
   if((clip_or_minor_delta==0)) {
     (line[DRAW_LINE_PIXEL_COUNT_INDEX]=
@@ -1068,10 +1068,10 @@ legacy_u16 RsShape3dLinesDrawLineSetSlopeMode(
 
 legacy_u16 RsShape3dLinesDrawLineSetupSlope(legacy_u16 *line)
 {
-  legacy_s32 temple_difference_3929;
-  legacy_s32 temple_tmp_3930;
-  legacy_u16 temple_vertical_delta_3931;
-  legacy_s32 temple_tmp_3932;
+  legacy_s32 noreg temple_difference_3929;
+  legacy_s32 noreg temple_tmp_3930;
+  legacy_u16 noreg temple_vertical_delta_3931;
+  legacy_s32 noreg temple_tmp_3932;
   temple_difference_3929=
       TempleCastS32(TempleCastS32((TempleCastS32(RsShape3dLinesLegacyS16FromBits(
                                       TempleCastU16(TempleCastU16(line[DRAW_LINE_END_Y_INDEX]))))-
@@ -1104,10 +1104,10 @@ legacy_u16 RsShape3dLinesDrawLineSetupSlope(legacy_u16 *line)
 
 legacy_u16 RsShape3dLinesDrawLineFindHorizontalClip(legacy_u16 *line,legacy_u16 *clip)
 {
-  legacy_u16 temple_coordinate_3933;
-  legacy_u16 temple_clip_or_minor_delta_3934;
+  legacy_u16 noreg temple_coordinate_3933;
+  legacy_u16 noreg temple_clip_or_minor_delta_3934;
   legacy_u16 *temple_tmp_3935;
-  legacy_u32 temple_value32_3936;
+  legacy_u32 noreg temple_value32_3936;
   legacy_u16 *temple_tmp_3937;
   legacy_u16 *temple_tmp_3938;
   legacy_u16 *temple_tmp_3939;
@@ -1159,7 +1159,7 @@ legacy_u16 RsShape3dLinesDrawLineFindHorizontalClip(legacy_u16 *line,legacy_u16 
 
 legacy_u16 RsShape3dLinesDrawLineApplyHorizontalClipping(legacy_u16 *line,legacy_u16 clip)
 {
-  legacy_s16 temple_clip_result_3940;
+  legacy_s16 noreg temple_clip_result_3940;
   switch(TempleCastU32((clip&15))) {
     case 0:
       return TempleCastU16(0);
@@ -1184,8 +1184,8 @@ legacy_u16 RsShape3dLinesDrawLineApplyHorizontalClipping(legacy_u16 *line,legacy
 
 legacy_u16 RsShape3dLinesDrawLineApplyClipping(legacy_u16 *line,legacy_u16 clip)
 {
-  legacy_s32 temple_tmp_3942;
-  legacy_s16 temple_clip_result_3943;
+  legacy_s32 noreg temple_tmp_3942;
+  legacy_s16 noreg temple_clip_result_3943;
   while(1) {
     if(!(1)) {
       break;
@@ -1225,12 +1225,12 @@ legacy_u16 RsShape3dLinesDrawLineApplyClipping(legacy_u16 *line,legacy_u16 clip)
 legacy_u16 RsLinePrepare(legacy_u16 start_x,legacy_u16 start_y,legacy_u16 end_x,legacy_u16 end_y,
     legacy_u16 *line,legacy_u16 skip_clipping)
 {
-  legacy_u16 temple_coordinate_3944;
-  legacy_u16 temple_boundary_or_swap_3945;
-  legacy_u16 temple_extent_or_major_delta_3946;
-  legacy_u16 temple_clip_or_minor_delta_3947;
-  legacy_u16 temple_clip_3948;
-  legacy_u16 temple_clip_result_3950;
+  legacy_u16 noreg temple_coordinate_3944;
+  legacy_u16 noreg temple_boundary_or_swap_3945;
+  legacy_u16 noreg temple_extent_or_major_delta_3946;
+  legacy_u16 noreg temple_clip_or_minor_delta_3947;
+  legacy_u16 noreg temple_clip_3948;
+  legacy_u16 noreg temple_clip_result_3950;
   (line[DRAW_LINE_MODE_AND_CLIP_INDEX]=TempleCastU16(DRAW_LINE_MODE_UNSET));
   (line[DRAW_LINE_START_X_FRACTION_INDEX]=TempleCastU16(0));
   (line[DRAW_LINE_START_Y_FRACTION_INDEX]=TempleCastU16(0));

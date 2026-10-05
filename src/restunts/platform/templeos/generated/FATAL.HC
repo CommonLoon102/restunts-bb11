@@ -2,7 +2,7 @@
 
 legacy_s8 RsFatalLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_981;
+  legacy_s32 noreg temple_tmp_981;
   if((value<=127)) {
     temple_tmp_981=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsFatalLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsFatalLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_982;
+  legacy_s32 noreg temple_tmp_982;
   if((value<=32767)) {
     temple_tmp_982=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsFatalLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsFatalLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_983;
+  legacy_s32 noreg temple_tmp_983;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_983=TempleCastS32(TempleCastS32(value));
   } else {
@@ -38,9 +38,9 @@ legacy_s32 RsFatalLegacyS32FromBits(legacy_u32 value)
 
 legacy_void RsAddExitHandler(legacy_u8 *exit_handler)
 {
-  legacy_s16 temple_index_985;
+  legacy_s16 noreg temple_index_985;
   legacy_s16 *temple_tmp_986;
-  legacy_s16 temple_tmp_987;
+  legacy_s16 noreg temple_tmp_987;
   temple_index_985=TempleCastS16(0);
   while(1) {
     if(!((temple_index_985<10))) {
@@ -64,10 +64,10 @@ legacy_void RsAddExitHandler(legacy_u8 *exit_handler)
 
 legacy_void RsCallExitlist()
 {
-  legacy_s16 temple_index_989;
+  legacy_s16 noreg temple_index_989;
   legacy_void (*temple_callee_990)();
   legacy_s16 *temple_tmp_991;
-  legacy_s16 temple_tmp_992;
+  legacy_s16 noreg temple_tmp_992;
   temple_index_989=TempleCastS16(10);
   while(1) {
     if(!((temple_index_989>=0))) {
@@ -101,7 +101,7 @@ legacy_void RsFatalFatalFlushOutput(CFatalOutputState *output)
 legacy_void RsFatalFatalEmitCharacter(CFatalOutputState *output,legacy_s8 character)
 {
   legacy_u16 *temple_tmp_993;
-  legacy_u16 temple_tmp_994;
+  legacy_u16 noreg temple_tmp_994;
   if((output->length==96)) {
     RsFatalFatalFlushOutput(output);
   }
@@ -115,7 +115,7 @@ legacy_void RsFatalFatalEmitPadding(
     CFatalOutputState *output,legacy_s8 character,legacy_s16 count)
 {
   legacy_s16 *temple_tmp_996;
-  legacy_s16 temple_tmp_997;
+  legacy_s16 noreg temple_tmp_997;
   while(1) {
     temple_tmp_996=&(count);
     temple_tmp_997=*temple_tmp_996;
@@ -130,14 +130,14 @@ legacy_void RsFatalFatalEmitPadding(
 legacy_void RsFatalFatalEmitText(CFatalOutputState *output,legacy_s8 *text,legacy_s16 width,
     legacy_s16 precision,legacy_s16 left_aligned)
 {
-  legacy_s16 temple_length_998;
-  legacy_s32 temple_tmp_1000;
-  legacy_s32 temple_tmp_1001;
+  legacy_s16 noreg temple_length_998;
+  legacy_s32 noreg temple_tmp_1000;
+  legacy_s32 noreg temple_tmp_1001;
   legacy_s16 *temple_tmp_1002;
-  legacy_s16 temple_tmp_1003;
-  legacy_s16 temple_emitted_length_1004;
+  legacy_s16 noreg temple_tmp_1003;
+  legacy_s16 noreg temple_emitted_length_1004;
   legacy_s16 *temple_tmp_1006;
-  legacy_s16 temple_tmp_1007;
+  legacy_s16 noreg temple_tmp_1007;
   if((text==0)) {
     (text="(null)");
   }
@@ -186,19 +186,19 @@ legacy_void RsFatalFatalEmitNumber(CFatalOutputState *output,legacy_u32 value,le
   legacy_s8 *temple_alphabet_1008;
   legacy_char *temple_tmp_1009;
   legacy_s8 temple_digits_1010[12];
-  legacy_s16 temple_digit_count_1011;
+  legacy_s16 noreg temple_digit_count_1011;
   legacy_s16 *temple_tmp_1013;
-  legacy_s16 temple_tmp_1014;
+  legacy_s16 noreg temple_tmp_1014;
   legacy_s16 *temple_tmp_1015;
-  legacy_s16 temple_tmp_1016;
-  legacy_s16 temple_zero_count_1017;
-  legacy_s32 temple_tmp_1018;
-  legacy_s32 temple_tmp_1019;
-  legacy_s32 temple_tmp_1020;
-  legacy_s16 temple_space_count_1021;
-  legacy_s16 temple_index_1023;
+  legacy_s16 noreg temple_tmp_1016;
+  legacy_s16 noreg temple_zero_count_1017;
+  legacy_s32 noreg temple_tmp_1018;
+  legacy_s32 noreg temple_tmp_1019;
+  legacy_s32 noreg temple_tmp_1020;
+  legacy_s16 noreg temple_space_count_1021;
+  legacy_s16 noreg temple_index_1023;
   legacy_s16 *temple_tmp_1024;
-  legacy_s16 temple_tmp_1025;
+  legacy_s16 noreg temple_tmp_1025;
   if(uppercase) {
     temple_tmp_1009="0123456789ABCDEF";
   } else {
@@ -275,9 +275,9 @@ legacy_void RsFatalFatalEmitNumber(CFatalOutputState *output,legacy_u32 value,le
 
 legacy_s8 *RsFatalFatalParseConversion(legacy_s8 *format,CFatalConversion *field)
 {
-  legacy_s32 temple_tmp_1027;
-  legacy_s32 temple_tmp_1029;
-  legacy_s32 temple_tmp_1031;
+  legacy_s32 noreg temple_tmp_1027;
+  legacy_s32 noreg temple_tmp_1029;
+  legacy_s32 noreg temple_tmp_1031;
   (field->left_aligned=TempleCastS16(0));
   (field->zero_padded=TempleCastS16(0));
   while(1) {
@@ -356,8 +356,8 @@ legacy_void RsFatalFatalEmitFieldCharacter(
 legacy_void RsFatalFatalEmitSignedField(
     CFatalOutputState *output,CFatalConversion *field,legacy_s32 value)
 {
-  legacy_u32 temple_magnitude_1032;
-  legacy_u32 temple_tmp_1033;
+  legacy_u32 noreg temple_magnitude_1032;
+  legacy_u32 noreg temple_tmp_1033;
   if((value<0)) {
     temple_tmp_1033=TempleCastU32(TempleCastU32(TempleCastU32((0-TempleCastU32(value)))));
   } else {
@@ -373,7 +373,7 @@ legacy_void RsFatalFatalEmitSignedField(
 legacy_void RsFatalFatalEmitUnsignedField(
     CFatalOutputState *output,CFatalConversion *field,legacy_u32 value)
 {
-  legacy_s32 temple_tmp_1034;
+  legacy_s32 noreg temple_tmp_1034;
   if((field->conversion=='u')) {
     temple_tmp_1034=TempleCastS32(FATAL_FORMAT_DECIMAL_RADIX);
   } else {
@@ -396,12 +396,12 @@ legacy_void RsFatalFatalEmitUnknownField(CFatalOutputState *output,legacy_s8 con
 legacy_void RsFatalFatalVprintf(legacy_s8 *format,legacy_u64 *arguments)
 {
   CFatalOutputState temple_output_1035;
-  legacy_u32 temple_unsigned_value_1036;
+  legacy_u32 noreg temple_unsigned_value_1036;
   CFatalConversion temple_field_1037;
-  legacy_s16 temple_value_1038;
-  legacy_s32 temple_long_signed_value_1039;
-  legacy_s32 temple_tmp_1041;
-  legacy_u32 temple_tmp_1042;
+  legacy_s16 noreg temple_value_1038;
+  legacy_s32 noreg temple_long_signed_value_1039;
+  legacy_s32 noreg temple_tmp_1041;
+  legacy_u32 noreg temple_tmp_1042;
   (temple_output_1035.length=TempleCastU16(0));
   while(1) {
     if(!(((*(format))!=0))) {
@@ -462,6 +462,7 @@ legacy_void RsFatalFatalVprintf(legacy_s8 *format,legacy_u64 *arguments)
 legacy_void RsFatalError(legacy_s8 *format,...)
 {
   legacy_u64 *temple_arguments_1043;
+  no_warn argc;
   RsSpriteSelectScreen();
   (temple_arguments_1043=argv);
   RsFatalFatalVprintf(format,temple_arguments_1043);

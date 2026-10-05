@@ -23,9 +23,9 @@ legacy_void TempleResourcesAssert(legacy_s64 condition,legacy_u8 *message)
 
 legacy_void TempleResourcesTest()
 {
-  legacy_s32 length;
+  legacy_s32 noreg length;
   legacy_u8 *resource;
-  legacy_u16 matches;
+  legacy_u16 noreg matches;
   legacy_u64 index;
   legacy_u8 *write_source,*read_result;
   RsFullDataInitialize();
