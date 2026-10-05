@@ -1,0 +1,86 @@
+.timing-page {
+    --physics-color: #edbd73;
+    --classic-color: #9dc4ff;
+    --hv-color: #82dfc0;
+    --panel-space: 24px;
+    --timeline-min-width: 850px;
+    --table-min-width: 580px;
+    padding-top: 56px;
+}
+.timing-intro { max-width: 800px; margin-bottom: 42px; }
+.timing-intro h1 { font-size: clamp(2.7rem, 5.5vw, 4.4rem); }
+.timing-intro .intro { margin-bottom: 18px; }
+.timing-lab { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--panel-space); background: var(--surface); }
+.lab-heading { display: flex; align-items: start; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; }
+.lab-heading .eyebrow { margin-bottom: 12px; }
+.lab-heading h2 { font-size: 1.8rem; margin-bottom: 0; }
+.model-label { font-size: .75rem; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 5px 9px; }
+.timing-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px; }
+.timing-control label, .scrub-control label { display: flex; justify-content: space-between; gap: 12px; font-size: .9375rem; font-weight: 650; }
+.timing-page output { color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.timing-page input[type="range"] { display: block; width: 100%; margin: 8px 0; min-height: 28px; accent-color: var(--accent); cursor: pointer; }
+.timing-page :is(input, summary, [tabindex]):focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+.timing-control p { font-size: .8125rem; margin-bottom: 12px; }
+.timing-presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.timing-presets .button { font-size: .75rem; padding: 6px 10px; }
+.timing-page .button:disabled { opacity: .5; cursor: default; }
+.timing-figure { margin: 28px 0 24px; }
+.timeline-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--page); }
+#timeline { display: block; width: 100%; min-width: var(--timeline-min-width); font-family: inherit; }
+#timeline text { fill: var(--muted); font-size: 14px; }
+#timeline .lane-title { fill: var(--text); font-size: 16px; font-weight: 650; }
+#timeline .tick-label { font-size: 13px; }
+#timeline .grid-line { stroke: var(--line); stroke-dasharray: 3 6; stroke-width: 1; }
+#timeline .lane-line { stroke: var(--line); stroke-width: 2; }
+#timeline .physics-mark { fill: var(--physics-color); }
+#timeline .classic-mark { fill: var(--classic-color); }
+#timeline .hv-mark { fill: var(--hv-color); }
+#timeline .background-mark { fill: var(--raised); stroke: var(--muted); stroke-width: 1; }
+#timeline .selected-mark { stroke: var(--text); stroke-width: 2; }
+#timeline .frame-label { fill: var(--page); font-size: 13px; font-weight: 800; }
+#timeline .event-label { font-size: 13px; font-weight: 650; }
+#timeline .wait-line { stroke: var(--physics-color); stroke-width: 4; }
+#timeline .input-line { stroke: var(--physics-color); stroke-width: 1; stroke-dasharray: 5 4; }
+#timeline .output-line { stroke: var(--hv-color); stroke-width: 3; }
+#timeline .time-cursor { stroke: var(--text); stroke-width: 2; opacity: .8; pointer-events: none; }
+.timing-figure figcaption { font-size: .8125rem; color: var(--muted); margin-top: 12px; }
+.playback-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; }
+.scrub-control { flex: 1; min-width: 220px; }
+#playback-help { margin-top: 10px; margin-bottom: 16px; }
+.event-status { padding: 14px 18px; border-left: 3px solid var(--accent); background: var(--page); min-height: 4.8em; font-size: .9375rem; }
+.timing-results { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-block: 24px; }
+.timing-result { padding: 18px; background: var(--page); border-radius: var(--radius); border-top: 3px solid var(--physics-color); }
+.classic-result { border-color: var(--classic-color); }
+.hv-result { border-color: var(--hv-color); }
+.timing-result .eyebrow { font-size: .7rem; margin-bottom: 12px; }
+.classic-result .eyebrow, .classic-result .delay-number { color: var(--classic-color); }
+.hv-result .eyebrow, .hv-result .delay-number { color: var(--hv-color); }
+.timing-result h3 { font-size: 1rem; }
+.timing-result p:last-child { font-size: .8125rem; margin-bottom: 0; }
+.delay-number { font-size: 2rem; line-height: 1.2; letter-spacing: -.04em; color: var(--physics-color); margin-bottom: 14px; font-weight: 750; font-variant-numeric: tabular-nums; }
+.timing-table-scroll { overflow-x: auto; }
+.timing-table { border-collapse: collapse; width: 100%; min-width: var(--table-min-width); font-size: .875rem; text-align: left; }
+.timing-table caption { text-align: left; font-weight: 650; padding-bottom: 12px; }
+.timing-table th, .timing-table td { border-bottom: 1px solid var(--line); padding: 12px 8px; vertical-align: top; }
+.timing-table tbody th { font-weight: 400; color: var(--muted); width: 46%; }
+.timing-table td { font-variant-numeric: tabular-nums; }
+.total-row { background: var(--page); }
+.timing-explanation { padding-block: 56px 0; }
+.explanation-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 30px; margin-top: 30px; }
+.explanation-grid h3 { font-size: 1.2rem; }
+.explanation-grid p { font-size: .9375rem; }
+.timing-assumptions { border-block: 1px solid var(--line); margin-top: 20px; padding-block: 18px; }
+.timing-assumptions summary { cursor: pointer; font-weight: 650; color: var(--accent); }
+.timing-assumptions p { font-size: .875rem; max-width: 900px; margin: 16px 0 0; }
+@media (max-width: 800px) {
+    .timing-results, .explanation-grid { grid-template-columns: 1fr; }
+    .explanation-grid { gap: 12px; }
+}
+@media (max-width: 680px) {
+    .timing-page { --panel-space: 16px; padding-top: 36px; }
+    .timing-controls { grid-template-columns: 1fr; gap: 22px; }
+    .timing-lab { margin-inline: -4px; }
+    .playback-controls { gap: 16px; }
+    .playback-controls .button { font-size: .8125rem; padding: 10px 12px; }
+    .timing-explanation { padding-top: 40px; }
+}
