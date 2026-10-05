@@ -8,6 +8,13 @@ The linked `site/quick-guide.html` shares the landing page styling and gives
 returning players a short guide to added hotkeys and launch parameters. Keep
 it in the builder's `WEBSITE_FILES` list so it is included in the published site.
 
+The landing page also links to `site/hypervision-timing.html`, an interactive
+comparison of input sampling, physics updates, and video presentation in
+HyperVision and the original 20 FPS renderer. The timeline illustrates the
+normal 20 Hz physics schedule and HyperVision interpolation; it is a timing
+model, not a measurement of the visitor's machine. Its HTML, CSS, and JavaScript
+files are included in `WEBSITE_FILES`.
+
 ## Publish
 
 1. Add the website and workflow changes to the repository through the usual

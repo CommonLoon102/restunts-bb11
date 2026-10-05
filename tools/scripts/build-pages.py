@@ -13,6 +13,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[2]
 SITE = ROOT / "site"
 WEBSITE_FILES = ("index.html", "quick-guide.html", "styles.css", "site.js",
+                 "hypervision-timing.html", "hypervision-timing.css", "hypervision-timing.js",
                  "templeos/index.html", "templeos/templeos.css")
 TEMPLEOS_DOWNLOAD_DIRECTORY = "downloads/templeos"
 TEMPLEOS_DOWNLOAD_FILES = ("RESTUNTS.ISO", "RESTUNTS_STOCK_TEMPLEOS.ZIP", "README.MD")

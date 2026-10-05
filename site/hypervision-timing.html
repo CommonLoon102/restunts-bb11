@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1b2531">
+    <meta name="description" content="Explore how input sampling, physics updates, and video frames line up in HyperVision and the original 20 FPS renderer.">
+    <title>HyperVision timing lab — Chocolate Stunts</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="hypervision-timing.css">
+    <script src="hypervision-timing.js" defer></script>
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header wrap">
+        <a class="wordmark" href="index.html" aria-label="Chocolate Stunts home"><span class="flag" aria-hidden="true"></span>Chocolate Stunts</a>
+        <nav aria-label="Main navigation">
+            <a href="index.html#features">Features</a>
+            <a href="quick-guide.html">Quick guide</a>
+            <a href="hypervision-timing.html" aria-current="page">Timing lab</a>
+            <a href="index.html#play">Play</a>
+        </nav>
+    </header>
+
+    <main id="main" class="timing-page wrap">
+        <header class="timing-intro">
+            <p class="eyebrow">HyperVision / Interactive timing lab</p>
+            <h1>From key press<br>to <span>video frame.</span></h1>
+            <p class="intro">Follow one input through the physics engine and onto the screen. Compare the original 20 FPS renderer with HyperVision’s 60 FPS interpolation.</p>
+            <p>Both sample gameplay input and advance physics at <strong>20 Hz: once every 50 ms.</strong> HyperVision draws three visual steps between completed states. Smoother motion does not mean faster input sampling.</p>
+        </header>
+
+        <noscript><p class="guide-callout">Enable JavaScript to use the timeline. The timing explanation and comparison below remain available.</p></noscript>
+
+        <section class="timing-lab" aria-labelledby="lab-title" hidden>
+            <div class="lab-heading">
+                <div><p class="eyebrow">01 / Set up a key press</p><h2 id="lab-title">Same input. Two renderers.</h2></div>
+                <span class="model-label">Illustrative model · 20 Hz physics</span>
+            </div>
+            <div class="timing-controls">
+                <div class="timing-control">
+                    <label for="input-time">Key press time <output id="input-time-value" for="input-time"></output></label>
+                    <input id="input-time" type="range" aria-describedby="input-help">
+                    <p id="input-help">Move the press between two physics ticks. A press exactly on a tick is sampled on that tick.</p>
+                    <div class="timing-presets" aria-label="Input timing examples">
+                        <button class="button" type="button" data-input-preset="early">Just after a tick</button>
+                        <button class="button" type="button" data-input-preset="late">Just before a tick</button>
+                    </div>
+                </div>
+                <div class="timing-control">
+                    <label for="display-delay">Extra display delay <output id="display-delay-value" for="display-delay"></output></label>
+                    <input id="display-delay" type="range" aria-describedby="display-help">
+                    <p id="display-help">Add the same fixed delay to both video outputs. This is an illustration, not a measurement or a VSync simulator.</p>
+                </div>
+            </div>
+
+            <figure class="timing-figure">
+                <div class="timeline-scroll" tabindex="0" role="region" aria-label="Timing diagram; scroll horizontally on small screens">
+                    <svg id="timeline" viewBox="0 0 1100 400" role="img" aria-labelledby="timeline-title timeline-description">
+                        <title id="timeline-title">Input, physics, and video output timeline</title>
+                        <desc id="timeline-description"></desc>
+                        <line id="time-cursor" class="time-cursor" y1="55" y2="367"></line>
+                        <g id="timeline-events"></g>
+                    </svg>
+                </div>
+                <figcaption>All times are milliseconds. <strong>S</strong> marks the first physics state using your input. Highlighted video frames show ⅓, ⅔, or all of that new state; other dots show the surrounding frame cadence.</figcaption>
+            </figure>
+
+            <div class="playback-controls">
+                <div class="actions">
+                    <button id="play-timeline" class="button primary" type="button">Play slowly</button>
+                    <button id="next-event" class="button" type="button">Next event</button>
+                    <button id="reset-timeline" class="button" type="button">Reset</button>
+                </div>
+                <div class="scrub-control">
+                    <label for="scrub-time">Inspect time <output id="scrub-time-value" for="scrub-time"></output></label>
+                    <input id="scrub-time" type="range" aria-describedby="playback-help">
+                </div>
+            </div>
+            <p id="playback-help" class="small">Playback is slowed 40×. Drag the time slider or use its arrow keys; Next event steps through the press, physics, and affected video frames.</p>
+            <p id="event-status" class="event-status" role="status"></p>
+
+            <div class="timing-results" aria-label="Calculated delays for this key press">
+                <article class="timing-result shared-result">
+                    <p class="eyebrow">Both renderers</p><h3>Input → physics</h3>
+                    <p class="delay-number" id="input-wait"></p>
+                    <p id="physics-summary"></p>
+                </article>
+                <article class="timing-result classic-result">
+                    <p class="eyebrow">Original / 20 FPS</p><h3>Physics → full state</h3>
+                    <p class="delay-number" id="classic-output"></p>
+                    <p id="classic-summary"></p>
+                </article>
+                <article class="timing-result hv-result">
+                    <p class="eyebrow">HyperVision / 60 FPS</p><h3>Physics → full state</h3>
+                    <p class="delay-number" id="hv-output"></p>
+                    <p id="hv-summary"></p>
+                </article>
+            </div>
+            <div class="timing-table-scroll" tabindex="0" role="region" aria-label="Exact event times">
+                <table class="timing-table">
+                    <caption>For this key press, from input to screen</caption>
+                    <thead><tr><th scope="col">Event</th><th scope="col">Original</th><th scope="col">HyperVision</th></tr></thead>
+                    <tbody>
+                        <tr><th scope="row">Input available to physics / state S calculated</th><td id="classic-physics-time"></td><td id="hv-physics-time"></td></tr>
+                        <tr><th scope="row">First frame influenced by S</th><td id="classic-first-time"></td><td id="hv-first-time"></td></tr>
+                        <tr><th scope="row">Full state S visible</th><td id="classic-full-time"></td><td id="hv-full-time"></td></tr>
+                        <tr class="total-row"><th scope="row">Key press → full state visible</th><td id="classic-total"></td><td id="hv-total"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="timing-explanation" aria-labelledby="explanation-title">
+            <p class="eyebrow">02 / Read the timing</p>
+            <h2 id="explanation-title">First response ≠ full new state.</h2>
+            <div class="explanation-grid">
+                <article><h3>Input waits for physics.</h3><p>A held input arriving between ticks waits for the next 50 ms tick in either renderer. The ideal sampling wait is from 0 to just under 50 ms, averaging 25 ms for uniformly timed presses. The extra HyperVision frames do not run extra authoritative physics or record extra inputs.</p></article>
+                <article><h3>Video takes different steps.</h3><p>The original renderer shows the completed state immediately, then holds it. HyperVision first shows a <strong>⅓ blend</strong> from the previous state toward the new one, then <strong>⅔ at +16.7 ms</strong>, then the <strong>full state at +33.3 ms</strong>. Those fractions describe the visual blend, not the strength of your input.</p></article>
+                <article><h3>Smoothness has a time offset.</h3><p>With no extra delays, the first changed frame arrives at the same time in this model. The full new state takes 33.3 ms longer with HyperVision. At each 60 FPS presentation, its visual sample is about 33.3 ms behind the physics timeline; the original instead holds each frame for 50 ms.</p></article>
+            </div>
+            <details class="timing-assumptions">
+                <summary>Model assumptions and source code</summary>
+                <p>This is normal driving at 20 Hz with established interpolation history and sustained target frame rates. Physics calculation and rendering are treated as instantaneous so the scheduling delays are visible. The optional display delay is a fixed offset after each frame is prepared.</p>
+                <p>Real input delivery, computation, rendering, VSync, scanout, and the monitor add delay. Slow frames can also postpone input processing or skip visual samples. The values here are not measured key-to-screen latency.</p>
+                <p>HyperVision interpolates completed states; it does not predict future physics. Startup, seeking, pausing, rewinding, and camera changes can reset its history. Confirmed crash transitions can show the current pose immediately. The separate 10 Hz simulation mode has about 83.3 ms of interpolation delay and is outside this 20 FPS comparison. Desktop double buffering does not itself queue an extra game frame.</p>
+                <p>The model follows the project’s <a href="https://github.com/CommonLoon102/restunts-bb11/blob/main/readme.md#hypervision-and-fps-display">timing documentation</a>, <a href="https://github.com/CommonLoon102/restunts-bb11/blob/main/src/restunts/c/race.c">race presentation loop</a>, and <a href="https://github.com/CommonLoon102/restunts-bb11/blob/main/src/restunts/c/replay_record.c">input sampling code</a>.</p>
+            </details>
+        </section>
+    </main>
+
+    <footer class="site-footer wrap">
+        <p><strong>Chocolate Stunts</strong><br>The same physics. More frames along the way.</p>
+        <nav aria-label="Timing lab resources"><a href="index.html">Back to the homepage</a><a href="quick-guide.html">Hotkeys &amp; parameters</a><a href="#main">Back to top</a></nav>
+    </footer>
+</body>
+</html>
