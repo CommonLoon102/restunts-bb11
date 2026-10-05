@@ -56,9 +56,10 @@ The [TempleOS/TinkerOS port](src/restunts/platform/templeos/README.TXT) includes
 HolyC sources, an uppercase-file packager, and an isolated QEMU test workflow.
 The [stock TempleOS installation guide](docs/templeos.md) covers the game CD,
 installation on a fresh system, controls, and rebuilding the package. The port
-projects and rasterizes 3D geometry at 640x400, preserving the original 8:5 aspect
-ratio within the 640x480 display with 40-pixel black bars above and below.
-Original bitmap artwork and UI retain their source detail at a uniform 2x scale.
+projects and rasterizes 3D geometry at 640x400, then applies the DOS game's
+4:3 display correction to fill the entire 640x480 display. Original 320x200
+bitmap artwork and UI retain their source detail, displayed at 2x horizontal
+and 2.4x vertical scale using nearest-neighbor sampling.
 
 All builds require the original Broderbund Stunts 1.1 game data (12 Feb. 1991).
 Startup checks the `gver` text in `MISC.RES`, or `MISC.PRE` when no unpacked

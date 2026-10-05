@@ -45,6 +45,7 @@ legacy_void TestAssert(legacy_s64 condition)
   }
 }
 
+#include "TEST_PRESENTATION.HC"
 #include "TEST_POLYGON.HC"
 #include "TEST_LINE.HC"
 
@@ -99,7 +100,7 @@ legacy_void TestVideoCache(CSprite *background)
   /* Direct raster callers still get a complete conversion of a clean screen. */
   DCFill(temple_video_back,WHITE);
   TempleRasterPresent(temple_video_back);
-  TestAssert(temple_video_back->body[0]==BLACK);
+  TestAssert(temple_video_back->body[0]==GREEN);
   TestAssert(
       temple_video_back->body[(TEMPLE_SCREEN_HEIGHT-1)*temple_video_back->width_internal]==
       BLACK);
@@ -194,6 +195,7 @@ legacy_void RasterTests()
   TestPolygonSharedEdges(dc);
   TestNativeGeometry(dc);
   TestLineCoverage(dc);
+  TestPresentation(dc);
   DCDel(dc);
   for(y=0;y<TEMPLE_RENDER_HEIGHT;y++) {
     ly=y/TEMPLE_RASTER_Y_SCALE;

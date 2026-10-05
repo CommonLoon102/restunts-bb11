@@ -98,7 +98,7 @@ legacy_void TestPolygonSharedEdges(CDC *dc)
             TempleRasterPresent(dc);
             for(y=0;y<TEMPLE_SCREEN_HEIGHT;y++) {
               /* Integer inequalities independently test pixel centers against edges. */
-              render_y=y-TEMPLE_RENDER_TOP;
+              render_y=y*TEMPLE_RENDER_HEIGHT/TEMPLE_SCREEN_HEIGHT;
               center_y=2*render_y+1;
               for(x=0;x<TEMPLE_SCREEN_WIDTH;x++) {
                 expected=BLACK;
@@ -131,11 +131,6 @@ legacy_void TestPolygonSharedEdges(CDC *dc)
   }
   TempleRasterNative(FALSE);
   MemCpy(&drawing_sprite,&saved_sprite,sizeof(CSprite));
-}
-
-legacy_u8 TestRasterPixel(CDC *dc,legacy_s64 x,legacy_s64 y)
-{
-  return dc->body[(y+TEMPLE_RENDER_TOP)*dc->width_internal+x+TEMPLE_RENDER_LEFT];
 }
 
 legacy_void TestNativeGeometry(CDC *dc)

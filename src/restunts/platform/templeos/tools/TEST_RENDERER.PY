@@ -80,7 +80,8 @@ legacy_void *dos_memory_make_pointer(legacy_u16 segment, legacy_u16 offset) {ret
 legacy_u16 dos_memory_pointer_segment(legacy_void *p) {return ((legacy_u8*)p-arena)/16;}
 legacy_s16 mmgr_get_chunk_size(legacy_void *p) {(void)p;return 4096;}
 '''
-polygon_tests = "#define TestAssert assert\n" + (root / "TEST_POLYGON.HC").read_text()
+presentation_tests = "#define TestAssert assert\n" + (root / "TEST_PRESENTATION.HC").read_text()
+polygon_tests = (root / "TEST_POLYGON.HC").read_text()
 line_tests = (root / "TEST_LINE.HC").read_text()
 material_tests = "#define TestMaterialAssert assert\n" + (root / "TEST_MATERIAL.HC").read_text()
 tests=r'''
@@ -104,7 +105,7 @@ legacy_int main(legacy_void) {
  SPRITE background={arena+0x20000,rows,320,0,200,0,320};TempleRasterRegisterSprite(&background);
  video_pages_copy_span(background.sprite_bitmapptr,9,drawing_sprite.sprite_bitmapptr,5,1);assert(!memcmp(saved,TempleRasterFind(background.sprite_bitmapptr)->samples+9*TEMPLE_RASTER_CELL_PIXELS,sizeof(saved)));
  video_pages_write_pixel(drawing_sprite.sprite_bitmapptr,5,2);video_pages_copy_span(drawing_sprite.sprite_bitmapptr,5,background.sprite_bitmapptr,9,1);assert(!memcmp(saved,cell,sizeof(saved)));
- CDC dc={calloc(TEMPLE_SCREEN_PIXELS,1),TEMPLE_SCREEN_WIDTH};TempleRasterPresent(&dc);for(legacy_int i=0;i<TEMPLE_SCREEN_PIXELS;i++)assert(dc.body[i]<16);TestPolygonSharedEdges(&dc);TestNativeGeometry(&dc);TestLineCoverage(&dc);TestMaterialRaster(&dc);memset(dc.body,255,TEMPLE_SCREEN_PIXELS);TempleRasterPresent(&dc);assert(dc.body[0]==BLACK&&dc.body[(TEMPLE_SCREEN_HEIGHT-1)*dc.width_internal]==BLACK);free(dc.body);
+ CDC dc={calloc(TEMPLE_SCREEN_PIXELS,1),TEMPLE_SCREEN_WIDTH};TempleRasterPresent(&dc);for(legacy_int i=0;i<TEMPLE_SCREEN_PIXELS;i++)assert(dc.body[i]<16);TestPolygonSharedEdges(&dc);TestNativeGeometry(&dc);TestLineCoverage(&dc);TestMaterialRaster(&dc);TestPresentation(&dc);free(dc.body);
  for(legacy_int y=0;y<TEMPLE_RENDER_HEIGHT;y++){legacy_int ly=y/TEMPLE_RASTER_Y_SCALE;assert(TempleRasterY(ly)<=y&&TempleRasterY(ly+1)>y);}
  legacy_u8 *res=arena+0x30000;res[4]=1;memcpy(res+6,"!eg0",4);res[14]=0;res[15]=1;res[16]=1;for(legacy_int i=0;i<256;i++)res[30+i]=i;
  TempleRasterResource(res);assert(TempleRasterPairs(res+30)[127]==127);
@@ -157,7 +158,7 @@ def host_storage_keywords(text):
     return style["TOKEN"].sub(replace, text)
 
 
-host_source = host_storage_keywords(prefix + s + polygon_tests + line_tests + material_tests + tests)
+host_source = host_storage_keywords(prefix + s + presentation_tests + polygon_tests + line_tests + material_tests + tests)
 with tempfile.TemporaryDirectory(prefix="restunts-raster-") as directory:
     source = Path(directory) / "TEST.C"
     program = Path(directory) / "TEST"
