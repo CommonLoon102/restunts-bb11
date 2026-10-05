@@ -91,6 +91,49 @@ The website uses plain HTML, CSS, and JavaScript; no npm installation or separat
 frontend compilation is needed. HTML and Markdown use CRLF working-tree line
 endings, while the workflow and Python builder use LF.
 
+## Refresh TempleOS downloads and screenshots
+
+Rebuild the code-only RedSea package from the current sources with Python 3,
+QEMU, dosfstools, mtools, and the official stock TempleOS ISO:
+
+```sh
+python3 src/restunts/platform/templeos/tools/PACKAGE.PY \
+    --iso /path/to/TempleOS.ISO \
+    --output /path/to/new/RESTUNTS_STOCK_TEMPLEOS
+```
+
+The output directory and its sibling ZIP must not already exist. Copy the new
+`RESTUNTS.ISO`, `README.MD`, and sibling `RESTUNTS_STOCK_TEMPLEOS.ZIP` into
+`site/downloads/templeos/`. The builder copies the installation guide from
+`docs/templeos.md`. Regenerate the public download checksums from the repository
+root; the package's internal checksum file covers a different inventory:
+
+```sh
+python3 - <<'PYTHON'
+import hashlib
+from pathlib import Path
+
+downloads = Path("site/downloads/templeos")
+names = ("RESTUNTS.ISO", "RESTUNTS_STOCK_TEMPLEOS.ZIP", "README.MD")
+checksums = "".join(
+    f"{hashlib.sha256((downloads / name).read_bytes()).hexdigest()}  {name}\r\n"
+    for name in names
+)
+(downloads / "SHA256SUMS.TXT").write_bytes(checksums.encode("ascii"))
+PYTHON
+```
+
+Use the [guest capture controls](../src/restunts/platform/templeos/tools/VM.TXT)
+to take framebuffer screenshots from a disposable stock TempleOS VM.
+Capture the same six scenes from the current build and replace
+`main-menu.png`, `car-selection.png`, `default-cockpit.png`,
+`bernies-ferrari-f2.png`, `helens-jaguar-f3.png`, and `joes-porsche-indy-f3.png`
+in `site/assets/templeos/`. Keep the raw 640×480 captures, including the 40-pixel
+black bars around the 640×400 game viewport; do not stretch or recolor them.
+Update scene captions and alternative text if a scene changes, and update the
+download size labels in `site/templeos/index.html` from the new ISO and ZIP sizes.
+Run the Pages checks below before publishing all changed files together.
+
 ## Check the builder
 
 ```sh
