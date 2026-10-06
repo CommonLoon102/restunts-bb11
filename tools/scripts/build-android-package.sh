@@ -5,6 +5,13 @@ script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 repo_dir=$(cd -- "$script_dir/../.." && pwd)
 target=${1:?Usage: build-android-package.sh TARGET RUNTIME_DIRECTORY}
 runtime_dir=${2:?Specify the empty runtime directory}
+build_type=${RESTUNTS_ANDROID_BUILD_TYPE:-debug}
+case "$build_type" in
+    debug) native_configuration=Debug ;;
+    release) native_configuration=Release ;;
+    *) echo "Unknown Android build type: $build_type" >&2; exit 1 ;;
+esac
+export RESTUNTS_ANDROID_BUILD_TYPE=$build_type
 source "$repo_dir/android/toolchain.properties"
 apk_alignment_bytes=4
 apk_page_alignment_kb=16
@@ -23,9 +30,16 @@ if [[ -n "$(ls -A "$runtime_dir")" ]]; then
 fi
 bash "$script_dir/build-android.sh" "$target" --no-daemon \
     "-PrestuntsAndroidBuildRoot=$build_root"
-apk="$build_root/app/build/outputs/apk/$flavor/debug/app-$flavor-debug.apk"
-"${JAVA_HOME:?Set JAVA_HOME to Java 17}/bin/java" -jar "$build_tools/lib/apksigner.jar" \
-    verify --verbose "$apk"
+apk="$build_root/app/build/outputs/apk/$flavor/$build_type/app-$flavor-$build_type.apk"
+verification=$("${JAVA_HOME:?Set JAVA_HOME to Java 17}/bin/java" -jar "$build_tools/lib/apksigner.jar" \
+    verify --verbose --print-certs "$apk")
+printf '%s\n' "$verification"
+for signature in 'v1 scheme (JAR signing)' 'v2 scheme (APK Signature Scheme v2)'; do
+    if ! grep --fixed-strings --quiet "Verified using $signature: true" <<< "$verification"; then
+        echo "Android APK is missing its required $signature signature." >&2
+        exit 1
+    fi
+done
 "$build_tools/zipalign" -c -P "$apk_page_alignment_kb" "$apk_alignment_bytes" "$apk"
 badging=$("$build_tools/aapt" dump badging "$apk")
 if ! [[ "$badging" == *"sdkVersion:'$minimum_sdk'"* && \
@@ -34,19 +48,39 @@ if ! [[ "$badging" == *"sdkVersion:'$minimum_sdk'"* && \
     echo "Android APK has incorrect SDK or native ABI requirements." >&2
     exit 1
 fi
+if [[ "$build_type" == release ]]; then
+    if grep --quiet '^application-debuggable' <<< "$badging"; then
+        echo 'Refusing to package a debuggable Android release APK.' >&2
+        exit 1
+    fi
+    certificate=$(mktemp "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/restunts-signing-certificate.XXXXXX")
+    trap 'rm -f -- "$certificate"' EXIT
+    "$JAVA_HOME/bin/keytool" -exportcert -keystore "$ANDROID_KEYSTORE_FILE" \
+        -storepass:env ANDROID_KEYSTORE_PASSWORD -alias "$ANDROID_KEY_ALIAS" -file "$certificate"
+    expected_digest=$(python3 -c \
+        'import hashlib, sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' \
+        "$certificate")
+    if ! grep --fixed-strings --line-regexp --quiet 'Number of signers: 1' <<< "$verification" || \
+            ! grep --fixed-strings --line-regexp --quiet \
+                "Signer #1 certificate SHA-256 digest: $expected_digest" <<< "$verification"; then
+        echo 'Android release APK was not signed with the configured release key.' >&2
+        exit 1
+    fi
+fi
 
 # A reused build root can retain the previous minimum SDK's configuration hash.
 # Only install the native tree matching the selected ABI and minimum API.
 native_builds=()
-for cache in "$build_root/app/.cxx/Debug/"*"/$abi/CMakeCache.txt"; do
+for cache in "$build_root/app/.cxx/$native_configuration/"*"/$abi/CMakeCache.txt"; do
     if [[ -f "$cache" ]] && \
             grep --quiet --extended-regexp "^ANDROID_PLATFORM:[^=]+=android-$minimum_sdk$" "$cache" && \
-            grep --quiet --extended-regexp "^ANDROID_ABI:[^=]+=$abi$" "$cache"; then
+            grep --quiet --extended-regexp "^ANDROID_ABI:[^=]+=$abi$" "$cache" && \
+            grep --quiet --extended-regexp "^CMAKE_BUILD_TYPE:[^=]+=$native_configuration$" "$cache"; then
         native_builds+=("$cache")
     fi
 done
 if [[ "${#native_builds[@]}" != 1 ]]; then
-    echo "Expected one Android native build for $abi at API $minimum_sdk." >&2
+    echo "Expected one $native_configuration Android native build for $abi at API $minimum_sdk." >&2
     exit 1
 fi
 "$sdk_root/cmake/$ANDROID_CMAKE/bin/cmake" --install "${native_builds[0]%/CMakeCache.txt}" \

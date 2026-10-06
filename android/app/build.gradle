@@ -5,6 +5,11 @@ plugins {
 def sdlDirectory = file('../../out/android-deps/sdl')
 def toolchain = new Properties()
 rootProject.file('toolchain.properties').withInputStream { toolchain.load(it) }
+def releaseSigning = ['ANDROID_KEYSTORE_FILE', 'ANDROID_KEYSTORE_PASSWORD',
+    'ANDROID_KEY_ALIAS', 'ANDROID_KEY_PASSWORD'].collectEntries { name ->
+    [(name): providers.environmentVariable(name).orNull]
+}
+def releaseSigningConfigured = releaseSigning.values().every { it != null && !it.isEmpty() }
 
 android {
     namespace 'org.restunts.android'
@@ -60,9 +65,31 @@ android {
     packaging {
         jniLibs.useLegacyPackaging = true
     }
+    signingConfigs {
+        if (releaseSigningConfigured) {
+            release {
+                storeFile file(releaseSigning['ANDROID_KEYSTORE_FILE'])
+                storePassword releaseSigning['ANDROID_KEYSTORE_PASSWORD']
+                keyAlias releaseSigning['ANDROID_KEY_ALIAS']
+                keyPassword releaseSigning['ANDROID_KEY_PASSWORD']
+                enableV1Signing = true
+                enableV2Signing = true
+            }
+        }
+    }
     buildTypes {
         release {
+            debuggable false
+            jniDebuggable false
             minifyEnabled false
+            if (releaseSigningConfigured) {
+                signingConfig signingConfigs.release
+            }
+            externalNativeBuild {
+                cmake {
+                    arguments '-DCMAKE_BUILD_TYPE=Release'
+                }
+            }
         }
     }
 }

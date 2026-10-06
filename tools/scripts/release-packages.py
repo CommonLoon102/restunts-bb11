@@ -72,7 +72,8 @@ ANDROID_ASSET_METADATA = {"assets/menus/manifest.json", "assets/opponents/game/m
 ANDROID_RESOURCES = {"res/drawable/ic_launcher_foreground.xml", "res/drawable/tv_banner.xml",
                      "res/mipmap-anydpi-v26/ic_launcher.xml"}
 ANDROID_METADATA = {"AndroidManifest.xml", "resources.arsc", "META-INF/MANIFEST.MF",
-                    "META-INF/com/android/build/gradle/app-metadata.properties"}
+                    "META-INF/com/android/build/gradle/app-metadata.properties",
+                    "META-INF/version-control-info.textproto"}
 ELF_MAGIC = b"\x7fELF"
 ELF_CLASS_32 = 1
 ELF_CLASS_64 = 2
@@ -336,12 +337,17 @@ def readme(target, commit):
         version = ANDROID_VERSIONS[minimum]
         lines += [f"Requires Android {version} (API {minimum}) or newer; runs in landscape only.",
                   f"This APK contains only {ANDROID_TARGETS[target]} native libraries.",
-                  "Install bin/restunts.apk, then use Import Stunts folder or Import Stunts ZIP.",
-                  "Your original game files are copied into writable local app storage.",
+                  "Install bin/restunts.apk, then use Choose game folder or Import Stunts ZIP.",
+                  "Original resources and custom game files use one selected public folder.",
+                  "ZIP import extracts into the exact destination folder you select.",
+                  "The app manages its private working cache and copies completed game writes",
+                  "back to your selected folder, including tracks, replays and screenshots.",
                   "Enhanced artwork/music and dependency notices are included in the APK.",
-                  "This development APK is signed with a debug certificate.",
-                  "Android updates require the same signing key. Different CI builds may use",
-                  "different debug keys; uninstalling removes imported game files and saves.",
+                  "Release workflow APKs use the project's persistent release signing key.",
+                  "PR/local debug APKs use debug keys, which may differ between builds.",
+                  "Android updates require the same signing key. A different key may require",
+                  "uninstalling the old app. Your selected public game folder is preserved;",
+                  "uninstalling removes private preferences, cache and unexported pending writes.",
                   "See share/docs/restunts/android.md for import, controls and rebuild/signing",
                   "details. Nuked source and build context are in share/restunts/nuked-opl2-lite."]
         if target == "android-armv7":

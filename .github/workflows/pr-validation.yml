@@ -52,3 +52,4 @@ jobs:
     with:
       dos-artifact: ${{ needs.validate.outputs.exe-artifact }}
       attest: false
+      android-release: false

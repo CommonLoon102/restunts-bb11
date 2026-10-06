@@ -13,6 +13,23 @@ on:
         description: Attest package archives and checksums for a release run.
         type: boolean
         default: false
+      android-release:
+        description: Build signed Android release APKs for a trusted release dispatch.
+        type: boolean
+        default: false
+    secrets:
+      ANDROID_KEYSTORE_BASE64:
+        description: Base64-encoded Android release keystore.
+        required: false
+      ANDROID_KEYSTORE_PASSWORD:
+        description: Android release keystore password.
+        required: false
+      ANDROID_KEY_ALIAS:
+        description: Alias of the Android release signing key.
+        required: false
+      ANDROID_KEY_PASSWORD:
+        description: Android release signing key password.
+        required: false
 
 # Inherit the caller's permissions: PRs are read-only; releases additionally
 # grant OIDC and attestation writes to the guarded provenance steps.
@@ -29,6 +46,12 @@ jobs:
       run:
         shell: bash
     steps:
+      - name: Reject signing requests from non-release events
+        if: inputs.android-release && github.event_name != 'workflow_dispatch'
+        run: |
+          echo 'Signed Android packages require a trusted release workflow dispatch.' >&2
+          exit 1
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
@@ -59,10 +82,42 @@ jobs:
             org.restunts.android.GameDataSyncTest
           python3 tools/scripts/test-release-packages.py
 
-      - name: Build and verify the ABI-specific APK and runtime archive
+      - name: Build and verify the ABI-specific debug APK and runtime archive
+        if: ${{ !inputs.android-release }}
         env:
           PACKAGE_TARGET: ${{ matrix.target }}
         run: bash tools/scripts/build-package.sh "$PACKAGE_TARGET"
+
+      - name: Build and verify the signed ABI-specific release APK and runtime archive
+        if: inputs.android-release && github.event_name == 'workflow_dispatch'
+        env:
+          PACKAGE_TARGET: ${{ matrix.target }}
+          RESTUNTS_ANDROID_BUILD_TYPE: release
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for signing_input in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD \
+              ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+              if [[ -z "${!signing_input:-}" ]]; then
+                  echo "Missing required Android signing secret: $signing_input" >&2
+                  exit 1
+              fi
+          done
+          umask 077
+          signing_dir=$(mktemp -d "$RUNNER_TEMP/restunts-android-signing.XXXXXX")
+          trap 'rm -rf -- "$signing_dir"' EXIT
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode \
+              > "$signing_dir/release.keystore"
+          unset ANDROID_KEYSTORE_BASE64
+          export ANDROID_KEYSTORE_FILE="$signing_dir/release.keystore"
+          if [[ ! -s "$ANDROID_KEYSTORE_FILE" ]]; then
+              echo 'The decoded Android release keystore is empty.' >&2
+              exit 1
+          fi
+          bash tools/scripts/build-package.sh "$PACKAGE_TARGET"
 
       - name: Upload immutable package artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
