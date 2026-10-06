@@ -153,11 +153,29 @@ bash tools/scripts/build-android.sh android-armv7 \
 The APK then appears at
 `/tmp/restunts-android-build/app/build/outputs/apk/armv7/debug/app-armv7-debug.apk`.
 
+These commands create debug APKs with the local Android debug signing key.
 Install with `adb install -r PATH_TO_APK`.
-This development APK uses a debug signing key and optimized native code with
-debug symbols. For distribution, open `android/`
-in Android Studio after running the helper and configure your own release key.
-No signing keys are stored in the repository.
+
+For a signed release build, keep your private keystore outside the checkout.
+Set `ANDROID_KEYSTORE_FILE` to its path, `ANDROID_KEYSTORE_PASSWORD` to its password,
+and `ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD` to the signing key's alias and
+password. Supply passwords through your environment or secret manager, then run:
+
+```sh
+bash tools/scripts/build-android.sh android-armv7 --release
+bash tools/scripts/build-android.sh android-arm64 --release
+```
+
+The results are `android/app/build/outputs/apk/armv7/release/app-armv7-release.apk`
+and `android/app/build/outputs/apk/arm64/release/app-arm64-release.apk`, or the
+corresponding paths below `restuntsAndroidBuildRoot` when set. Release APKs are
+non-debuggable. The helper requires all signing settings; missing settings fail
+before building rather than falling back to a debug or unsigned APK. Keep the
+same private release key for updates. For later published releases, increment
+shared `versionCode` and update `versionName` in `android/app/build.gradle`; see
+[Android versioning](https://developer.android.com/studio/publish/versioning).
+No signing keys or passwords are stored in the repository or included in APKs
+or package archives.
 
 ## CI packages
 
@@ -170,21 +188,34 @@ the exact Nuked OPL2 library sources/build settings. Release verifies and
 attests both archives with the other platform packages before publishing.
 Original Stunts data is never downloaded by the Android build or bundled.
 
-Each job tests the folder/ZIP importer, version validation, launcher options and complete-folder synchronization,
-checks the APK signature and 16 KB
-alignment, verifies each target's minimum SDK (21 for both ARMv7 and ARM64)
-and common target SDK, and checks that all native libraries
-match the selected ABI. Package verification also checks required enhancement
-assets/licenses and rejects embedded original game resources. CI builds do
+Each job tests the folder/ZIP importer, version validation, launcher options and
+complete-folder synchronization, checks the APK signature and 16 KB alignment,
+verifies each target's minimum SDK (21 for both ARMv7 and ARM64) and common target
+SDK, and checks that all native libraries match the selected ABI. Package
+verification also checks required enhancement assets/licenses and rejects embedded
+original game resources. CI builds do
 not replace installation, performance, audio, controller, or lifecycle testing
 on a real Galaxy S5, phone, or TV. Both APKs include a classic launcher
 icon for Android 5-7 and a JAR/v1 signature for pre-Android 7 installation;
 newer systems can use their adaptive icons and newer signature schemes.
 
-CI APKs use the Android debug signing key generated on that runner. A later CI
-run may have a different key, so Android can require uninstalling the old APK
-first, which removes private preferences and unexported writes but leaves the selected public folder. Use one persistent private
-release key for builds intended to update an installed copy.
+The manually dispatched Release workflow builds both APKs as non-debuggable
+release variants using the project's persistent release signing key. Configure
+GitHub Actions secrets `ANDROID_KEYSTORE_BASE64` (the base64-encoded keystore),
+`ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`.
+Release forwards only these signing secrets to the shared package workflow.
+PR validation and local builds use debug variants by default and need no release
+secrets. CI verifies release APKs against the supplied signing certificate, checks
+that they are non-debuggable, and requires both v1 and v2 signature verification.
+Keystores and signing credentials are kept outside the runtime package and are
+not uploaded as artifacts.
+
+Android updates require the same signing key. Debug keys from separate CI runs,
+local builds, or an existing debug installation can differ from the release key,
+so Android may require uninstalling the old app before installing another build.
+Uninstalling removes private preferences, cache and unexported pending writes;
+the selected public game folder and its files survive. Choose that folder again
+after reinstalling.
 
 ## Replacing Nuked OPL2
 
@@ -200,7 +231,8 @@ app before installing the replacement. No game executable relinking is needed.
 
 ## Verification
 
-The importer, version validation, launcher options and folder synchronization can be tested without Android:
+The importer, version validation, launcher options and folder synchronization
+can be tested without Android:
 
 ```sh
 javac -d out/android-import-tests \

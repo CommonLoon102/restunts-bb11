@@ -209,10 +209,17 @@ class ReleasePackageTests(unittest.TestCase):
                                      for name in files))
                 instructions = files[PACKAGES.README].decode("utf-8")
                 minimum = "Android 5.0 (API 21)"
-                for detail in (abi, minimum, "landscape", "Import Stunts folder",
-                               "Import Stunts ZIP", "debug certificate", "same signing key",
-                               "uninstalling removes", "share/docs/restunts/android.md"):
+                for detail in (abi, minimum, "landscape", "Choose game folder",
+                               "Import Stunts ZIP", "exact destination folder",
+                               "selected public folder", "private working cache",
+                               "tracks, replays and screenshots", "persistent release signing key",
+                               "PR/local debug APKs use debug keys", "same signing key",
+                               "selected public game folder is preserved",
+                               "unexported pending writes", "share/docs/restunts/android.md"):
                     self.assertIn(detail, instructions)
+                for obsolete in ("This development APK", "Import Stunts folder",
+                                 "removes imported game files and saves"):
+                    self.assertNotIn(obsolete, instructions)
                 if target == "android-armv7":
                     self.assertIn("Samsung Galaxy S5 SM-G900F running Android 5.0 or newer", instructions)
 
@@ -278,6 +285,45 @@ class ReleasePackageTests(unittest.TestCase):
                           "assets/DEFAULT.P3S", "stunts/notice.txt", "assets/private.dat"):
                 with self.subTest(target=target, extra=extra), self.assertRaises(ValueError):
                     PACKAGES.validate_android_apk(target, self.apk_data(target, {extra: FILE_DATA}))
+
+    def test_android_apks_allow_only_named_gradle_version_control_metadata(self):
+        metadata = {"META-INF/version-control-info.textproto":
+                    b"generate_error_reason: NO_SUPPORTED_VCS_FOUND\n"}
+        for target in PACKAGES.ANDROID_TARGETS:
+            with self.subTest(target=target):
+                content = self.apk_data(target, metadata)
+                PACKAGES.validate_android_apk(target, content)
+                self.create(target, {PACKAGES.ANDROID_APK: content})
+            for name in ("META-INF/version-control-info.txt", "META-INF/other.textproto",
+                         "META-INF/version-control-info.textproto.bak",
+                         "assets/version-control-info.textproto"):
+                with self.subTest(target=target, unexpected=name), \
+                        self.assertRaisesRegex(ValueError, "Unexpected APK"):
+                    PACKAGES.validate_android_apk(target, self.apk_data(target, {name: FILE_DATA}))
+
+    def test_android_packages_reject_signing_credentials_but_allow_public_signatures(self):
+        credentials = ("release.jks", "release.keystore", "release.p12", "signing-key.pem",
+                       "keystore.base64", "signing.properties")
+        for target in PACKAGES.ANDROID_TARGETS:
+            with self.subTest(target=target, public_signatures=True):
+                signatures = {"META-INF/MANIFEST.MF": FILE_DATA,
+                              "META-INF/RESTUNTS.SF": FILE_DATA,
+                              "META-INF/RESTUNTS.RSA": FILE_DATA}
+                PACKAGES.validate_android_apk(target, self.apk_data(target, signatures))
+            files = {name: self.runtime_data(target, name) for name in PACKAGES.required_files(target)}
+            modes = {name: PACKAGES.FILE_MODE for name in files}
+            for credential in credentials:
+                for prefix in ("", "assets/", "assets/licenses/", "META-INF/", "res/raw/"):
+                    name = prefix + credential
+                    with self.subTest(target=target, apk_member=name), \
+                            self.assertRaisesRegex(ValueError, "Unexpected APK"):
+                        PACKAGES.validate_android_apk(target, self.apk_data(target, {name: FILE_DATA}))
+                for prefix in ("", "share/licenses/restunts/", "share/restunts/nuked-opl2-lite/"):
+                    name = prefix + credential
+                    with self.subTest(target=target, package_member=name), \
+                            self.assertRaisesRegex(ValueError, "Unexpected package file"):
+                        PACKAGES.validate_contents(target, files | {name: FILE_DATA},
+                                                   modes | {name: PACKAGES.FILE_MODE})
 
     def test_android_apks_reject_duplicate_members_symlinks_and_unsafe_paths(self):
         target = "android-armv7"
