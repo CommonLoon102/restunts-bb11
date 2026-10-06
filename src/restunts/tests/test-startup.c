@@ -26,6 +26,7 @@ static legacy_s16 startup_exit_status;
 static jmp_buf exit_jump;
 #ifdef RESTUNTS_SDL3
 legacy_u8 supersight_enabled;
+legacy_u8 fps_display_enabled;
 static legacy_s32 startup_render_enabled;
 static legacy_s32 startup_render_scale = HIRES_SCALE;
 static legacy_u16 expected_hypervision_preset;
@@ -34,6 +35,13 @@ static legacy_s32 startup_audio_driver_loaded;
 static legacy_s32 startup_ogg_music_enabled;
 static legacy_s32 expected_ogg_music_enabled;
 static legacy_u32 startup_ogg_set_calls;
+static legacy_u8 expected_fps_display_enabled;
+static legacy_u32 startup_fps_reset_calls;
+
+void frame_fps_reset(void)
+{
+	++startup_fps_reset_calls;
+}
 
 void sdl3_music_set_enabled(legacy_s32 enabled)
 {
@@ -160,6 +168,7 @@ void dos_video_set_mode_13h(void)
 	startup_video_calls++;
 #ifdef RESTUNTS_SDL3
 	check_startup_hypervision();
+	assert(fps_display_enabled == expected_fps_display_enabled);
 #endif
 	trace(8);
 }
@@ -375,6 +384,7 @@ legacy_s16 run_intro_looped(void)
 #ifdef RESTUNTS_SDL3
 	check_startup_hypervision();
 	assert(startup_ogg_music_enabled == expected_ogg_music_enabled);
+	assert(fps_display_enabled == expected_fps_display_enabled);
 #endif
 	trace(44);
 	assert(intro_calls < 3);
@@ -440,6 +450,7 @@ legacy_s8 run_menu(void)
 #endif
 #ifdef RESTUNTS_SDL3
 	assert(startup_ogg_music_enabled == expected_ogg_music_enabled);
+	assert(fps_display_enabled == expected_fps_display_enabled);
 #endif
 	legacy_u32 call = menu_calls++;
 	trace(52);
@@ -855,6 +866,102 @@ static void test_startup_ogg_music_options(void)
 		assert(startup_ogg_set_calls == before);
 	}
 }
+
+static void test_startup_fps_display_options(void)
+{
+	static const struct {
+		const legacy_s8 *argument;
+		enum FRAME_FPS_DISPLAY_MODE mode;
+	} cases[] = {{"--fps:on", FRAME_FPS_DISPLAY_ON},
+				 {"--fps:off", FRAME_FPS_DISPLAY_OFF},
+				 {"--FPS:On", FRAME_FPS_DISPLAY_ON},
+				 {"--fPs:OfF", FRAME_FPS_DISPLAY_OFF}};
+	for (legacy_u16 index = 0; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+		legacy_s8 *arguments[] = {(legacy_s8 *)"game",	   (legacy_s8 *)cases[index].argument,
+								  (legacy_s8 *)"/ns",	   (legacy_s8 *)"--hv:low",
+								  (legacy_s8 *)"--ogg:on", (legacy_s8 *)"--nointro"};
+		reset_startup_hypervision();
+		expected_hypervision_preset = FRAME_ADAPTIVE_PRESET_LOW;
+		expected_hypervision_enabled = 1;
+		expected_ogg_music_enabled = 1;
+		expected_fps_display_enabled = cases[index].mode;
+		fps_display_enabled = cases[index].mode == FRAME_FPS_DISPLAY_OFF ? FRAME_FPS_DISPLAY_ON
+																		 : FRAME_FPS_DISPLAY_OFF;
+		expected_initial_intro_calls = index % 2U;
+		menu_calls = intro_calls = game_calls = score_calls = 0;
+		is_audioloaded = 0;
+		track_element_map = menu_track_data;
+		geometry_ticks = STARTUP_TEST_GEOMETRY_TICKS;
+		clear_ticks = STARTUP_TEST_CLEAR_TICKS;
+		partial_ticks = STARTUP_TEST_PARTIAL_TICKS;
+		legacy_s16 count = sizeof(arguments) / sizeof(arguments[0]);
+		if (expected_initial_intro_calls != 0) {
+			--count;
+		}
+		legacy_u32 before = startup_fps_reset_calls;
+		assert(run_main_menu_loop(count, arguments) == 1);
+		assert(startup_fps_reset_calls == before + 1U);
+		assert(startup_options.fps_display_specified);
+		assert(startup_options.fps_display_enabled == cases[index].mode);
+		assert(fps_display_enabled == cases[index].mode);
+		assert(menu_calls == 1 && intro_calls == (legacy_u32)expected_initial_intro_calls + 1U);
+	}
+	expected_initial_intro_calls = -1;
+	expected_ogg_music_enabled = 0;
+	expected_fps_display_enabled = FRAME_FPS_DISPLAY_OFF;
+
+	/* Default startup clears a prior session's display choice and FPS samples. */
+	legacy_s8 *defaults[] = {(legacy_s8 *)"game"};
+	reset_startup_hypervision();
+	fps_display_enabled = FRAME_FPS_DISPLAY_ON;
+	legacy_u32 before = startup_fps_reset_calls;
+	init_main(sizeof(defaults) / sizeof(defaults[0]), defaults);
+	assert(startup_fps_reset_calls == before + 1U);
+	assert(fps_display_enabled == FRAME_FPS_DISPLAY_OFF);
+	assert(startup_options.fps_display_enabled == FRAME_FPS_DISPLAY_OFF);
+	assert(!startup_options.fps_display_specified);
+
+	for (legacy_u16 first = 0; first < sizeof(cases) / sizeof(cases[0]); ++first) {
+		for (legacy_u16 second = 0; second < sizeof(cases) / sizeof(cases[0]); ++second) {
+			legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)cases[first].argument,
+									  (legacy_s8 *)"--hv:low", (legacy_s8 *)cases[second].argument};
+			fps_display_enabled = FRAME_FPS_DISPLAY_ON;
+			before = startup_fps_reset_calls;
+			expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
+			assert(startup_fps_reset_calls == before);
+			assert(fps_display_enabled == FRAME_FPS_DISPLAY_ON);
+		}
+	}
+	static const legacy_s8 *invalid[] = {"--fps:",	  "--fps:auto",	  "--fps:1",
+										 "--fps:onx", "--fps:off:on", "--FPS:unknown"};
+	for (legacy_u16 index = 0; index < sizeof(invalid) / sizeof(invalid[0]); ++index) {
+		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)invalid[index]};
+		fps_display_enabled = FRAME_FPS_DISPLAY_ON;
+		before = startup_fps_reset_calls;
+		expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
+		assert(startup_fps_reset_calls == before);
+		assert(fps_display_enabled == FRAME_FPS_DISPLAY_ON);
+	}
+	/* A later invalid option must leave the display and sample state untouched. */
+	static const legacy_s8 *other_invalid[] = {"--ogg:invalid", "--hv:invalid"};
+	for (legacy_u16 index = 0; index < sizeof(other_invalid) / sizeof(other_invalid[0]); ++index) {
+		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)"--fps:off",
+								  (legacy_s8 *)other_invalid[index]};
+		fps_display_enabled = FRAME_FPS_DISPLAY_ON;
+		before = startup_fps_reset_calls;
+		expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
+		assert(startup_fps_reset_calls == before);
+		assert(fps_display_enabled == FRAME_FPS_DISPLAY_ON);
+	}
+	static const legacy_s8 *ignored[] = {"", "--fps", "fps:on", "--fps=on", "--fpson"};
+	for (legacy_u16 index = 0; index < sizeof(ignored) / sizeof(ignored[0]); ++index) {
+		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)ignored[index]};
+		reset_startup_hypervision();
+		init_main(sizeof(arguments) / sizeof(arguments[0]), arguments);
+		assert(fps_display_enabled == FRAME_FPS_DISPLAY_OFF);
+		assert(!startup_options.fps_display_specified);
+	}
+}
 #endif
 
 static void test_startup_game_version(void)
@@ -924,6 +1031,7 @@ int main(void)
 #ifdef RESTUNTS_SDL3
 	test_startup_hypervision_options();
 	test_startup_ogg_music_options();
+	test_startup_fps_display_options();
 #endif
 	return 0;
 }

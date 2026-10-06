@@ -91,6 +91,7 @@ static void test_help_contents(void)
 		"  --nointro",
 #ifdef RESTUNTS_SDL3
 		"  --ogg:on|off",
+		"  --fps:on|off",
 #endif
 	};
 	static const legacy_char *physics_options[] = {"  --pg:on|off", "  --lc:on|off",
@@ -126,6 +127,9 @@ static void test_help_contents(void)
 #ifdef RESTUNTS_SDL3
 	expect_text("HyperVision starts off.");
 	expect_text("Ogg music starts off.");
+	expect_text("FPS display starts off.");
+	expect_text("F11 toggles it during play.");
+	expect_text("FPS display options are case-insensitive.");
 	expect_text("Shift+F10 switches music sources outside races.");
 	expect_text("Ogg music options are also case-insensitive.");
 #ifdef __DJGPP__
@@ -134,6 +138,7 @@ static void test_help_contents(void)
 #else
 	assert(strstr(output, "--data-dir") == NULL);
 	assert(strstr(output, "--ogg") == NULL);
+	assert(strstr(output, "--fps") == NULL);
 	assert(strstr(output, "hv:") == NULL);
 	assert(strstr(output, "--licenses") == NULL);
 	expect_text("AdLib");
@@ -174,7 +179,8 @@ static void test_normal_and_similar_arguments(void)
 		"--pg:off", "--lc:on",	"--lcb:off", "--owoot",	  "--licenses", "--data-dir",
 		"",			"-H",		"-V",		 "-help",	  "-version",	"/help",
 		"/v",		"/version", "help",		 "version",	  "--helpful",	"--version=1",
-		"-hv",		"-vh",		"--ogg:on",	 "--ogg:off", "--hv:auto"};
+		"-hv",		"-vh",		"--ogg:on",	 "--ogg:off", "--hv:auto",	"--fps:on",
+		"--fps:off"};
 	legacy_s8 *executable_only[] = {(legacy_s8 *)"--help"};
 	assert(run_arguments(COMMAND_LINE_TEST_ARGUMENT_COUNT(executable_only), executable_only) ==
 		   COMMAND_LINE_CONTINUE);

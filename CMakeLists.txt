@@ -33,19 +33,33 @@ if(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
 endif()
 
 option(RESTUNTS_SYSTEM_SDL "Use an installed SDL3 instead of the pinned source" OFF)
-if(EMSCRIPTEN)
+if(ANDROID)
+    # Keep installable debug APKs fast enough for older ARM phones, with debug symbols.
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O2")
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    # Gradle invokes Ninja for each ABI; bound native memory use on modest hosts.
+    set(RESTUNTS_ANDROID_BUILD_JOBS 1 CACHE STRING "Concurrent Android native compilations")
+    set_property(GLOBAL PROPERTY JOB_POOLS
+        restunts_android_compile=${RESTUNTS_ANDROID_BUILD_JOBS} restunts_android_link=1)
+    set(CMAKE_JOB_POOL_COMPILE restunts_android_compile)
+    set(CMAKE_JOB_POOL_LINK restunts_android_link)
+endif()
+
+if(EMSCRIPTEN OR ANDROID)
     set(restunts_tests_default OFF)
     # file:// cannot supply the isolation headers required by browser threads.
-    set(SDL_PTHREADS OFF CACHE BOOL "The standalone browser build uses one thread" FORCE)
+    if(EMSCRIPTEN)
+        set(SDL_PTHREADS OFF CACHE BOOL "The standalone browser build uses one thread" FORCE)
+    endif()
     if(RESTUNTS_SYSTEM_SDL)
-        message(FATAL_ERROR "Browser builds require the bundled SDL3 for the relink package")
+        message(FATAL_ERROR "Browser and Android builds require the bundled SDL3")
     endif()
 else()
     set(restunts_tests_default ON)
 endif()
 option(RESTUNTS_BUILD_TESTS "Build native platform regressions" ${restunts_tests_default})
-if(EMSCRIPTEN AND RESTUNTS_BUILD_TESTS)
-    message(FATAL_ERROR "Native regression executables require a separate non-Emscripten build")
+if((EMSCRIPTEN OR ANDROID) AND RESTUNTS_BUILD_TESTS)
+    message(FATAL_ERROR "Native regression executables require a separate host build")
 endif()
 if(CMAKE_SYSTEM_NAME STREQUAL "DOS")
     set(restunts_sse2_default OFF)
@@ -101,8 +115,13 @@ if(RESTUNTS_SYSTEM_SDL)
     find_package(SDL3 3.4 REQUIRED CONFIG)
 else()
     include(FetchContent)
-    set(SDL_SHARED OFF CACHE BOOL "Bundle SDL statically")
-    set(SDL_STATIC ON CACHE BOOL "Bundle SDL statically")
+    if(ANDROID)
+        set(SDL_SHARED ON CACHE BOOL "Android JNI loads shared SDL" FORCE)
+        set(SDL_STATIC OFF CACHE BOOL "Android JNI loads shared SDL" FORCE)
+    else()
+        set(SDL_SHARED OFF CACHE BOOL "Bundle SDL statically")
+        set(SDL_STATIC ON CACHE BOOL "Bundle SDL statically")
+    endif()
     set(SDL_TEST_LIBRARY OFF CACHE BOOL "Disable SDL tests")
     set(SDL_TESTS OFF CACHE BOOL "Disable SDL tests")
     set(SDL_EXAMPLES OFF CACHE BOOL "Disable SDL examples")
@@ -157,7 +176,7 @@ list(TRANSFORM common_sources PREPEND "${core}/")
 list(TRANSFORM game_sources PREPEND "${core}/")
 set(platform_common ${platform}/memory.c ${platform}/file.c ${platform}/runtime.c)
 set(platform_game ${platform}/asset_path.c ${platform}/video.c ${platform}/input.c ${platform}/timer.c
-    ${platform}/audio.c ${platform}/music.c)
+    ${platform}/audio.c ${platform}/music.c ${platform}/touch.c)
 
 execute_process(COMMAND git -c safe.directory=${CMAKE_SOURCE_DIR} rev-parse HEAD
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" OUTPUT_VARIABLE RESTUNTS_GIT_HASH
@@ -214,6 +233,10 @@ if(EMSCRIPTEN)
     target_compile_definitions(restunts_entry PRIVATE RESTUNTS_FULL)
     target_link_libraries(restunts_entry PRIVATE restunts_game)
     add_executable(restunts $<TARGET_OBJECTS:restunts_entry>)
+elseif(ANDROID)
+    add_library(restunts SHARED ${platform}/main.c)
+    target_compile_definitions(restunts PRIVATE RESTUNTS_FULL)
+    set_target_properties(restunts PROPERTIES OUTPUT_NAME main)
 else()
     add_executable(restunts ${platform}/main.c)
     target_compile_definitions(restunts PRIVATE RESTUNTS_FULL)
@@ -231,6 +254,51 @@ foreach(component Runtime Tests)
     install(FILES THIRD-PARTY-NOTICES.txt
         DESTINATION . COMPONENT ${component} ${exclude_from_default})
 endforeach()
+
+if(TARGET nuked_opl2 AND NOT EMSCRIPTEN)
+    configure_file(cmake/nuked-build-info.txt.in "${CMAKE_CURRENT_BINARY_DIR}/nuked-build-info.txt" @ONLY)
+    foreach(component Runtime Tests)
+        set(exclude_from_default)
+        if(component STREQUAL "Tests")
+            set(exclude_from_default EXCLUDE_FROM_ALL)
+        endif()
+        install(FILES third_party/nuked-opl2-lite/LICENSE
+            DESTINATION share/licenses/restunts RENAME Nuked-OPL2-LICENSE
+            COMPONENT ${component} ${exclude_from_default})
+        install(FILES third_party/nuked-opl2-lite/opl2.c third_party/nuked-opl2-lite/opl2.h
+            third_party/nuked-opl2-lite/CMakeLists.txt third_party/nuked-opl2-lite/LICENSE
+            third_party/nuked-opl2-lite/README.md "${CMAKE_CURRENT_BINARY_DIR}/nuked-build-info.txt"
+            DESTINATION share/restunts/nuked-opl2-lite COMPONENT ${component} ${exclude_from_default})
+        # Preserve the parent build controls as source context, alongside the
+        # standalone library build that recipients can use without the game.
+        install(FILES CMakeLists.txt
+            DESTINATION share/restunts/nuked-opl2-lite/build-context
+            COMPONENT ${component} ${exclude_from_default})
+        install(FILES cmake/nuked-build-info.txt.in
+            DESTINATION share/restunts/nuked-opl2-lite/build-context/cmake
+            COMPONENT ${component} ${exclude_from_default})
+        install(DIRECTORY cmake/toolchains/
+            DESTINATION share/restunts/nuked-opl2-lite/build-context/cmake/toolchains
+            COMPONENT ${component} ${exclude_from_default} FILES_MATCHING PATTERN "*.cmake")
+    endforeach()
+endif()
+if(NOT RESTUNTS_SYSTEM_SDL AND NOT EMSCRIPTEN)
+    foreach(component Runtime Tests)
+        set(exclude_from_default)
+        if(component STREQUAL "Tests")
+            set(exclude_from_default EXCLUDE_FROM_ALL)
+        endif()
+        install(FILES "${SDL3_SOURCE_DIR}/LICENSE.txt"
+            DESTINATION share/licenses/restunts RENAME SDL-LICENSE.txt
+            COMPONENT ${component} ${exclude_from_default})
+    endforeach()
+endif()
+
+if(ANDROID)
+    # Gradle packages native libraries and app assets; install source and licenses only.
+    install(FILES docs/android.md DESTINATION share/docs/restunts COMPONENT Runtime)
+    return()
+endif()
 
 if(EMSCRIPTEN)
     include(cmake/wasm.cmake)
@@ -291,42 +359,6 @@ if(TARGET nuked_opl2)
     install(TARGETS nuked_opl2
         RUNTIME DESTINATION bin COMPONENT Runtime
         LIBRARY DESTINATION lib COMPONENT Runtime)
-    configure_file(cmake/nuked-build-info.txt.in "${CMAKE_CURRENT_BINARY_DIR}/nuked-build-info.txt" @ONLY)
-    foreach(component Runtime Tests)
-        set(exclude_from_default)
-        if(component STREQUAL "Tests")
-            set(exclude_from_default EXCLUDE_FROM_ALL)
-        endif()
-        install(FILES third_party/nuked-opl2-lite/LICENSE
-            DESTINATION share/licenses/restunts RENAME Nuked-OPL2-LICENSE
-            COMPONENT ${component} ${exclude_from_default})
-        install(FILES third_party/nuked-opl2-lite/opl2.c third_party/nuked-opl2-lite/opl2.h
-            third_party/nuked-opl2-lite/CMakeLists.txt third_party/nuked-opl2-lite/LICENSE
-            third_party/nuked-opl2-lite/README.md "${CMAKE_CURRENT_BINARY_DIR}/nuked-build-info.txt"
-            DESTINATION share/restunts/nuked-opl2-lite COMPONENT ${component} ${exclude_from_default})
-        # Preserve the parent build controls as source context, alongside the
-        # standalone library build that recipients can use without the game.
-        install(FILES CMakeLists.txt
-            DESTINATION share/restunts/nuked-opl2-lite/build-context
-            COMPONENT ${component} ${exclude_from_default})
-        install(FILES cmake/nuked-build-info.txt.in
-            DESTINATION share/restunts/nuked-opl2-lite/build-context/cmake
-            COMPONENT ${component} ${exclude_from_default})
-        install(DIRECTORY cmake/toolchains/
-            DESTINATION share/restunts/nuked-opl2-lite/build-context/cmake/toolchains
-            COMPONENT ${component} ${exclude_from_default} FILES_MATCHING PATTERN "*.cmake")
-    endforeach()
-endif()
-if(NOT RESTUNTS_SYSTEM_SDL)
-    foreach(component Runtime Tests)
-        set(exclude_from_default)
-        if(component STREQUAL "Tests")
-            set(exclude_from_default EXCLUDE_FROM_ALL)
-        endif()
-        install(FILES "${SDL3_SOURCE_DIR}/LICENSE.txt"
-            DESTINATION share/licenses/restunts RENAME SDL-LICENSE.txt
-            COMPONENT ${component} ${exclude_from_default})
-    endforeach()
 endif()
 
 if(RESTUNTS_BUILD_TESTS)
@@ -439,8 +471,13 @@ if(RESTUNTS_BUILD_TESTS AND NOT CMAKE_SYSTEM_NAME STREQUAL "DOS")
     target_link_libraries(test-render-workers PRIVATE restunts_options)
     target_compile_options(test-render-workers PRIVATE -UNDEBUG)
     add_test(NAME render-workers COMMAND test-render-workers)
+    add_executable(test-sdl3-touch src/restunts/tests/test-sdl3-touch.c ${platform}/touch.c)
+    target_compile_definitions(test-sdl3-touch PRIVATE RESTUNTS_FULL)
+    target_link_libraries(test-sdl3-touch PRIVATE restunts_options)
+    target_compile_options(test-sdl3-touch PRIVATE -UNDEBUG)
+    add_test(NAME sdl3-touch COMMAND test-sdl3-touch)
     add_executable(test-sdl3-input src/restunts/tests/test-sdl3-input.c
-        ${platform}/input.c ${platform}/video.c ${platform}/timer.c ${core}/frame_adaptive.c)
+        ${platform}/input.c ${platform}/video.c ${platform}/timer.c ${platform}/touch.c ${core}/frame_adaptive.c)
     target_link_libraries(test-sdl3-input PRIVATE restunts_options)
     target_compile_options(test-sdl3-input PRIVATE -UNDEBUG)
     add_test(NAME sdl3-input COMMAND test-sdl3-input)

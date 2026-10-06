@@ -380,8 +380,10 @@ status display. SDL3 builds additionally support Shift+F12 in these locations.
 The main menu, opponent biographies, and track-selection menu hide F11 diagnostics;
 the F11 setting is retained when returning to a screen that displays them.
 
-HyperVision and the FPS display start off by default. Their selections persist
-until changed or the game exits.
+HyperVision and the FPS display start off by default. Use `--fps:on` to show
+FPS and render time from startup in SDL3 builds, or `--fps:off` to select the
+default explicitly. Like `--ogg:on|off`, the FPS option is case-insensitive and
+must appear only once. Their selections persist until changed or the game exits.
 The renderer and display shortcuts work in all driving and replay cameras,
 including opponent and ghost views and paused replays. Holding a shortcut key
 changes its selection only once.
@@ -514,6 +516,14 @@ For example, `0x040F` selects palette index 15 for the speedometer and 4 for
 the tachometer. The stock value `0x0010` keeps both needles white, and
 `0x0000` makes both black. Digital speedometer digits are unaffected.
 
+
+The [Android port](docs/android.md) runs in landscape on Android 5.0 or newer
+for both 32-bit ARM and ARM64. Import your original game folder or ZIP on first
+launch; game data is not bundled in the APK. Transparent touch circles support
+driving, menu navigation, and replay controls. Manual shift buttons appear only
+while racing with manual gears; replay swipes skip ten seconds. The launcher
+offers **New MIDI**, **Show FPS**, and all six **HyperVision** presets.
+Upper-right **C**/**T** circles send the camera/follow keyboard shortcuts.
 
 ## How to build
 
@@ -1439,14 +1449,15 @@ refactors and audit results.
 
 ## CI packages and releases
 
-**PR validation** and **Release** build all 20 distribution packages: 16-bit and
+**PR validation** and **Release** build all 22 distribution packages: 16-bit and
 32-bit DOS; Linux ARMv7, ARM64, x86 with and without SSE2, and x64; Windows ARM64,
 x86 with and without SSE2, and x64; FreeBSD, OpenBSD, and NetBSD x64; NetBSD x86
-with and without SSE2; Haiku x64 and x86; Universal macOS; and the offline browser.
+with and without SSE2; Haiku x64 and x86; Universal macOS; the offline browser;
+and Android ARMv7 and ARM64 (both Android 5.0+).
 The reusable **Build release packages** workflow is used by **PR validation** and **Release**.
 
 Packages contain the runtime dependencies and enhanced artwork, but no original
-game data. Desktop and browser packages include the Nuked sources and license;
+game data. Desktop, browser and Android packages include the Nuked sources and license;
 DOS uses hardware OPL and omits Nuked. DOS32 also includes CWSDPMI.
 
 A release publishes the exact archives downloaded from its build artifacts,

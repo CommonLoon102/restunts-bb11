@@ -43,6 +43,7 @@ static const legacy_s8 command_line_help[] = COMMAND_LINE_NEWLINE
 #ifdef RESTUNTS_SDL3
 	"  --ogg:on|off     Start with Ogg replacements enabled/disabled; supply "
 	"once." COMMAND_LINE_NEWLINE
+	"  --fps:on|off     Start with FPS display enabled/disabled; supply once." COMMAND_LINE_NEWLINE
 #endif
 	COMMAND_LINE_NEWLINE
 	"  --pg:on|off      Enable/disable the original power gear bug." COMMAND_LINE_NEWLINE
@@ -74,12 +75,14 @@ static const legacy_s8 command_line_help[] = COMMAND_LINE_NEWLINE
 #ifdef RESTUNTS_SDL3
 	"HyperVision starts off. F12 and Shift+F12 change it during play." COMMAND_LINE_NEWLINE
 	"Ogg music starts off. Shift+F10 switches music sources outside races." COMMAND_LINE_NEWLINE
+	"FPS display starts off. F11 toggles it during play." COMMAND_LINE_NEWLINE
 #else
 	"AdLib is the default driver. F12 toggles SuperSight; no presets." COMMAND_LINE_NEWLINE
 #endif
 	"Physics switches are case-insensitive; the last on/off value wins." COMMAND_LINE_NEWLINE
 #ifdef RESTUNTS_SDL3
 	"HyperVision presets and Ogg music options are also case-insensitive." COMMAND_LINE_NEWLINE
+	"FPS display options are case-insensitive." COMMAND_LINE_NEWLINE
 #endif
 	"Other switch names are case-sensitive; keep legacy names lowercase." COMMAND_LINE_NEWLINE
 	"For example, /sAD uses lowercase s and a two-letter audio driver ID." COMMAND_LINE_NEWLINE

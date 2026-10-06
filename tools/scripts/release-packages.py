@@ -23,6 +23,8 @@ README = "README-PACKAGE.txt"
 DOS_EXECUTABLES = ("restunts", "restunto", "repldump", "repldumo", "pixldump", "pixldumo")
 NATIVE_EXECUTABLES = ("restunts", "repldump", "pixldump")
 TARGETS = {
+    "android-armv7": ".zip",
+    "android-arm64": ".zip",
     "dos16": ".zip",
     "dos32": ".zip",
     "freebsd-x64": ".tar.gz",
@@ -53,6 +55,24 @@ BSD_TARGETS = {
 }
 HAIKU_TARGETS = {"haiku-x64": "Haiku x86-64", "haiku-x86": "Haiku 32-bit x86 with SSE2"}
 ELF_TARGETS = {**BSD_TARGETS, **HAIKU_TARGETS}
+ANDROID_TARGETS = {"android-armv7": "armeabi-v7a", "android-arm64": "arm64-v8a"}
+ANDROID_TOOLCHAIN_PROPERTIES = ROOT / "android/toolchain.properties"
+ANDROID_MINIMUM_KEYS = {"android-armv7": "ANDROID_ARMV7_MIN_SDK", "android-arm64": "ANDROID_ARM64_MIN_SDK"}
+ANDROID_VERSIONS = {21: "5.0", 28: "9"}
+ANDROID_ADAPTIVE_ICON_API = 26
+ANDROID_FALLBACK_ICON = "res/mipmap-anydpi-v21/ic_launcher.xml"
+ANDROID_APK = "bin/restunts.apk"
+ANDROID_LIBRARIES = ("libSDL3.so", "libmain.so", "libnuked-opl2.so")
+ANDROID_LICENSES = ("THIRD-PARTY-NOTICES.txt", "SDL-LICENSE.txt", "Nuked-OPL2-LICENSE.txt",
+                    "stb-LICENSE.txt", "libvpx-LICENSE.txt", "libvpx-PATENTS.txt", "nestegg-LICENSE.txt")
+ANDROID_DEX_PATTERN = re.compile(r"classes(?:[2-9]|[1-9][0-9]+)?\.dex")
+ANDROID_SIGNATURE_PATTERN = re.compile(r"META-INF/[A-Za-z0-9_-]+\.(?:SF|RSA|DSA|EC)")
+ANDROID_ASSET_METADATA = {"assets/menus/manifest.json", "assets/opponents/game/manifest.json",
+                          "assets/skyboxes/manifest.json", "assets/music/README.md"}
+ANDROID_RESOURCES = {"res/drawable/ic_launcher_foreground.xml", "res/drawable/tv_banner.xml",
+                     "res/mipmap-anydpi-v26/ic_launcher.xml"}
+ANDROID_METADATA = {"AndroidManifest.xml", "resources.arsc", "META-INF/MANIFEST.MF",
+                    "META-INF/com/android/build/gradle/app-metadata.properties"}
 ELF_MAGIC = b"\x7fELF"
 ELF_CLASS_32 = 1
 ELF_CLASS_64 = 2
@@ -61,11 +81,17 @@ ELF_CLASS_OFFSET = 4
 ELF_DATA_OFFSET = 5
 ELF_MACHINE_X86 = 3
 ELF_MACHINE_X64 = 62
+ELF_MACHINE_ARM = 40
+ELF_MACHINE_AARCH64 = 183
 ELF_MACHINE_OFFSET = 18
+ELF_TYPE_OFFSET = 16
+ELF_TYPE_SHARED = 3
 ELF_HEADER_SIZES = {ELF_CLASS_32: 52, ELF_CLASS_64: 64}
 ELF_ARCHITECTURES = {
     "x86": (ELF_CLASS_32, ELF_MACHINE_X86),
     "x64": (ELF_CLASS_64, ELF_MACHINE_X64),
+    "armv7": (ELF_CLASS_32, ELF_MACHINE_ARM),
+    "arm64": (ELF_CLASS_64, ELF_MACHINE_AARCH64),
 }
 ELF_FILES = {f"bin/{name}" for name in NATIVE_EXECUTABLES} | {"lib/libnuked-opl2.so"}
 ORIGINAL_SUFFIXES = {
@@ -114,7 +140,7 @@ def checked_path(name):
 
 
 def optional_music_files(target):
-    if target == "dos16":
+    if target == "dos16" or target in ANDROID_TARGETS:
         return set()
     if target == "browser":
         prefix = "share/restunts/wasm-relink/data/assets"
@@ -126,11 +152,106 @@ def optional_music_files(target):
             if (ROOT / "assets/music" / f"{track}.ogg").is_file()}
 
 
+def nuked_source_files():
+    prefix = "share/restunts/nuked-opl2-lite"
+    required = {f"{prefix}/{name}" for name in NUKED_FILES}
+    required |= {f"{prefix}/nuked-build-info.txt", f"{prefix}/build-context/CMakeLists.txt",
+                 f"{prefix}/build-context/cmake/nuked-build-info.txt.in"}
+    required |= {f"{prefix}/build-context/" + path.relative_to(ROOT).as_posix()
+                 for path in (ROOT / "cmake/toolchains").glob("*.cmake")}
+    return required
+
+
+def android_minimum_sdk(target):
+    key = ANDROID_MINIMUM_KEYS[target]
+    settings = ANDROID_TOOLCHAIN_PROPERTIES.read_text(encoding="utf-8")
+    match = re.search(r"^" + re.escape(key) + r"=(\d+)\s*$", settings, re.MULTILINE)
+    require(match is not None, f"Missing or invalid Android toolchain property: {key}")
+    minimum = int(match.group(1))
+    require(minimum in ANDROID_VERSIONS, f"Unsupported Android package minimum API: {minimum}")
+    return minimum
+
+
+def android_required_resources(target):
+    required = ANDROID_RESOURCES.copy()
+    if android_minimum_sdk(target) < ANDROID_ADAPTIVE_ICON_API:
+        required.add(ANDROID_FALLBACK_ICON)
+    return required
+
+
+def android_required_assets():
+    required = {f"assets/licenses/{name}" for name in ANDROID_LICENSES}
+    required |= {f"assets/skyboxes/{theme}-{image}.png"
+                 for theme in SKYBOX_THEMES for image in SKYBOX_IMAGES}
+    required |= {f"assets/menus/{background}.png" for background in MENU_BACKGROUNDS}
+    required |= {f"assets/opponents/game/opp{opponent}.png"
+                 for opponent in range(1, OPPONENT_COUNT + 1)}
+    required |= {f"assets/music/{track}.ogg" for track in MUSIC_TRACKS
+                 if (ROOT / "assets/music" / f"{track}.ogg").is_file()}
+    return required
+
+
+def validate_elf(target, name, content, elf_class, machine):
+    require(len(content) >= ELF_HEADER_SIZES[elf_class] and content.startswith(ELF_MAGIC),
+            f"Missing or truncated ELF header: {name}")
+    require(content[ELF_CLASS_OFFSET] == elf_class and
+            content[ELF_DATA_OFFSET] == ELF_DATA_LSB and
+            struct.unpack_from("<H", content, ELF_MACHINE_OFFSET)[0] == machine,
+            f"Wrong ELF architecture for {target}: {name}")
+
+
+def validate_android_apk(target, content):
+    abi = ANDROID_TARGETS[target]
+    native = {f"lib/{abi}/{name}" for name in ANDROID_LIBRARIES}
+    required = {"AndroidManifest.xml", "classes.dex", "resources.arsc"} | native
+    required |= android_required_resources(target)
+    required |= android_required_assets()
+    allowed_assets = android_required_assets() | ANDROID_ASSET_METADATA
+    allowed_assets |= {f"assets/skyboxes/{theme}.png" for theme in SKYBOX_THEMES}
+    files = {}
+    names = set()
+    with zipfile.ZipFile(io.BytesIO(content)) as apk:
+        for entry in apk.infolist():
+            name = entry.filename
+            checked_path(name[:-1] if entry.is_dir() else name)
+            require(name not in names, f"Duplicate APK member: {name}")
+            names.add(name)
+            mode = entry.external_attr >> 16
+            require(not stat.S_IFMT(mode) or stat.S_ISREG(mode) or
+                    (entry.is_dir() and stat.S_ISDIR(mode)), f"Unsupported APK member: {name}")
+            require(not entry.flag_bits & 1, f"Encrypted APK member: {name}")
+            if entry.is_dir():
+                continue
+            if name.startswith("lib/"):
+                require(name in native, f"Unexpected Android ABI or native library for {target}: {name}")
+            elif name.startswith("assets/"):
+                require(name in allowed_assets, f"Unexpected APK asset: {name}")
+            else:
+                require(name in ANDROID_METADATA or name in ANDROID_RESOURCES or
+                        name == ANDROID_FALLBACK_ICON or
+                        ANDROID_DEX_PATTERN.fullmatch(name) or
+                        ANDROID_SIGNATURE_PATTERN.fullmatch(name), f"Unexpected APK member: {name}")
+            files[name] = apk.read(entry)
+            require(files[name], f"Empty APK member: {name}")
+    missing = required - files.keys()
+    require(not missing, f"{target}: missing APK members: {', '.join(sorted(missing))}")
+    elf_class, machine = ELF_ARCHITECTURES[target.split("-")[1]]
+    for name in native:
+        validate_elf(target, name, files[name], elf_class, machine)
+        require(struct.unpack_from("<H", files[name], ELF_TYPE_OFFSET)[0] == ELF_TYPE_SHARED,
+                f"Expected an Android ELF shared library: {name}")
+
+
 def required_files(target):
     required = {README} | optional_music_files(target)
     if target != "dos16":
         required.add("THIRD-PARTY-NOTICES.txt")
         required |= {f"share/licenses/restunts/{name}" for name in SDL_DECODER_LICENSES}
+    if target in ANDROID_TARGETS:
+        required |= {ANDROID_APK, "share/docs/restunts/android.md",
+                     "share/licenses/restunts/SDL-LICENSE.txt",
+                     "share/licenses/restunts/Nuked-OPL2-LICENSE"}
+        return required | nuked_source_files()
     if target == "browser":
         required |= {"restunts.html", "wasm.md", "THIRD-PARTY-NOTICES.txt",
                      "share/licenses/restunts/SDL-LICENSE.txt",
@@ -166,12 +287,7 @@ def required_files(target):
     if target == "dos32":
         return required | {"bin/CWSDPMI.EXE", "share/licenses/restunts/CWSDPMI.DOC"}
     required |= {"THIRD-PARTY-NOTICES.txt", "share/licenses/restunts/Nuked-OPL2-LICENSE"}
-    required |= {f"share/restunts/nuked-opl2-lite/{name}" for name in NUKED_FILES}
-    required |= {"share/restunts/nuked-opl2-lite/nuked-build-info.txt",
-                 "share/restunts/nuked-opl2-lite/build-context/CMakeLists.txt",
-                 "share/restunts/nuked-opl2-lite/build-context/cmake/nuked-build-info.txt.in"}
-    required |= {"share/restunts/nuked-opl2-lite/build-context/" + path.relative_to(ROOT).as_posix()
-                 for path in (ROOT / "cmake/toolchains").glob("*.cmake")}
+    required |= nuked_source_files()
     if target.startswith("windows"):
         required.add("bin/nuked-opl2.dll")
     elif target == "macos-universal":
@@ -206,20 +322,33 @@ def validate_contents(target, files, modes):
     if target in ELF_TARGETS:
         elf_class, machine = ELF_ARCHITECTURES[target.split("-")[1]]
         for name in ELF_FILES:
-            content = files[name]
-            require(len(content) >= ELF_HEADER_SIZES[elf_class] and content.startswith(ELF_MAGIC),
-                    f"Missing or truncated ELF header: {name}")
-            require(content[ELF_CLASS_OFFSET] == elf_class and
-                    content[ELF_DATA_OFFSET] == ELF_DATA_LSB and
-                    struct.unpack_from("<H", content, ELF_MACHINE_OFFSET)[0] == machine,
-                    f"Wrong ELF architecture for {target}: {name}")
+            validate_elf(target, name, files[name], elf_class, machine)
+    if target in ANDROID_TARGETS:
+        validate_android_apk(target, files[ANDROID_APK])
 
 
 def readme(target, commit):
     lines = [f"Restunts package: {target}", f"Source commit: {commit}", "",
              "Supply your own original Broderbund Stunts 1.1 game data (12 Feb. 1991).",
              "Original game content is not included. Keep this package's files together.", ""]
-    if target == "browser":
+    if target in ANDROID_TARGETS:
+        minimum = android_minimum_sdk(target)
+        version = ANDROID_VERSIONS[minimum]
+        lines += [f"Requires Android {version} (API {minimum}) or newer; runs in landscape only.",
+                  f"This APK contains only {ANDROID_TARGETS[target]} native libraries.",
+                  "Install bin/restunts.apk, then use Import Stunts folder or Import Stunts ZIP.",
+                  "Your original game files are copied into writable local app storage.",
+                  "Enhanced artwork/music and dependency notices are included in the APK.",
+                  "This development APK is signed with a debug certificate.",
+                  "Android updates require the same signing key. Different CI builds may use",
+                  "different debug keys; uninstalling removes imported game files and saves.",
+                  "See share/docs/restunts/android.md for import, controls and rebuild/signing",
+                  "details. Nuked source and build context are in share/restunts/nuked-opl2-lite."]
+        if target == "android-armv7":
+            lines += [f"Suitable for Samsung Galaxy S5 SM-G900F running Android {version} or newer."]
+        else:
+            lines += ["Requires a 64-bit ARM Android operating system."]
+    elif target == "browser":
         lines += ["Open restunts.html in your browser and choose your game-data folder.",
                   "The HTML runs offline by itself. Keep the licenses and Nuked source/relink",
                   "kit with redistributed packages; see wasm.md for instructions."]

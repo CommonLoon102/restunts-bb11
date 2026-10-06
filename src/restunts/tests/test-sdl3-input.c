@@ -8,8 +8,10 @@
 #include <unistd.h>
 #include "../platform/sdl3/sdl3.h"
 #include "../platform/sdl3/music.h"
+#include "../platform/sdl3/touch.h"
 #include "../c/platform.h"
 #include "../c/keyboard.h"
+#include "../c/game_input.h"
 #include "../c/hires.h"
 #include "../c/frame_adaptive.h"
 #include "../c/video_frame.h"
@@ -563,6 +565,138 @@ static void test_video_and_mouse(void)
 	assert(buttons == 1);
 	dos_mouse_get_state(&buttons, &mx, &my);
 	assert(buttons == 0);
+	sdl3_input_touch_mouse(window_x, window_y, 1);
+	sdl3_input_touch_mouse(window_x, window_y, 0);
+	dos_mouse_get_state(&buttons, &mx, &my);
+	assert(buttons == 1 && mx == 160 && my == 100);
+	dos_mouse_get_state(&buttons, &mx, &my);
+	assert(buttons == 0);
+	/* The core translates the mouse edge once; no duplicate keyboard action. */
+	assert(dos_kb_get_char() == 0);
+}
+
+#define TEST_TOUCH_DEVICE 1
+#define TEST_TOUCH_REWIND_SCANCODE 16
+
+enum TEST_TOUCH_FINGER {
+	TEST_TOUCH_REWIND_FINGER = 1,
+	TEST_TOUCH_STEERING_FINGER,
+	TEST_TOUCH_THROTTLE_FINGER,
+	TEST_TOUCH_SHIFT_FINGER,
+	TEST_TOUCH_SHORTCUT_FINGER
+};
+
+static void send_touch_control(SDL_EventType type, SDL_FingerID finger, enum TOUCH_CONTROL control)
+{
+	SDL_Window *window = sdl3_video_window();
+	SDL_Rect area;
+	assert(window != NULL && SDL_GetWindowSafeArea(window, &area));
+	legacy_int width, height;
+	assert(SDL_GetWindowSize(window, &width, &height));
+	struct TOUCH_CIRCLE circle = sdl3_touch_circle(control, &area);
+	SDL_Event event;
+	SDL_zero(event);
+	event.type = type;
+	event.tfinger.windowID = SDL_GetWindowID(window);
+	event.tfinger.touchID = TEST_TOUCH_DEVICE;
+	event.tfinger.fingerID = finger;
+	event.tfinger.x = circle.x / width;
+	event.tfinger.y = circle.y / height;
+	assert(SDL_PushEvent(&event));
+}
+
+static void test_touch_shortcut_keys(void)
+{
+	static const struct {
+		enum TOUCH_CONTROL control;
+		SDL_Scancode scancode;
+		legacy_u16 key;
+	} shortcuts[] = {{TOUCH_CAMERA, SDL_SCANCODE_C, 'c'}, {TOUCH_FOLLOW, SDL_SCANCODE_T, 't'}};
+	sdl3_platform_pump();
+	kb_init_interrupt();
+	sdl3_touch_enable(true);
+	sdl3_touch_configure(true, true, false, false);
+	for (legacy_u32 index = 0; index < SDL_arraysize(shortcuts); index++) {
+		/* Touch must deliver the same character as a physical, unmodified key press. */
+		send_key(shortcuts[index].scancode, SDL_KMOD_NONE, true, false);
+		assert(kb_read_char() == shortcuts[index].key);
+		send_key(shortcuts[index].scancode, SDL_KMOD_NONE, false, false);
+		assert(kb_read_char() == 0);
+		send_touch_control(SDL_EVENT_FINGER_DOWN, TEST_TOUCH_SHORTCUT_FINGER,
+						   shortcuts[index].control);
+		assert(kb_read_char() == shortcuts[index].key);
+		send_touch_control(SDL_EVENT_FINGER_MOTION, TEST_TOUCH_SHORTCUT_FINGER,
+						   shortcuts[index].control);
+		send_touch_control(SDL_EVENT_FINGER_DOWN, TEST_TOUCH_SHORTCUT_FINGER,
+						   shortcuts[index].control);
+		assert(kb_read_char() == 0);
+		send_touch_control(SDL_EVENT_FINGER_UP, TEST_TOUCH_SHORTCUT_FINGER,
+						   shortcuts[index].control);
+		assert(kb_read_char() == 0);
+		send_touch_control(SDL_EVENT_FINGER_DOWN, TEST_TOUCH_SHORTCUT_FINGER,
+						   shortcuts[index].control);
+		send_touch_control(SDL_EVENT_FINGER_UP, TEST_TOUCH_SHORTCUT_FINGER,
+						   shortcuts[index].control);
+		assert(kb_read_char() == shortcuts[index].key && kb_read_char() == 0);
+	}
+	sdl3_touch_enable(false);
+}
+
+static void send_touch_holds(SDL_EventType type)
+{
+	send_touch_control(type, TEST_TOUCH_REWIND_FINGER, TOUCH_REWIND);
+	send_touch_control(type, TEST_TOUCH_STEERING_FINGER, TOUCH_LEFT);
+	send_touch_control(type, TEST_TOUCH_THROTTLE_FINGER, TOUCH_ACCELERATE);
+}
+
+static void assert_touch_holds(legacy_u8 held)
+{
+	assert(kb_get_key_state(TEST_TOUCH_REWIND_SCANCODE) == held);
+	assert(kb_get_key_state((legacy_u16)KEY_LEFT >> LEGACY_BYTE_BITS) == held);
+	assert(kb_get_key_state((legacy_u16)KEY_UP >> LEGACY_BYTE_BITS) == held);
+}
+
+static void send_touch_shift(void)
+{
+	send_touch_control(SDL_EVENT_FINGER_DOWN, TEST_TOUCH_SHIFT_FINGER, TOUCH_SHIFT_UP);
+	send_touch_control(SDL_EVENT_FINGER_UP, TEST_TOUCH_SHIFT_FINGER, TOUCH_SHIFT_UP);
+}
+
+static void test_touch_focus_and_background(void)
+{
+	static const SDL_EventType reset_events[] = {SDL_EVENT_WINDOW_FOCUS_LOST,
+												 SDL_EVENT_WILL_ENTER_BACKGROUND};
+	sdl3_platform_pump();
+	kb_init_interrupt();
+	sdl3_touch_enable(true);
+	sdl3_touch_configure(true, true, true, false);
+	for (legacy_u32 index = 0; index < SDL_arraysize(reset_events); index++) {
+		send_touch_holds(SDL_EVENT_FINGER_DOWN);
+		send_touch_shift();
+		assert_touch_holds(true);
+		assert(sdl3_touch_take_shift_flags() == INPUT_SHIFT_UP_FLAG);
+		/* Leave a second shift pending while all three control fingers stay held. */
+		send_touch_shift();
+		sdl3_platform_pump();
+		assert(kb_checking() != 0);
+		SDL_Event event;
+		SDL_zero(event);
+		event.type = reset_events[index];
+		event.window.windowID = SDL_GetWindowID(sdl3_video_window());
+		assert(SDL_PushEvent(&event));
+		assert_touch_holds(false);
+		assert(sdl3_touch_take_shift_flags() == 0);
+		assert(kb_read_char() == 0);
+		/* Reusing the canceled finger IDs must establish fresh holds and tap actions. */
+		send_touch_holds(SDL_EVENT_FINGER_DOWN);
+		send_touch_shift();
+		assert_touch_holds(true);
+		assert(sdl3_touch_take_shift_flags() == INPUT_SHIFT_UP_FLAG);
+		send_touch_holds(SDL_EVENT_FINGER_UP);
+		assert_touch_holds(false);
+		assert(kb_check() == 0);
+	}
+	sdl3_touch_enable(false);
 }
 
 static void assert_presented_color(legacy_s32 x, legacy_s32 y, Uint8 red, Uint8 green, Uint8 blue)
@@ -1272,11 +1406,37 @@ static void test_joystick(void)
 	assert(SDL_SetJoystickVirtualHat(virtual_joystick, 0, SDL_HAT_RIGHTUP));
 	SDL_UpdateJoysticks();
 	assert(dos_get_joy_flags() == (4 | 1));
+	/* Keep only the platform's reference, so disabling must close the SDL device. */
+	SDL_CloseJoystick(virtual_joystick);
+	assert(SDL_GetJoystickFromID(id) != NULL);
 	dos_joystick_set_enabled(0);
+	assert(SDL_GetJoystickFromID(id) == NULL);
 	assert(dos_get_joy_flags() == 0);
 	assert(dos_joystick_get_scaled_axis(0) == 0);
-	SDL_CloseJoystick(virtual_joystick);
+	dos_joystick_set_enabled(1);
+	virtual_joystick = SDL_GetJoystickFromID(id);
+	assert(virtual_joystick != NULL);
+	assert(SDL_SetJoystickVirtualHat(virtual_joystick, 0, SDL_HAT_LEFTDOWN));
+	SDL_UpdateJoysticks();
+	assert(dos_get_joy_flags() == (INPUT_STEER_LEFT_FLAG | INPUT_BRAKE_FLAG));
+	/* Re-selecting an enabled device must not accumulate open references. */
+	dos_joystick_set_enabled(1);
+	dos_joystick_set_enabled(0);
+	assert(SDL_GetJoystickFromID(id) == NULL);
 	assert(SDL_DetachVirtualJoystick(id));
+	sdl3_platform_pump();
+	id = SDL_AttachVirtualJoystick(&descriptor);
+	assert(id != 0);
+	sdl3_platform_pump();
+	assert(SDL_GetJoystickFromID(id) == NULL);
+	dos_joystick_set_enabled(1);
+	assert(SDL_GetJoystickFromID(id) != NULL);
+	/* Device removal while enabled releases the platform reference as well. */
+	assert(SDL_DetachVirtualJoystick(id));
+	sdl3_platform_pump();
+	assert(SDL_GetJoystickFromID(id) == NULL);
+	assert(dos_get_joy_flags() == 0);
+	dos_joystick_set_enabled(0);
 }
 
 legacy_int main(void)
@@ -1300,6 +1460,8 @@ legacy_int main(void)
 	test_video_vsync();
 	test_video_borderless();
 	test_video_and_mouse();
+	test_touch_focus_and_background();
+	test_touch_shortcut_keys();
 	test_high_resolution_video();
 	test_dynamic_resolution_video();
 	test_completed_video_pages();

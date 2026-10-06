@@ -44,16 +44,41 @@ class ReleasePackageTests(unittest.TestCase):
         self.root = Path(self.temporary.name)
         self.output = self.root / "archives"
 
-    def runtime_data(self, target, name):
-        if target not in ELF_TARGETS or name not in PACKAGES.ELF_FILES:
-            return FILE_DATA
-        elf_class, machine = PACKAGES.ELF_ARCHITECTURES[target.split("-")[1]]
+    def elf_data(self, elf_class, machine, shared=False):
         header = bytearray(PACKAGES.ELF_HEADER_SIZES[elf_class])
         header[:len(PACKAGES.ELF_MAGIC)] = PACKAGES.ELF_MAGIC
         header[PACKAGES.ELF_CLASS_OFFSET] = elf_class
         header[PACKAGES.ELF_DATA_OFFSET] = PACKAGES.ELF_DATA_LSB
         struct.pack_into("<H", header, PACKAGES.ELF_MACHINE_OFFSET, machine)
+        if shared:
+            struct.pack_into("<H", header, PACKAGES.ELF_TYPE_OFFSET, PACKAGES.ELF_TYPE_SHARED)
         return bytes(header) + FILE_DATA
+
+    def apk_data(self, target, replacements=None, missing=()):
+        abi = PACKAGES.ANDROID_TARGETS[target]
+        elf_class, machine = PACKAGES.ELF_ARCHITECTURES[target.split("-")[1]]
+        files = {name: FILE_DATA for name in
+                 PACKAGES.android_required_assets() | PACKAGES.android_required_resources(target)}
+        files |= {"AndroidManifest.xml": FILE_DATA, "classes.dex": FILE_DATA,
+                  "classes2.dex": FILE_DATA, "resources.arsc": FILE_DATA}
+        files |= {f"lib/{abi}/{name}": self.elf_data(elf_class, machine, shared=True)
+                  for name in PACKAGES.ANDROID_LIBRARIES}
+        files.update(replacements or {})
+        for name in missing:
+            files.pop(name)
+        output = io.BytesIO()
+        with zipfile.ZipFile(output, "w") as apk:
+            for name, content in files.items():
+                apk.writestr(name, content)
+        return output.getvalue()
+
+    def runtime_data(self, target, name):
+        if target in PACKAGES.ANDROID_TARGETS and name == PACKAGES.ANDROID_APK:
+            return self.apk_data(target)
+        if target not in ELF_TARGETS or name not in PACKAGES.ELF_FILES:
+            return FILE_DATA
+        elf_class, machine = PACKAGES.ELF_ARCHITECTURES[target.split("-")[1]]
+        return self.elf_data(elf_class, machine)
 
     def create(self, target, asset_data=None):
         runtime = self.root / target
@@ -157,6 +182,173 @@ class ReleasePackageTests(unittest.TestCase):
         arguments = argparse.Namespace(directory=self.output, commit=COMMIT, all=True,
                                        run_id=RUN_ID, run_attempt=RUN_ATTEMPT)
         for target in ELF_TARGETS:
+            archive = self.output / PACKAGES.archive_name(target)
+            saved = self.root / archive.name
+            archive.rename(saved)
+            try:
+                with self.subTest(target=target), \
+                        self.assertRaisesRegex(ValueError, f"missing=.*{archive.name}"):
+                    PACKAGES.verify_directory(arguments)
+            finally:
+                saved.rename(archive)
+
+    def test_android_archives_include_installable_apk_sources_and_import_instructions(self):
+        for target, abi in PACKAGES.ANDROID_TARGETS.items():
+            with self.subTest(target=target):
+                archive = self.create(target)
+                self.assertEqual(archive.name, f"restunts-{target}.zip")
+                files, _ = PACKAGES.archive_contents(archive)
+                self.assertEqual(files[PACKAGES.ANDROID_APK], self.apk_data(target))
+                for name in ("share/docs/restunts/android.md", "share/licenses/restunts/SDL-LICENSE.txt",
+                             "share/licenses/restunts/Nuked-OPL2-LICENSE",
+                             "share/restunts/nuked-opl2-lite/opl2.c",
+                             "share/restunts/nuked-opl2-lite/nuked-build-info.txt",
+                             "share/restunts/nuked-opl2-lite/build-context/CMakeLists.txt"):
+                    self.assertIn(name, files)
+                self.assertFalse(any(name.startswith(("bin/music/", "bin/menus/", "bin/opponents/"))
+                                     for name in files))
+                instructions = files[PACKAGES.README].decode("utf-8")
+                minimum = "Android 5.0 (API 21)"
+                for detail in (abi, minimum, "landscape", "Import Stunts folder",
+                               "Import Stunts ZIP", "debug certificate", "same signing key",
+                               "uninstalling removes", "share/docs/restunts/android.md"):
+                    self.assertIn(detail, instructions)
+                if target == "android-armv7":
+                    self.assertIn("Samsung Galaxy S5 SM-G900F running Android 5.0 or newer", instructions)
+
+    def test_android_minimum_sdk_and_launcher_resources_match_each_target(self):
+        for target in PACKAGES.ANDROID_TARGETS:
+            with self.subTest(target=target):
+                self.assertEqual(PACKAGES.android_minimum_sdk(target), 21)
+                with self.assertRaisesRegex(ValueError, "missing APK members.*mipmap-anydpi-v21"):
+                    PACKAGES.validate_android_apk(target, self.apk_data(
+                        target, missing=(PACKAGES.ANDROID_FALLBACK_ICON,)))
+                PACKAGES.validate_android_apk(target, self.apk_data(target))
+        settings = self.root / "toolchain.properties"
+        with mock.patch.object(PACKAGES, "ANDROID_TOOLCHAIN_PROPERTIES", settings):
+            for contents in ("ANDROID_MIN_SDK=28\n", "ANDROID_ARMV7_MIN_SDK=invalid\n"):
+                settings.write_text(contents, encoding="utf-8")
+                with self.subTest(contents=contents), self.assertRaisesRegex(ValueError, "toolchain property"):
+                    PACKAGES.android_minimum_sdk("android-armv7")
+            settings.write_text("ANDROID_ARMV7_MIN_SDK=19\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "Unsupported Android package minimum API"):
+                PACKAGES.android_minimum_sdk("android-armv7")
+
+    def test_android_apks_require_exact_abi_and_all_shared_libraries(self):
+        for target, abi in PACKAGES.ANDROID_TARGETS.items():
+            with self.subTest(target=target):
+                PACKAGES.validate_android_apk(target, self.apk_data(target))
+            other = next(other for other in PACKAGES.ANDROID_TARGETS if other != target)
+            with self.subTest(target=target, error="other ABI"), \
+                    self.assertRaisesRegex(ValueError, "Unexpected Android ABI"):
+                PACKAGES.validate_android_apk(target, self.apk_data(other))
+            for name in PACKAGES.ANDROID_LIBRARIES:
+                member = f"lib/{abi}/{name}"
+                with self.subTest(target=target, missing=member), \
+                        self.assertRaisesRegex(ValueError, "missing APK members"):
+                    PACKAGES.validate_android_apk(target, self.apk_data(target, missing=(member,)))
+            extra = f"lib/{PACKAGES.ANDROID_TARGETS[other]}/libmain.so"
+            with self.subTest(target=target, extra=extra), \
+                    self.assertRaisesRegex(ValueError, "Unexpected Android ABI"):
+                PACKAGES.validate_android_apk(target, self.apk_data(target, {extra: FILE_DATA}))
+            with self.subTest(target=target, error="extra library"), \
+                    self.assertRaisesRegex(ValueError, "Unexpected Android ABI or native library"):
+                PACKAGES.validate_android_apk(target, self.apk_data(target, {f"lib/{abi}/other.so": FILE_DATA}))
+
+    def test_android_apks_reject_wrong_elf_headers_missing_assets_and_original_game_data(self):
+        for target, abi in PACKAGES.ANDROID_TARGETS.items():
+            elf_class, machine = PACKAGES.ELF_ARCHITECTURES[target.split("-")[1]]
+            other_class = PACKAGES.ELF_CLASS_64 if elf_class == PACKAGES.ELF_CLASS_32 else PACKAGES.ELF_CLASS_32
+            for library in PACKAGES.ANDROID_LIBRARIES:
+                name = f"lib/{abi}/{library}"
+                for content in (FILE_DATA, self.elf_data(elf_class, PACKAGES.ELF_MACHINE_X86, shared=True),
+                                self.elf_data(other_class, machine, shared=True),
+                                self.elf_data(elf_class, machine)):
+                    with self.subTest(target=target, library=library, content=content), \
+                            self.assertRaisesRegex(ValueError, "ELF"):
+                        PACKAGES.validate_android_apk(target, self.apk_data(target, {name: content}))
+            for missing in ("AndroidManifest.xml", "classes.dex", "res/drawable/tv_banner.xml",
+                            "resources.arsc", "assets/licenses/Nuked-OPL2-LICENSE.txt",
+                            "assets/skyboxes/city-sce2.png", "assets/menus/main.png",
+                            "assets/opponents/game/opp6.png"):
+                with self.subTest(target=target, missing=missing), \
+                        self.assertRaisesRegex(ValueError, "missing APK members"):
+                    PACKAGES.validate_android_apk(target, self.apk_data(target, missing=(missing,)))
+            for extra in ("assets/MISC.RES", "assets/game/FONTDEF.FNT", "assets/data.zip",
+                          "assets/DEFAULT.P3S", "stunts/notice.txt", "assets/private.dat"):
+                with self.subTest(target=target, extra=extra), self.assertRaises(ValueError):
+                    PACKAGES.validate_android_apk(target, self.apk_data(target, {extra: FILE_DATA}))
+
+    def test_android_apks_reject_duplicate_members_symlinks_and_unsafe_paths(self):
+        target = "android-armv7"
+        for name, mode, message in (("../outside.txt", stat.S_IFREG, "Unsafe"),
+                                    ("assets/menus/main.png", stat.S_IFREG, "Duplicate APK"),
+                                    ("assets/menus/main.png", stat.S_IFLNK, "Unsupported APK")):
+            missing = (name,) if mode == stat.S_IFLNK else ()
+            output = io.BytesIO(self.apk_data(target, missing=missing))
+            with zipfile.ZipFile(output, "a") as apk:
+                entry = zipfile.ZipInfo(name)
+                entry.external_attr = (mode | PACKAGES.FILE_MODE) << 16
+                with contextlib.redirect_stderr(io.StringIO()):
+                    apk.writestr(entry, FILE_DATA)
+            with self.subTest(name=name, mode=mode), self.assertRaisesRegex(ValueError, message):
+                PACKAGES.validate_android_apk(target, output.getvalue())
+
+    def test_android_optional_source_music_is_required_inside_apk_only(self):
+        source = self.root / "android-source"
+        with mock.patch.object(PACKAGES, "ROOT", source):
+            baseline = {target: self.apk_data(target) for target in PACKAGES.ANDROID_TARGETS}
+            for track in PACKAGES.MUSIC_TRACKS:
+                path = source / "assets/music" / f"{track}.ogg"
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b"OggS Android music fixture " + track.encode("ascii"))
+            audio = {f"assets/music/{track}.ogg":
+                     (source / "assets/music" / f"{track}.ogg").read_bytes()
+                     for track in PACKAGES.MUSIC_TRACKS}
+            for target in PACKAGES.ANDROID_TARGETS:
+                with self.subTest(target=target):
+                    self.assertEqual(PACKAGES.optional_music_files(target), set())
+                    with self.assertRaisesRegex(ValueError, "missing APK members.*assets/music"):
+                        PACKAGES.validate_android_apk(target, baseline[target])
+                    content = self.apk_data(target, audio)
+                    PACKAGES.validate_android_apk(target, content)
+                    archive = self.create(target, {PACKAGES.ANDROID_APK: content})
+                    files, _ = PACKAGES.archive_contents(archive)
+                    with zipfile.ZipFile(io.BytesIO(files[PACKAGES.ANDROID_APK])) as apk:
+                        for name, music in audio.items():
+                            self.assertEqual(apk.read(name), music)
+
+    def test_android_docs_sources_licenses_and_apk_manifest_are_required(self):
+        target = "android-armv7"
+        files = {name: self.runtime_data(target, name) for name in PACKAGES.required_files(target)}
+        modes = {name: PACKAGES.FILE_MODE for name in files}
+        for missing in (PACKAGES.ANDROID_APK, "share/docs/restunts/android.md",
+                        "share/restunts/nuked-opl2-lite/opl2.c",
+                        "share/restunts/nuked-opl2-lite/build-context/CMakeLists.txt",
+                        "share/licenses/restunts/SDL-LICENSE.txt",
+                        "share/licenses/restunts/Nuked-OPL2-LICENSE"):
+            incomplete = files.copy()
+            incomplete.pop(missing)
+            with self.subTest(missing=missing), self.assertRaisesRegex(ValueError, "missing packaged files"):
+                PACKAGES.validate_contents(target, incomplete, modes)
+        archive = self.create(target)
+        packaged, permissions = PACKAGES.archive_contents(archive)
+        packaged[PACKAGES.ANDROID_APK] = self.apk_data(target, {"classes.dex": b"changed application"})
+        with zipfile.ZipFile(archive, "w") as output:
+            for name, content in packaged.items():
+                entry = zipfile.ZipInfo(name)
+                entry.external_attr = (stat.S_IFREG | permissions[name]) << 16
+                output.writestr(entry, content)
+        self.checksum(archive)
+        with self.assertRaisesRegex(ValueError, "File differs from manifest: bin/restunts.apk"):
+            PACKAGES.verify_package(archive, target, COMMIT)
+
+    def test_complete_release_requires_both_android_archives(self):
+        for target in PACKAGES.TARGETS:
+            self.create(target)
+        arguments = argparse.Namespace(directory=self.output, commit=COMMIT, all=True,
+                                       run_id=RUN_ID, run_attempt=RUN_ATTEMPT)
+        for target in PACKAGES.ANDROID_TARGETS:
             archive = self.output / PACKAGES.archive_name(target)
             saved = self.root / archive.name
             archive.rename(saved)

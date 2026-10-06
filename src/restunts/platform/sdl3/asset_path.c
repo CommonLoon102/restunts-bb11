@@ -18,6 +18,7 @@ static void asset_path_cleanup(void)
 	executable_directory = NULL;
 }
 
+#ifndef __ANDROID__
 static legacy_char *asset_path_resolve(const legacy_char *executable)
 {
 	struct stat info;
@@ -65,6 +66,7 @@ static legacy_char *asset_path_search(const legacy_char *executable)
 	return resolved;
 }
 #endif
+#endif
 
 void asset_path_initialize(const legacy_char *executable)
 {
@@ -72,6 +74,16 @@ void asset_path_initialize(const legacy_char *executable)
 	if (executable_directory != NULL) {
 		return;
 	}
+#ifdef __ANDROID__
+	(void)executable;
+	const legacy_char *base = SDL_GetAndroidInternalStoragePath();
+	if (base != NULL) {
+		executable_directory = malloc(strlen(base) + sizeof("/"));
+		if (executable_directory != NULL) {
+			sprintf(executable_directory, "%s/", base);
+		}
+	}
+#else
 	const legacy_char *base = SDL_GetBasePath();
 	if (base != NULL) {
 		executable_directory = strdup(base);
@@ -83,6 +95,7 @@ void asset_path_initialize(const legacy_char *executable)
 			separator[1] = '\0';
 		}
 	}
+#endif
 	if (executable_directory != NULL && !cleanup_registered) {
 		if (atexit(asset_path_cleanup) != 0) {
 			asset_path_cleanup();

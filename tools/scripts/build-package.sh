@@ -76,6 +76,9 @@ if [[ -n "$(ls -A "$package_dir")" ]]; then
 fi
 
 case "$target" in
+    android-armv7|android-arm64)
+        bash "$script_dir/build-android-package.sh" "$target" "$package_dir"
+        ;;
     dos16)
         dos_directory=${2:?The DOS16 target requires the downloaded DOS executable artifact}
         for executable in restunts restunto repldump repldumo pixldump pixldumo; do

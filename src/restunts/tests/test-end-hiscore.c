@@ -41,6 +41,31 @@ static struct SHAPE2D fixture_shapes[4];
 static struct SPRITE fixture_sprites[4];
 static struct HIGHSCORE_ENTRY fixture_scores[HIGHSCORE_ENTRY_COUNT];
 
+#define FIXTURE_POINTER_SCENARIO 1U
+#define FIXTURE_POINTER_OPPONENT_ID 2
+#define FIXTURE_PLAYER_FINISH_TIME 650
+#define FIXTURE_OPPONENT_WIN_TIME 550
+#define FIXTURE_OPPONENT_LOSS_TIME 750
+#define FIXTURE_BUTTON_CENTER_DIVISOR 2
+
+enum FIXTURE_RESULT_BUTTON {
+	FIXTURE_RESULT_REPLAY_BUTTON = 1,
+	FIXTURE_RESULT_RACE_BUTTON,
+	FIXTURE_RESULT_MAIN_MENU_BUTTON
+};
+enum FIXTURE_POINTER_LAYOUT {
+	FIXTURE_POINTER_SOLO,
+	FIXTURE_POINTER_OPPONENT,
+	FIXTURE_POINTER_NO_HIGHSCORE,
+	FIXTURE_POINTER_LAYOUT_COUNT
+};
+
+static legacy_u8 pointer_case, pointer_keyboard;
+static legacy_u32 pointer_polls;
+static legacy_u16 pointer_key;
+static enum FIXTURE_RESULT_BUTTON pointer_button;
+static struct BUTTON_AREA pointer_area;
+
 #ifdef RESTUNTS_SDL3
 #define FIXTURE_ANIMATION_WIDTH 30U
 #define FIXTURE_ANIMATION_WIDTH_VARIANTS 4U
@@ -414,6 +439,14 @@ legacy_s16 get_super_random(void)
 
 legacy_s16 input_checking(legacy_s16 frame_delta)
 {
+	if (pointer_case != 0) {
+		/* A tap supplies its new position and activation in the same input sample. */
+		assert(pointer_polls++ == 0);
+		mouse_xpos = (pointer_area.x1 + pointer_area.x2) / FIXTURE_BUTTON_CENTER_DIVISOR;
+		mouse_ypos = (pointer_area.y1 + pointer_area.y2) / FIXTURE_BUTTON_CENTER_DIVISOR;
+		kbormouse = pointer_keyboard == 0;
+		return LEGACY_S16_FROM_BITS(pointer_key);
+	}
 #ifdef RESTUNTS_SDL3
 	assert(fallback_pending == 0);
 	if (display_shortcuts != 0 && display_shortcut_count < FIXTURE_SHORTCUT_COUNT) {
@@ -454,6 +487,10 @@ legacy_s8 *locate_text_res(legacy_s8 *data, const legacy_s8 *name)
 legacy_s16 menu_animate_button_highlight(legacy_s16 item_index, const struct BUTTON_AREA *buttons,
 										 legacy_s16 second_color, legacy_s16 first_color)
 {
+	if (pointer_case != 0) {
+		assert(item_index == FIXTURE_RESULT_REPLAY_BUTTON);
+		pointer_area = buttons[pointer_button];
+	}
 	trace_word(1030);
 	trace_word((legacy_u16)item_index);
 	trace_pointer(buttons);
@@ -485,6 +522,18 @@ void mouse_draw_transparent_check(void)
 
 legacy_s16 mouse_multi_hittest(legacy_s16 count, const struct BUTTON_AREA *buttons)
 {
+	if (pointer_case != 0) {
+		if (kbormouse == 0) {
+			return -1;
+		}
+		for (legacy_s16 i = 0; i < count; i++) {
+			if (buttons[i].x1 <= mouse_xpos && mouse_xpos <= buttons[i].x2 &&
+				buttons[i].y1 <= mouse_ypos && mouse_ypos <= buttons[i].y2) {
+				return i;
+			}
+		}
+		return -1;
+	}
 	trace_word(1035);
 	trace_word((legacy_u16)count);
 	trace_pointer(buttons);
@@ -761,6 +810,52 @@ static void test_external_animation_interaction(void)
 }
 #endif
 
+static void run_immediate_pointer_case(enum FIXTURE_POINTER_LAYOUT layout, legacy_u8 won,
+									   enum FIXTURE_RESULT_BUTTON button, legacy_u16 key,
+									   legacy_u8 keyboard)
+{
+	initialize_end_screen(FIXTURE_POINTER_SCENARIO);
+	gameconfig.game_opponenttype = layout == FIXTURE_POINTER_SOLO ? 0 : FIXTURE_POINTER_OPPONENT_ID;
+	gState_total_finish_time = FIXTURE_PLAYER_FINISH_TIME;
+	gState_opponent_finish_time = won ? FIXTURE_OPPONENT_LOSS_TIME : FIXTURE_OPPONENT_WIN_TIME;
+	replay_recording_flags = REPLAY_RECORDING_MODIFIED_FLAG;
+	if (layout == FIXTURE_POINTER_NO_HIGHSCORE) {
+		/* An unavailable highscore removes the first button even with an opponent. */
+		fixture_track[0] ^= 1;
+	}
+	kbormouse = 0;
+	pointer_polls = 0;
+	pointer_button = button;
+	pointer_key = key;
+	pointer_keyboard = keyboard;
+	pointer_case = 1;
+	legacy_u16 selected = end_hiscore();
+	pointer_case = 0;
+	assert(pointer_polls == 1U);
+	assert(selected == (legacy_u16)((keyboard ? FIXTURE_RESULT_REPLAY_BUTTON : button) -
+									FIXTURE_RESULT_REPLAY_BUTTON));
+}
+
+static void test_immediate_pointer_selection(void)
+{
+	static const legacy_u16 activation_keys[] = {KEY_SPACE, KEY_ENTER};
+	for (enum FIXTURE_POINTER_LAYOUT layout = FIXTURE_POINTER_SOLO;
+		 layout < FIXTURE_POINTER_LAYOUT_COUNT; layout++) {
+		for (legacy_u8 won = 0; won <= 1U; won++) {
+			for (enum FIXTURE_RESULT_BUTTON button = FIXTURE_RESULT_REPLAY_BUTTON;
+				 button <= FIXTURE_RESULT_MAIN_MENU_BUTTON; button++) {
+				for (legacy_u32 i = 0; i < sizeof(activation_keys) / sizeof(activation_keys[0]);
+					 i++) {
+					run_immediate_pointer_case(layout, won, button, activation_keys[i], 0);
+					/* Keyboard activation retains the default without a pointer hit. */
+					run_immediate_pointer_case(layout, won, button, activation_keys[i], 1);
+				}
+			}
+		}
+	}
+	puts("Immediate race-result pointer selection passed (win/loss, both menu layouts).");
+}
+
 int main(void)
 {
 	for (legacy_u32 index = 0; index < 360U; index++) {
@@ -768,16 +863,18 @@ int main(void)
 	}
 	/* Full-entry trace includes race outcomes, score eligibility, disk retry/cancel,
 	 * text variants, animations, table entry, menu toggles and cleanup. Native
-	 * integer conversions evaluate font and shape metric calls only once. */
+	 * integer conversions evaluate font and shape metric calls only once. Input
+	 * sampling precedes pointer selection so taps use their fresh position. */
 #ifdef HIGHSCORE_RECORD_BASELINE
 	fprintf(stdout, "highscore=0x%016" LEGACY_PRIx64 "\n", trace_hash);
 #else
-	assert(trace_hash == UINT64_C(0x0294efe4d2efdda5));
+	assert(trace_hash == UINT64_C(0x9008eb08ba4359d5));
 #endif
 #ifdef RESTUNTS_SDL3
 	test_external_animation_interaction();
 	puts("External opponent animation lifecycle and display toggles passed.");
 #endif
+	test_immediate_pointer_selection();
 	puts("End-of-race interaction snapshots passed (360 scenarios).");
 	return 0;
 }

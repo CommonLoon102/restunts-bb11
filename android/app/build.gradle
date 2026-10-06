@@ -1,0 +1,68 @@
+plugins {
+    id 'com.android.application'
+}
+
+def sdlDirectory = file('../../out/android-deps/sdl')
+def toolchain = new Properties()
+rootProject.file('toolchain.properties').withInputStream { toolchain.load(it) }
+
+android {
+    namespace 'org.restunts.android'
+    compileSdk Integer.parseInt(toolchain.getProperty('ANDROID_COMPILE_SDK'))
+    buildToolsVersion toolchain.getProperty('ANDROID_BUILD_TOOLS')
+    ndkVersion toolchain.getProperty('ANDROID_NDK')
+
+    defaultConfig {
+        applicationId 'org.restunts.android'
+        targetSdk Integer.parseInt(toolchain.getProperty('ANDROID_COMPILE_SDK'))
+        versionCode 1
+        versionName '1.0'
+        externalNativeBuild {
+            cmake {
+                arguments '-DRESTUNTS_BUILD_TESTS=OFF', '-DANDROID_STL=c++_static',
+                    "-DFETCHCONTENT_SOURCE_DIR_SDL3=${sdlDirectory.absolutePath}",
+                    "-DFETCHCONTENT_SOURCE_DIR_RESTUNTS_VPX=${file('../../out/android-deps/vpx').absolutePath}",
+                    "-DFETCHCONTENT_SOURCE_DIR_RESTUNTS_NESTEGG=${file('../../out/android-deps/nestegg').absolutePath}"
+                targets 'restunts', 'SDL3-shared', 'nuked_opl2'
+            }
+        }
+    }
+
+    flavorDimensions 'cpu'
+    productFlavors {
+        armv7 {
+            dimension 'cpu'
+            minSdk Integer.parseInt(toolchain.getProperty('ANDROID_ARMV7_MIN_SDK'))
+            ndk { abiFilters 'armeabi-v7a' }
+        }
+        arm64 {
+            dimension 'cpu'
+            minSdk Integer.parseInt(toolchain.getProperty('ANDROID_ARM64_MIN_SDK'))
+            ndk { abiFilters 'arm64-v8a' }
+        }
+    }
+
+    sourceSets.main {
+        java.srcDir new File(sdlDirectory, 'android-project/app/src/main/java')
+        // Only port enhancements and dependency notices. Never include stunts/.
+        assets.srcDirs '../../assets', '../generated-assets'
+    }
+    externalNativeBuild {
+        cmake {
+            def androidBuildRoot = providers.gradleProperty('restuntsAndroidBuildRoot')
+            if (androidBuildRoot.isPresent()) {
+                buildStagingDirectory file("${androidBuildRoot.get()}/app/.cxx")
+            }
+            path '../../CMakeLists.txt'
+            version toolchain.getProperty('ANDROID_CMAKE')
+        }
+    }
+    packaging {
+        jniLibs.useLegacyPackaging = true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+}

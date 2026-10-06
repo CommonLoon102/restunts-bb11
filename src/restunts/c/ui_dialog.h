@@ -5,6 +5,8 @@
 
 #define DIALOG_AUTO_POSITION 65535U
 #define DIALOG_FAILURE_RESULT 65535U
+#define DIALOG_FRAME_PADDING 8U
+#define DIALOG_TEXT_INPUT_TOP DIALOG_FRAME_PADDING
 
 enum DIALOG_BACKGROUND_POLICY { DIALOG_NO_BACKGROUND_SAVE = 0, DIALOG_SAVE_BACKGROUND = 1 };
 
@@ -19,6 +21,18 @@ enum DIALOG_TYPE {
 legacy_u16 show_dialog(legacy_s16 dialog_type, legacy_s16 save_background, void far *text_resource,
 					   legacy_u16 x_argument, legacy_u16 y_argument, legacy_s16 border_color,
 					   legacy_s16 *disabled_choices, legacy_s16 initial_choice);
+/* Text entry stays above the Android keyboard; other builds retain their layout. */
+static inline legacy_u16 show_text_input_dialog(legacy_s16 save_background, void far *text_resource,
+												legacy_u16 x_argument, legacy_u16 y_argument,
+												legacy_s16 border_color, legacy_s16 *positions)
+{
+#ifdef __ANDROID__
+	y_argument = DIALOG_TEXT_INPUT_TOP;
+#endif
+	return show_dialog(DIALOG_TYPE_PLACEHOLDERS, save_background, text_resource, x_argument,
+					   y_argument, border_color, positions, 0);
+}
+
 legacy_s8 do_fileselect_dialog(legacy_s8 *directory, legacy_s8 *filename, legacy_s8 *extension,
 							   legacy_s8 far *prompt);
 legacy_s16 do_savefile_dialog(legacy_s8 *primary, legacy_s8 *secondary, legacy_s8 far *prompt);

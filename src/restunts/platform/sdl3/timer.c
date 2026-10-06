@@ -79,6 +79,11 @@ legacy_u64 presentation_now(void)
 	return SDL_GetTicksNS();
 }
 
+void sdl3_timer_rebase(void)
+{
+	last_tick = SDL_GetTicks();
+}
+
 void sdl3_timer_pump(void)
 {
 	if (!initialized || dispatching) {

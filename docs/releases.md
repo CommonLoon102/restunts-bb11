@@ -1,11 +1,13 @@
 # Release packages and verification
 
 The **PR validation** and manual **Release** workflows call the same
-`build-packages.yml` workflow. Every successful run produces these 20 archives
+`build-packages.yml` workflow. Every successful run produces these 22 archives
 and a SHA-256 sidecar for each archive:
 
 | Archive | Target baseline |
 | --- | --- |
+| `restunts-android-armv7.zip` | 32-bit ARM (`armeabi-v7a`), Android 5.0+; Galaxy S5 SM-G900F |
+| `restunts-android-arm64.zip` | 64-bit ARM (`arm64-v8a`), Android 5.0+; phones and Android TV |
 | `restunts-dos16.zip` | 16-bit DOS, Open Watcom |
 | `restunts-dos32.zip` | 32-bit DOS, DJGPP/SDL3, bundled CWSDPMI |
 | `restunts-linux-arm32.tar.gz` | ARMv7 hard-float, Debian/Raspbian 12+; Pi 2 and newer |
@@ -26,6 +28,12 @@ and a SHA-256 sidecar for each archive:
 | `restunts-haiku-x86.tar.gz` | 32-bit x86 with SSE2, modern GCC ABI, Haiku R1/beta6 |
 | `restunts-macos-universal.tar.gz` | Intel and Apple Silicon, macOS 11.0+ |
 | `restunts-browser.zip` | Offline HTML/WebAssembly |
+
+Android targets build separate installable APKs, verify signatures, SDK levels,
+ABI-specific libraries and assets, and test folder/ZIP import. The APKs use CI
+debug signing keys; updates from a different key require uninstalling the old
+app, removing app data. See [Android builds and controls](android.md) for import,
+TV setup, development signing and device testing.
 
 These are build baselines, not a claim that CI exercises every OS version and
 CPU. The full golden replay suites run on native Linux SDL3 and/or 16-bit DOS,
@@ -53,6 +61,10 @@ The browser package contains the single playable `restunts.html`, notices,
 licenses, and `share/restunts/wasm-relink/`. The relinking kit contains Nuked's
 source and the object/archive files needed to rebuild the HTML with a modified
 library. Only the HTML is needed to play; distribute the complete archive.
+
+Android ZIPs contain `bin/restunts.apk`, Android setup instructions, dependency
+notices/licenses, and the exact Nuked sources/build settings. Enhancement
+assets are inside the APK; original game data must be imported at launch.
 
 DOS uses hardware AdLib/OPL and includes neither Nuked binaries nor its sources.
 DOS32 includes `bin/CWSDPMI.EXE` and the accompanying CWSDPMI redistribution

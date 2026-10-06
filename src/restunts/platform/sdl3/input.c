@@ -1,5 +1,6 @@
 #include "sdl3.h"
 #include "music.h"
+#include "touch.h"
 #include "../../c/platform.h"
 #include "../../c/keyboard.h"
 #include "../../c/game_input.h"
@@ -218,6 +219,16 @@ static void input_key(const SDL_KeyboardEvent *event)
 	if ((legacy_u32)event->scancode >= SDL_SCANCODE_COUNT) {
 		return;
 	}
+#ifdef __ANDROID__
+	if (event->scancode == SDL_SCANCODE_AC_BACK && event->down && !event->repeat) {
+		sdl3_input_queue_key(KEY_ESCAPE);
+		return;
+	}
+	if (SDL_TextInputActive(sdl3_video_window()) && event->key >= KEY_SPACE &&
+		event->key <= LEGACY_S8_MAX) {
+		return;
+	}
+#endif
 	legacy_u8 was_pressed = keys[event->scancode];
 	keys[event->scancode] = event->down;
 	if (!event->down) {
@@ -290,6 +301,11 @@ static void input_key(const SDL_KeyboardEvent *event)
 	if (value == 0) {
 		return;
 	}
+	sdl3_input_queue_key(value);
+}
+
+void sdl3_input_queue_key(legacy_u16 value)
+{
 	if (key_count == KEY_BUFFER_CAPACITY) {
 		key_read = (key_read + 1U) % KEY_BUFFER_CAPACITY;
 		key_count--;
@@ -315,6 +331,34 @@ static void input_mouse_position(legacy_f32 window_x, legacy_f32 window_y)
 	sdl3_video_window_to_game(window_x, window_y, &x, &y);
 	mouse_x = clamp_mouse(x, mouse_min_x, mouse_max_x);
 	mouse_y = clamp_mouse(y, mouse_min_y, mouse_max_y);
+}
+
+static void input_mouse_transition(void)
+{
+	if (mouse_transition_count == KEY_BUFFER_CAPACITY) {
+		mouse_transition_read = (mouse_transition_read + 1U) % KEY_BUFFER_CAPACITY;
+		mouse_transition_count--;
+	}
+	struct MOUSE_TRANSITION *transition =
+		&mouse_transitions[(mouse_transition_read + mouse_transition_count++) %
+						   KEY_BUFFER_CAPACITY];
+	transition->buttons = mouse_buttons;
+	transition->x = mouse_x;
+	transition->y = mouse_y;
+}
+
+void sdl3_input_touch_mouse(legacy_f32 x, legacy_f32 y, legacy_u8 down)
+{
+	legacy_u8 was_down = (mouse_buttons & MOUSE_LEFT_FLAG) != 0;
+	input_mouse_position(x, y);
+	if (down) {
+		mouse_buttons |= MOUSE_LEFT_FLAG;
+	} else {
+		mouse_buttons &= ~MOUSE_LEFT_FLAG;
+	}
+	if (was_down != down) {
+		input_mouse_transition();
+	}
 }
 
 static void open_joystick(void)
@@ -347,6 +391,7 @@ void sdl3_platform_pump(void)
 		return;
 	}
 	pumping = true;
+	sdl3_touch_sync_game();
 #ifdef __EMSCRIPTEN__
 	/* Menus can poll only input. Share the yield budget with explicit waits
 	 * and presentation so repeated device reads do not add browser sleeps. */
@@ -363,17 +408,49 @@ void sdl3_platform_pump(void)
 				pumping = false;
 				call_exitlist2();
 				return;
+			case SDL_EVENT_FINGER_DOWN:
+			case SDL_EVENT_FINGER_UP:
+			case SDL_EVENT_FINGER_MOTION:
+			case SDL_EVENT_FINGER_CANCELED: {
+				SDL_Rect area;
+				SDL_Window *window = sdl3_video_window();
+				if (window != NULL && SDL_GetWindowSafeArea(window, &area)) {
+					sdl3_touch_event(&event.tfinger, &area);
+				}
+				break;
+			}
+#ifdef __ANDROID__
+			case SDL_EVENT_TEXT_INPUT:
+				if (SDL_TextInputActive(sdl3_video_window())) {
+					for (const legacy_char *text = event.text.text; *text != '\0'; text++) {
+						if ((legacy_u8)*text >= KEY_SPACE && (legacy_u8)*text < LEGACY_S8_MAX) {
+							sdl3_input_queue_key((legacy_u8)*text);
+						}
+					}
+				}
+				break;
+#endif
 			case SDL_EVENT_KEY_DOWN:
 			case SDL_EVENT_KEY_UP:
 				input_key(&event.key);
 				break;
 			case SDL_EVENT_WINDOW_FOCUS_LOST:
+			case SDL_EVENT_WILL_ENTER_BACKGROUND:
+				sdl3_touch_reset();
 				/* A fullscreen transition can change focus while Enter is held.
 				 * Keep consumed shortcuts latched until release or a fresh press. */
 				memset(keys, 0, sizeof(keys));
 				key_count = 0;
 				mouse_buttons = 0;
 				mouse_transition_count = 0;
+				break;
+			case SDL_EVENT_DID_ENTER_FOREGROUND:
+				sdl3_timer_rebase();
+				redraw_requested = true;
+				break;
+			case SDL_EVENT_RENDER_DEVICE_RESET:
+				sdl3_video_reset_renderer();
+				redraw_requested = true;
 				break;
 			case SDL_EVENT_WINDOW_EXPOSED:
 			case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
@@ -427,6 +504,7 @@ void sdl3_platform_pump(void)
 	if (poll_events) {
 		last_event_poll = SDL_GetTicks();
 	}
+	sdl3_touch_update();
 	sdl3_timer_pump();
 	if (redraw_requested) {
 		sdl3_video_redraw();
@@ -437,6 +515,7 @@ void sdl3_platform_pump(void)
 
 void sdl3_input_shutdown(void)
 {
+	sdl3_touch_reset();
 	SDL_CloseJoystick(joystick);
 	joystick = NULL;
 	joystick_initialized = false;
@@ -479,7 +558,8 @@ legacy_s16 kb_get_key_state(legacy_s16 key)
 	if (key <= 0 || (legacy_u32)key >= SDL_arraysize(scancodes)) {
 		return 0;
 	}
-	if (keys[scancodes[key]] && !consumed_keys[scancodes[key]]) {
+	if (sdl3_touch_key_state((SDL_Scancode)scancodes[key]) ||
+		(keys[scancodes[key]] && !consumed_keys[scancodes[key]])) {
 		return 1;
 	}
 	/* Distinct SDL keys share the original XT scancode (keypad, right modifiers). */
@@ -608,6 +688,10 @@ void dos_joystick_set_enabled(legacy_u8 enabled)
 	joystick_enabled = enabled;
 	if (enabled != 0) {
 		open_joystick();
+	} else {
+		/* SDL Android routes unopened controllers back through keyboard events. */
+		SDL_CloseJoystick(joystick);
+		joystick = NULL;
 	}
 }
 

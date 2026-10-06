@@ -106,10 +106,66 @@ static void test_custom_camera_limits(void)
 	assert(input == 0);
 }
 
-int main(void)
+#ifdef RESTUNTS_SDL3
+#define TEST_REPLAY_LENGTH 1000U
+#define TEST_REPLAY_MIDDLE 500U
+static legacy_s16 touch_direction;
+
+legacy_s16 sdl3_touch_take_seek(void)
+{
+	legacy_s16 direction = touch_direction;
+	touch_direction = 0;
+	return direction;
+}
+
+static void test_touch_seek_targets(void)
+{
+	static const legacy_u8 rates[] = {GAME_FRAME_RATE_LOW, GAME_FRAME_RATE_NORMAL};
+	gameconfig.game_recordedframes = TEST_REPLAY_LENGTH;
+	kbormouse = mouse_butstate = 0;
+	for (legacy_u32 index = 0; index < sizeof(rates) / sizeof(rates[0]); index++) {
+		gameconfig.game_framespersec = rates[index];
+		elapsed_time2 = TEST_REPLAY_MIDDLE;
+		touch_direction = -1;
+		assert(replay_touch_seek_target() ==
+			   TEST_REPLAY_MIDDLE - REPLAY_TOUCH_SKIP_SECONDS * rates[index]);
+		assert(replay_touch_seek_target() == REPLAY_TOUCH_NO_SEEK);
+		touch_direction = 1;
+		assert(replay_touch_seek_target() ==
+			   TEST_REPLAY_MIDDLE + REPLAY_TOUCH_SKIP_SECONDS * rates[index]);
+		elapsed_time2 = REPLAY_FIRST_FRAME;
+		touch_direction = -1;
+		assert(replay_touch_seek_target() == REPLAY_FIRST_FRAME);
+		elapsed_time2 = TEST_REPLAY_LENGTH;
+		touch_direction = 1;
+		assert(replay_touch_seek_target() == TEST_REPLAY_LENGTH);
+	}
+	kbormouse = 1;
+	mouse_butstate = REPLAY_TOUCH_LEFT_BUTTON;
+	mouse_ypos = REPLAY_TIMELINE_Y;
+	mouse_xpos = REPLAY_TIMELINE_X;
+	assert(replay_touch_seek_target() == REPLAY_FIRST_FRAME);
+	mouse_xpos += REPLAY_TIMELINE_POSITION_RANGE / 2;
+	assert(replay_touch_seek_target() == TEST_REPLAY_MIDDLE);
+	mouse_xpos = REPLAY_TIMELINE_X + REPLAY_TIMELINE_POSITION_RANGE;
+	assert(replay_touch_seek_target() == TEST_REPLAY_LENGTH);
+	mouse_xpos = REPLAY_TIMELINE_X + REPLAY_TIMELINE_WIDTH - 1;
+	assert(replay_touch_seek_target() == TEST_REPLAY_LENGTH);
+	mouse_xpos++;
+	assert(replay_touch_seek_target() == REPLAY_TOUCH_NO_SEEK);
+	mouse_xpos = REPLAY_TIMELINE_X;
+	mouse_butstate = 0;
+	assert(replay_touch_seek_target() == REPLAY_TOUCH_NO_SEEK);
+}
+#endif
+
+legacy_int main(void)
 {
 	test_mouse_control_translation();
 	test_pan_quadrants();
 	test_custom_camera_limits();
+#ifdef RESTUNTS_SDL3
+	test_touch_seek_targets();
+#endif
 	return 0;
 }

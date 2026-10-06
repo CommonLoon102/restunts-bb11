@@ -321,8 +321,8 @@ void enter_hiscore(legacy_s16 frame_count, void far *prompt, legacy_u8 car_flag)
 	highscore_draw_table();
 	sprite_blit_to_video(render_window_sprite, -1);
 	legacy_s16 positions[2];
-	show_dialog(DIALOG_TYPE_PLACEHOLDERS, DIALOG_NO_BACKGROUND_SAVE, prompt, DIALOG_AUTO_POSITION,
-				DIALOG_AUTO_POSITION, dialog_border_color, positions, 0);
+	show_text_input_dialog(DIALOG_NO_BACKGROUND_SAVE, prompt, DIALOG_AUTO_POSITION,
+						   DIALOG_AUTO_POSITION, dialog_border_color, positions);
 	check_input();
 	call_read_line(highscore_player_name_input, HIGHSCORE_NAME_MAX_CHARACTERS, positions[0],
 				   positions[1], HIGHSCORE_NAME_INPUT_TIMEOUT);
@@ -1100,8 +1100,8 @@ static legacy_s16 end_hiscore_run_menu(struct END_SCREEN_STATE *screen)
 			end_hiscore_update_external_animation(screen);
 #endif
 		}
-		end_hiscore_select_mouse(screen);
 		legacy_u16 input = (legacy_u16)input_checking(delta);
+		end_hiscore_select_mouse(screen);
 		legacy_s16 result = end_hiscore_handle_menu_input(screen, input);
 		if (result != 0) {
 			return result;

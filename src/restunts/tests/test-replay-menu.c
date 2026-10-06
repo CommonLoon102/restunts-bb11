@@ -14,6 +14,27 @@ static legacy_s16 ghost_fixture_active;
 static legacy_s16 opponent_view_disabled;
 static legacy_u8 supersight_reset_pending;
 static legacy_u32 input_polls, input_exit_poll, fps_expire_poll, fps_expiry_checks;
+#ifdef RESTUNTS_SDL3
+#define TEST_SEEK_CHECKPOINT_INTERVAL 60U
+#define TEST_SEEK_RECORDING_FRAMES 1000U
+#define TEST_SEEK_START_FRAME 501U
+static legacy_u8 touch_seek_testing;
+static legacy_s16 touch_seek_direction;
+static legacy_u16 touch_seek_target;
+static legacy_u32 touch_seek_restores, touch_seek_updates;
+
+void sdl3_touch_set_replay_active(legacy_u8 active)
+{
+	(void)active;
+}
+
+legacy_s16 sdl3_touch_take_seek(void)
+{
+	legacy_s16 direction = touch_seek_direction;
+	touch_seek_direction = 0;
+	return direction;
+}
+#endif
 
 legacy_s16 frame_fps_expire_idle(void)
 {
@@ -74,13 +95,30 @@ legacy_s16 input_do_checking(legacy_s16 delta)
 
 void restore_gamestate(legacy_u16 target)
 {
+#ifdef RESTUNTS_SDL3
+	assert(touch_seek_testing && supersight_reset_pending);
+	assert(is_in_replay != 0 && game_replay_mode == REPLAY_MODE_PLAYBACK);
+	supersight_reset_pending = 0;
+	touch_seek_target = target;
+	touch_seek_restores++;
+	state.game_frame = target / TEST_SEEK_CHECKPOINT_INTERVAL * TEST_SEEK_CHECKPOINT_INTERVAL;
+	elapsed_time2 = (legacy_u16)state.game_frame;
+#else
 	(void)target;
 	assert(0 && "Unexpected replay restore");
+#endif
 }
 
 void update_gamestate(void)
 {
+#ifdef RESTUNTS_SDL3
+	assert(touch_seek_testing && is_in_replay != 0);
+	assert(elapsed_time2 == touch_seek_target && (legacy_u16)state.game_frame < touch_seek_target);
+	state.game_frame++;
+	touch_seek_updates++;
+#else
 	assert(0 && "Unexpected replay update");
+#endif
 }
 
 legacy_u32 timer_wait_ticks(legacy_u32 ticks)
@@ -577,7 +615,56 @@ static void test_paused_replay_fps_refresh(void)
 	assert(input_polls == 1 && fps_expiry_checks == 0);
 }
 
-int main(void)
+#ifdef RESTUNTS_SDL3
+static void assert_touch_seek(legacy_u16 expected)
+{
+	assert(replay_touch_seek() != 0);
+	assert(is_in_replay != 0 && replay_control_active[REPLAY_CONTROL_PAUSE] != 0);
+	assert(state.game_frame == expected && elapsed_time2 == expected);
+	assert(touch_seek_restores == 1);
+	assert(touch_seek_updates == expected % TEST_SEEK_CHECKPOINT_INTERVAL);
+	/* A held seeker at the same point must not reconstruct the replay again. */
+	if (mouse_butstate != 0) {
+		assert(replay_touch_seek() != 0);
+		assert(touch_seek_restores == 1);
+	} else {
+		assert(replay_touch_seek() == 0);
+	}
+}
+
+static void test_touch_seek_reconstruction(void)
+{
+	static const legacy_u8 rates[] = {GAME_FRAME_RATE_LOW, GAME_FRAME_RATE_NORMAL};
+	static const legacy_s16 directions[] = {-1, 1};
+	for (legacy_u32 rate = 0; rate < sizeof(rates) / sizeof(rates[0]); rate++) {
+		for (legacy_u32 dir = 0; dir < sizeof(directions) / sizeof(directions[0]); dir++) {
+			reset_viewer();
+			touch_seek_testing = 1;
+			touch_seek_restores = touch_seek_updates = 0;
+			game_replay_mode = REPLAY_MODE_PLAYBACK;
+			gameconfig.game_framespersec = rates[rate];
+			gameconfig.game_recordedframes = TEST_SEEK_RECORDING_FRAMES;
+			elapsed_time2 = TEST_SEEK_START_FRAME;
+			mouse_butstate = 0;
+			touch_seek_direction = directions[dir];
+			assert_touch_seek(
+				(legacy_u16)(TEST_SEEK_START_FRAME +
+							 directions[dir] * REPLAY_TOUCH_SKIP_SECONDS * rates[rate]));
+		}
+	}
+	reset_viewer();
+	touch_seek_restores = touch_seek_updates = 0;
+	game_replay_mode = REPLAY_MODE_PLAYBACK;
+	gameconfig.game_recordedframes = TEST_SEEK_RECORDING_FRAMES;
+	mouse_butstate = REPLAY_TOUCH_LEFT_BUTTON;
+	mouse_xpos = REPLAY_TIMELINE_X + REPLAY_TIMELINE_POSITION_RANGE / 2;
+	mouse_ypos = REPLAY_TIMELINE_Y;
+	assert_touch_seek(TEST_SEEK_RECORDING_FRAMES / 2);
+	touch_seek_testing = 0;
+}
+#endif
+
+legacy_int main(void)
 {
 	legacy_u32 menu = menu_fingerprint();
 	legacy_u32 draw = draw_fingerprint();
@@ -585,6 +672,9 @@ int main(void)
 	test_save_cleanup();
 	test_ghost_view_display_option();
 	test_paused_replay_fps_refresh();
+#ifdef RESTUNTS_SDL3
+	test_touch_seek_reconstruction();
+#endif
 #ifdef REPLAY_MENU_BASELINE
 	printf("%08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 "\n", menu, draw);
 #else

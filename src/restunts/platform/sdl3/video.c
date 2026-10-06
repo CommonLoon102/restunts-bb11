@@ -1,4 +1,5 @@
 #include "sdl3.h"
+#include "touch.h"
 #include "../../c/platform.h"
 #include "../../c/fatal.h"
 #include "../../c/hires.h"
@@ -77,6 +78,9 @@ static void video_fail(const legacy_char *operation)
 #if !defined(__DJGPP__) && !defined(__EMSCRIPTEN__)
 static SDL_WindowFlags desktop_window_flags(void)
 {
+#ifdef __ANDROID__
+	return SDL_WINDOW_FULLSCREEN;
+#endif
 	const legacy_char *setting = getenv("RESTUNTS_BORDERLESS");
 	if (setting != NULL && *setting != '\0') {
 		if (strcmp(setting, "1") == 0) {
@@ -350,6 +354,12 @@ static void prepare_presentation_page(const legacy_u8 *legacy_pixels)
 	front_page = back_page;
 }
 
+void sdl3_video_reset_renderer(void)
+{
+	SDL_DestroyTexture(texture);
+	texture = NULL;
+}
+
 static void present_texture(legacy_u8 new_frame)
 {
 	const struct PRESENTATION_PAGE *page = &presentation_pages[front_page];
@@ -390,6 +400,7 @@ static void present_texture(legacy_u8 new_frame)
 	if (new_frame) {
 		video_record_render_work();
 	}
+	sdl3_touch_draw(renderer, window);
 	legacy_u64 present_started = SDL_GetTicksNS();
 	if (!SDL_RenderPresent(renderer)) {
 		video_fail("Present video");
