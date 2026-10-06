@@ -60,6 +60,7 @@ static legacy_u8 enabled = 1;
 static legacy_u8 enabled;
 #endif
 static legacy_u8 keyboard_selected = 1;
+static legacy_u8 intro_active;
 static legacy_u8 racing;
 static legacy_u8 manual_gears;
 static legacy_u8 replay_active;
@@ -111,6 +112,14 @@ void sdl3_touch_configure(legacy_u8 keyboard, legacy_u8 live, legacy_u8 manual, 
 	replay_active = replay;
 }
 
+void sdl3_touch_set_intro_active(legacy_u8 active)
+{
+	if (intro_active != active) {
+		sdl3_touch_reset();
+	}
+	intro_active = active;
+}
+
 void sdl3_touch_set_game_active(legacy_u8 active)
 {
 	game_active = active;
@@ -152,7 +161,7 @@ void sdl3_touch_sync_game(void)
 
 legacy_u8 sdl3_touch_visible(enum TOUCH_CONTROL control)
 {
-	if (!enabled || !keyboard_selected || control >= TOUCH_CONTROL_COUNT) {
+	if (!enabled || intro_active || !keyboard_selected || control >= TOUCH_CONTROL_COUNT) {
 		return false;
 	}
 	if (control == TOUCH_SHIFT_UP || control == TOUCH_SHIFT_DOWN) {
@@ -390,7 +399,7 @@ void sdl3_touch_event(const SDL_TouchFingerEvent *event, const SDL_Rect *area)
 
 void sdl3_touch_draw(SDL_Renderer *renderer, SDL_Window *window)
 {
-	if (!enabled || !keyboard_selected) {
+	if (!enabled || intro_active || !keyboard_selected) {
 		return;
 	}
 	SDL_Rect area;
