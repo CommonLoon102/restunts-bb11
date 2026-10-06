@@ -7,6 +7,9 @@
 #include "timing.h"
 #include "crash_state.h"
 #include "car_audio.h"
+#ifdef RESTUNTS_SDL3
+#include "../platform/sdl3/touch_game.h"
+#endif
 
 #define INPUT_STEERING_HISTORY_SIZE 64U
 #define INPUT_STEERING_HISTORY_MASK 63U
@@ -200,6 +203,9 @@ static legacy_s16 replay_read_live_input(void)
 	if (kb_get_key_state(KEY_SCAN_GEAR_DOWN) != 0) {
 		input_flags = (legacy_s16)((legacy_u16)input_flags | INPUT_SHIFT_DOWN_FLAG);
 	}
+#ifdef RESTUNTS_SDL3
+	input_flags |= sdl3_touch_take_shift_flags();
+#endif
 	return input_flags;
 }
 

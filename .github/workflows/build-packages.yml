@@ -17,6 +17,60 @@ on:
 # Inherit the caller's permissions: PRs are read-only; releases additionally
 # grant OIDC and attestation writes to the guarded provenance steps.
 jobs:
+  android:
+    name: Package ${{ matrix.target }} (Android 5+)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [android-armv7, android-arm64]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Select the runner's Java 17 toolchain
+        run: echo "JAVA_HOME=$JAVA_HOME_17_X64" >> "$GITHUB_ENV"
+
+      - name: Install the pinned Android SDK, NDK and CMake
+        run: bash tools/scripts/install-android-package-dependencies.sh
+
+      - name: Test Android imports and package validation
+        run: |
+          "$JAVA_HOME/bin/javac" -d "$RUNNER_TEMP/android-import-tests" \
+            android/app/src/main/java/org/restunts/android/GameDataImport.java \
+            android/app/src/main/java/org/restunts/android/LaunchOptions.java \
+            android/tests/GameDataImportTest.java android/tests/LaunchOptionsTest.java
+          "$JAVA_HOME/bin/java" -cp "$RUNNER_TEMP/android-import-tests" \
+            org.restunts.android.GameDataImportTest
+          "$JAVA_HOME/bin/java" -cp "$RUNNER_TEMP/android-import-tests" \
+            org.restunts.android.LaunchOptionsTest
+          python3 tools/scripts/test-release-packages.py
+
+      - name: Build and verify the ABI-specific APK and runtime archive
+        env:
+          PACKAGE_TARGET: ${{ matrix.target }}
+        run: bash tools/scripts/build-package.sh "$PACKAGE_TARGET"
+
+      - name: Upload immutable package artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: packages-${{ matrix.target }}
+          path: dist/packages/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+      - name: Attest the package and its checksum
+        if: inputs.attest
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
+        with:
+          subject-path: dist/packages/*
+
   cross:
     name: Package ${{ matrix.target }}
     runs-on: ubuntu-24.04

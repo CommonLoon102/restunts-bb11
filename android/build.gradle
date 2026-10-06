@@ -1,0 +1,12 @@
+plugins {
+    id 'com.android.application' version '8.7.3' apply false
+}
+
+// Shared VM filesystems can stall native archive/link writes. Allow local build output.
+def androidBuildRoot = providers.gradleProperty('restuntsAndroidBuildRoot')
+if (androidBuildRoot.isPresent()) {
+    layout.buildDirectory.set(file("${androidBuildRoot.get()}/build"))
+    subprojects {
+        layout.buildDirectory.set(file("${androidBuildRoot.get()}/${project.name}/build"))
+    }
+}

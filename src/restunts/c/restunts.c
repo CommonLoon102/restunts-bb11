@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "frame_adaptive.h"
+#include "frame_internal.h"
 #include "hires.h"
 #include "../platform/sdl3/music.h"
 #endif
@@ -67,6 +68,7 @@
 
 #define STARTUP_HYPERVISION_PREFIX "--hv:"
 #define STARTUP_OGG_MUSIC_PREFIX "--ogg:"
+#define STARTUP_FPS_DISPLAY_PREFIX "--fps:"
 #define STARTUP_SKIP_INTRO_OPTION "--nointro"
 
 #define STARTUP_PROJECTION_X 36
@@ -185,6 +187,8 @@ struct STARTUP_OPTIONS {
 	legacy_u8 hypervision_specified;
 	legacy_u8 ogg_music_enabled;
 	legacy_u8 ogg_music_specified;
+	legacy_u8 fps_display_enabled;
+	legacy_u8 fps_display_specified;
 #endif
 };
 
@@ -261,32 +265,33 @@ static void startup_parse_hypervision(const legacy_s8 *argument, struct STARTUP_
 			argument);
 	dos_process_exit(EXIT_FAILURE);
 }
-static void startup_parse_ogg_music(const legacy_s8 *argument, struct STARTUP_OPTIONS *options)
+static void startup_parse_boolean(const legacy_s8 *argument, const legacy_s8 *prefix,
+								  const legacy_s8 *name, legacy_u8 *enabled, legacy_u8 *specified)
 {
-	const legacy_s8 *prefix = STARTUP_OGG_MUSIC_PREFIX;
+	const legacy_s8 *option = prefix;
 	const legacy_s8 *value = argument;
-	while (*prefix != 0 && tolower((legacy_u8)*value) == *prefix) {
-		prefix++;
+	while (*option != 0 && tolower((legacy_u8)*value) == *option) {
+		option++;
 		value++;
 	}
-	if (*prefix != 0) {
+	if (*option != 0) {
 		return;
 	}
-	if (options->ogg_music_specified != 0) {
-		fprintf(stderr, "Only one Ogg music option may be specified (--ogg:).\n");
+	if (*specified != 0) {
+		fprintf(stderr, "Only one %s option may be specified (%s).\n", name, prefix);
 		dos_process_exit(EXIT_FAILURE);
 		return;
 	}
-	options->ogg_music_specified = 1;
+	*specified = 1;
 	if (stricmp(value, "on") == 0) {
-		options->ogg_music_enabled = 1;
+		*enabled = 1;
 		return;
 	}
 	if (stricmp(value, "off") == 0) {
-		options->ogg_music_enabled = 0;
+		*enabled = 0;
 		return;
 	}
-	fprintf(stderr, "Invalid Ogg music option '%s'; use --ogg:on or --ogg:off.\n", argument);
+	fprintf(stderr, "Invalid %s option '%s'; use %son or %soff.\n", name, argument, prefix, prefix);
 	dos_process_exit(EXIT_FAILURE);
 }
 #endif
@@ -303,11 +308,16 @@ static void startup_parse_options(legacy_s16 argc, legacy_s8 *argv[],
 	options->hypervision_specified = 0;
 	options->ogg_music_enabled = 0;
 	options->ogg_music_specified = 0;
+	options->fps_display_enabled = FRAME_FPS_DISPLAY_OFF;
+	options->fps_display_specified = 0;
 #endif
 	for (legacy_u16 i = 1; argc > i; ++i) {
 #ifdef RESTUNTS_SDL3
 		startup_parse_hypervision(argv[i], options);
-		startup_parse_ogg_music(argv[i], options);
+		startup_parse_boolean(argv[i], STARTUP_OGG_MUSIC_PREFIX, "Ogg music",
+							  &options->ogg_music_enabled, &options->ogg_music_specified);
+		startup_parse_boolean(argv[i], STARTUP_FPS_DISPLAY_PREFIX, "FPS display",
+							  &options->fps_display_enabled, &options->fps_display_specified);
 #endif
 		if (strcmp(argv[i], STARTUP_SKIP_INTRO_OPTION) == 0) {
 			options->skip_intro = 1;
@@ -423,6 +433,8 @@ void init_main(legacy_s16 argc, legacy_s8 *argv[])
 	configure_owoot(argc, argv);
 	startup_parse_options(argc, argv, &startup_options);
 #ifdef RESTUNTS_SDL3
+	fps_display_enabled = startup_options.fps_display_enabled;
+	frame_fps_reset();
 	if (startup_options.hypervision_specified != 0) {
 		frame_adaptive_set_preset(&frame_adaptive,
 								  (enum FRAME_ADAPTIVE_PRESET)startup_options.hypervision_preset);

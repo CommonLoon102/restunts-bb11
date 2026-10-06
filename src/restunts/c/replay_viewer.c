@@ -22,6 +22,9 @@
 #include "externs.h"
 #include "keyboard.h"
 #include "frame_internal.h"
+#ifdef RESTUNTS_SDL3
+#include "../platform/sdl3/touch_game.h"
+#endif
 
 #define REPLAY_PLAYER_COUNT 2U
 #define REPLAY_CONTROL_COUNT 9U
@@ -488,6 +491,9 @@ static void replay_display_options(void)
 
 static void replay_pause_menu(void)
 {
+#ifdef RESTUNTS_SDL3
+	sdl3_touch_set_replay_active(0);
+#endif
 	switch (replay_choose_pause_action()) {
 		case REPLAY_PAUSE_ACTION_FINISH:
 			update_crash_state(CRASH_EVENT_EXIT, PLAYER_CAR_INDEX);
@@ -518,6 +524,9 @@ static void replay_pause_menu(void)
 			break;
 	}
 	check_input();
+#ifdef RESTUNTS_SDL3
+	sdl3_touch_set_replay_active(1);
+#endif
 }
 
 static legacy_s32 replay_scrub_accumulate(legacy_s32 accumulated, legacy_s16 speed,
@@ -895,6 +904,58 @@ static legacy_s16 replay_handle_camera_input(legacy_u16 *input)
 	return 0;
 }
 
+#ifdef RESTUNTS_SDL3
+#define REPLAY_TOUCH_SKIP_SECONDS 10L
+#define REPLAY_TOUCH_LEFT_BUTTON 1U
+#define REPLAY_TOUCH_NO_SEEK (-1L)
+
+static legacy_s32 replay_touch_seek_target(void)
+{
+	legacy_s16 direction = sdl3_touch_take_seek();
+	legacy_s32 target = elapsed_time2;
+	if (direction != 0) {
+		target += direction * REPLAY_TOUCH_SKIP_SECONDS * gameconfig.game_framespersec;
+	} else if (kbormouse != 0 && (mouse_butstate & REPLAY_TOUCH_LEFT_BUTTON) != 0 &&
+			   mouse_xpos >= REPLAY_TIMELINE_X &&
+			   mouse_xpos < REPLAY_TIMELINE_X + REPLAY_TIMELINE_WIDTH &&
+			   mouse_ypos >= REPLAY_TIMELINE_Y &&
+			   mouse_ypos < REPLAY_TIMELINE_Y + REPLAY_TIMELINE_HEIGHT) {
+		target = (legacy_s32)(mouse_xpos - REPLAY_TIMELINE_X) * gameconfig.game_recordedframes /
+				 REPLAY_TIMELINE_POSITION_RANGE;
+	} else {
+		return REPLAY_TOUCH_NO_SEEK;
+	}
+	if (target < REPLAY_FIRST_FRAME) {
+		target = REPLAY_FIRST_FRAME;
+	} else if (target > gameconfig.game_recordedframes) {
+		target = gameconfig.game_recordedframes;
+	}
+	return target;
+}
+
+static legacy_s16 replay_touch_seek(void)
+{
+	legacy_s32 target = replay_touch_seek_target();
+	if (target == REPLAY_TOUCH_NO_SEEK) {
+		return 0;
+	}
+	if (target == elapsed_time2 && target == state.game_frame && is_in_replay != 0) {
+		return 1;
+	}
+	is_in_replay = 1;
+	audio_carstate();
+	replay_controls_select(REPLAY_CONTROL_PAUSE);
+	frame_supersight_reset();
+	restore_gamestate((legacy_u16)target);
+	elapsed_time2 = (legacy_u16)target;
+	while ((legacy_u16)state.game_frame != elapsed_time2) {
+		update_gamestate();
+	}
+	replay_controls_draw(state.game_frame, elapsed_time2);
+	return 1;
+}
+#endif
+
 static void replay_handle_input(void)
 {
 	if (LEGACY_S8_FROM_BITS(replay_selected_control) >
@@ -911,6 +972,11 @@ static void replay_handle_input(void)
 	for (;;) {
 		legacy_s16 delta = LEGACY_S16_FROM_BITS((legacy_u16)timer_get_delta_alt());
 		input = replay_read_control_input(delta);
+#ifdef RESTUNTS_SDL3
+		if (replay_touch_seek() != 0) {
+			return;
+		}
+#endif
 
 		if (input != 0 && input != KEY_ESCAPE &&
 			(legacy_u8)handle_ingame_kb_shortcuts(input) != 0) {

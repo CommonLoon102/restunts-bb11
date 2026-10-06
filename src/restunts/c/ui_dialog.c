@@ -168,10 +168,10 @@ static legacy_s16 dialog_draw_frame(struct DIALOG_CONTENT *dialog, legacy_u16 x_
 
 	legacy_s16 left = dialog->x;
 	legacy_s16 right = LEGACY_S16_WRAP_ADD(dialog->x, dialog->dialog_width);
-	legacy_s16 top = LEGACY_S16_WRAP_SUB(dialog->y, 8);
-	legacy_s16 bottom =
-		LEGACY_S16_WRAP_ADD(LEGACY_S16_WRAP_ADD(dialog->y, dialog->dialog_height), 8);
-	dialog->x = LEGACY_S16_WRAP_ADD(dialog->x, 8);
+	legacy_s16 top = LEGACY_S16_WRAP_SUB(dialog->y, DIALOG_FRAME_PADDING);
+	legacy_s16 bottom = LEGACY_S16_WRAP_ADD(LEGACY_S16_WRAP_ADD(dialog->y, dialog->dialog_height),
+											DIALOG_FRAME_PADDING);
+	dialog->x = LEGACY_S16_WRAP_ADD(dialog->x, DIALOG_FRAME_PADDING);
 	dialog->dialog_width =
 		LEGACY_S16_WRAP_SUB(dialog->dialog_width, DIALOG_CONTENT_WIDTH_REDUCTION);
 	if (save_background != 0 && sprite_push_background(left, right, top, bottom) == 0) {
@@ -661,10 +661,9 @@ legacy_s8 do_fileselect_dialog(legacy_s8 *directory, legacy_s8 *filename, legacy
 							   legacy_s8 far *prompt)
 {
 	struct FILE_DIALOG dialog;
-	legacy_s16 dialog_result = LEGACY_S16_FROM_BITS(
-		show_dialog(DIALOG_TYPE_PLACEHOLDERS, DIALOG_SAVE_BACKGROUND,
-					locate_text_res(mainresptr, file_load_dialog_id), DIALOG_AUTO_POSITION,
-					DIALOG_AUTO_POSITION, dialog_border_color, dialog.positions, 0));
+	legacy_s16 dialog_result = LEGACY_S16_FROM_BITS(show_text_input_dialog(
+		DIALOG_SAVE_BACKGROUND, locate_text_res(mainresptr, file_load_dialog_id),
+		DIALOG_AUTO_POSITION, DIALOG_AUTO_POSITION, dialog_border_color, dialog.positions));
 	if (dialog_result < 0) {
 		return 0;
 	}
@@ -720,10 +719,9 @@ void show_waiting(void)
 legacy_s16 do_savefile_dialog(legacy_s8 *primary, legacy_s8 *secondary, legacy_s8 far *prompt)
 {
 	legacy_s16 positions[6];
-	legacy_s16 result =
-		LEGACY_S16_FROM_BITS(show_dialog(DIALOG_TYPE_PLACEHOLDERS, DIALOG_SAVE_BACKGROUND,
-										 locate_text_res(mainresptr, file_save_dialog_id), -1, -1,
-										 dialog_border_color, positions, 0));
+	legacy_s16 result = LEGACY_S16_FROM_BITS(show_text_input_dialog(
+		DIALOG_SAVE_BACKGROUND, locate_text_res(mainresptr, file_save_dialog_id),
+		DIALOG_AUTO_POSITION, DIALOG_AUTO_POSITION, dialog_border_color, positions));
 	if (result < 0) {
 		return 0;
 	}
@@ -799,8 +797,8 @@ void security_check(legacy_s16 question_index)
 	}
 
 	legacy_s16 positions[8];
-	show_dialog(DIALOG_TYPE_PLACEHOLDERS, DIALOG_SAVE_BACKGROUND, (void far *)question_text,
-				DIALOG_AUTO_POSITION, SECURITY_DIALOG_Y, performGraphColor, positions, 0);
+	show_text_input_dialog(DIALOG_SAVE_BACKGROUND, (void far *)question_text, DIALOG_AUTO_POSITION,
+						   SECURITY_DIALOG_Y, performGraphColor, positions);
 	(&resID_byte1)[2] = 0;
 	(&resID_byte1)[0] = question_parts[0];
 	(&resID_byte1)[1] = question_parts[1];

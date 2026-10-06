@@ -226,9 +226,16 @@ run_host_test test-replay-menu replay.c \
     "$test_source_dir/legacy.c" "$test_source_dir/headless_data.c" \
     "$test_source_dir/full_data.c" "$test_source_dir/full_strings.c" \
     -Wno-pointer-sign -Wno-missing-field-initializers
+run_host_test test-replay-menu replay.c \
+    "$test_source_dir/legacy.c" "$test_source_dir/headless_data.c" \
+    "$test_source_dir/full_data.c" "$test_source_dir/full_strings.c" \
+    -DRESTUNTS_SDL3 -Wno-pointer-sign -Wno-missing-field-initializers
 run_host_test test-replay-controls legacy.c \
     "$test_source_dir/headless_data.c" "$test_source_dir/full_data.c" "$test_source_dir/math.c" \
     -Wno-pointer-sign -Wno-missing-field-initializers
+run_host_test test-replay-controls legacy.c \
+    "$test_source_dir/headless_data.c" "$test_source_dir/full_data.c" "$test_source_dir/math.c" \
+    -DRESTUNTS_SDL3 -Wno-pointer-sign -Wno-missing-field-initializers
 run_host_test test-replay-serialization replay.c
 run_host_test test-resource-lookup resource.c
 run_host_test test-shape2d-memory shape2d_resources.c \
@@ -339,6 +346,8 @@ run_host_test test-ui-file-input ui_dialog.c \
     "$test_source_dir/ui_input.c" "$test_source_dir/legacy.c" \
     "$test_source_dir/strlib.c" "$test_source_dir/resource.c" -Wno-pointer-sign
 run_host_test test-ui-dialog ui_dialog.c "$test_source_dir/legacy.c" -Wno-pointer-sign
+run_host_test test-ui-dialog ui_dialog.c "$test_source_dir/legacy.c" \
+    -D__ANDROID__ -Wno-pointer-sign
 
 run_host_test test-gameplay-residue gamestep.c \
     "$test_source_dir/state.c" "$test_source_dir/physics_grip.c" \

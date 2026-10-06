@@ -32,6 +32,15 @@ static legacy_u32 supersight_reset_count;
 static legacy_u32 supersight_status_count;
 static legacy_s8 supersight_status[TEST_SUPERSIGHT_STATUS_CAPACITY];
 #ifdef RESTUNTS_SDL3
+static legacy_u16 touch_shift_flags;
+
+legacy_u16 sdl3_touch_take_shift_flags(void)
+{
+	legacy_u16 flags = touch_shift_flags;
+	touch_shift_flags = 0;
+	return flags;
+}
+
 static legacy_u32 hires_enabled_transitions;
 static legacy_u32 render_timing_reset_count;
 void frame_render_timing_reset(void)
@@ -230,6 +239,7 @@ static void reset_inputs(void)
 	fps_reset_count = supersight_reset_count = supersight_status_count = 0;
 	supersight_status[0] = 0;
 #ifdef RESTUNTS_SDL3
+	touch_shift_flags = 0;
 	frame_adaptive_reset(&frame_adaptive);
 	render_timing_reset_count = 0;
 	hires_enabled_transitions = 0;
@@ -516,6 +526,21 @@ static void test_recording_input_modes(void)
 	replay_update_input_tick(1);
 	assert(elapsed_time2 == 2 && gameconfig.game_recordedframes == 6 && replay_bytes[1] == 0);
 }
+
+#ifdef RESTUNTS_SDL3
+static void test_touch_shift_recording(void)
+{
+	static const legacy_u16 shifts[] = {INPUT_SHIFT_UP_FLAG, INPUT_SHIFT_DOWN_FLAG};
+	for (legacy_u32 index = 0; index < sizeof(shifts) / sizeof(shifts[0]); index++) {
+		reset_inputs();
+		touch_shift_flags = shifts[index];
+		replay_update_input_tick(0);
+		assert(replay_bytes[0] == shifts[index]);
+		replay_update_input_tick(0);
+		assert(replay_bytes[1] == 0);
+	}
+}
+#endif
 
 static void test_ghost_view_shortcut(void)
 {
@@ -830,6 +855,7 @@ int main(void)
 	test_custom_camera_cycle();
 	test_custom_camera_switches();
 #ifdef RESTUNTS_SDL3
+	test_touch_shift_recording();
 	test_shift_f12_callback();
 	test_locked_display_shortcuts();
 #endif

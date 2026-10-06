@@ -1,5 +1,6 @@
 #ifdef RESTUNTS_SDL3
 #include "../platform/sdl3/sdl3.h"
+#include "../platform/sdl3/touch_game.h"
 #include "frame_interpolation.h"
 #include "frame_adaptive.h"
 #include "hires.h"
@@ -123,6 +124,9 @@ static void race_rewind_resume(struct RACE_REWIND_STATE *rewind)
 	is_in_replay = 0;
 	dos_interrupts_enable();
 	rewind->active = 0;
+#ifdef RESTUNTS_SDL3
+	sdl3_touch_set_rewind_active(0);
+#endif
 	kbormouse = 0;
 	audio_carstate();
 }
@@ -154,6 +158,10 @@ static void race_update_rewind(struct RACE_REWIND_STATE *rewind)
 		return;
 	}
 
+#ifdef RESTUNTS_SDL3
+	/* Preserve held Q while rewinding temporarily uses the playback engine. */
+	sdl3_touch_set_rewind_active(1);
+#endif
 	/* Freeze both recording and playback before touching the saved timeline.
 	 * Pending timer input beyond the displayed frame is discarded on release. */
 	dos_interrupts_disable();
@@ -917,7 +925,13 @@ void run_game(void)
 		show_insufficient_memory_dialog();
 	} else {
 		race_initialize_state();
+#ifdef RESTUNTS_SDL3
+		sdl3_touch_set_game_active(1);
+#endif
 		race_run_frames(&cache);
+#ifdef RESTUNTS_SDL3
+		sdl3_touch_set_game_active(0);
+#endif
 		race_release_resources();
 	}
 	ghost_end_race();

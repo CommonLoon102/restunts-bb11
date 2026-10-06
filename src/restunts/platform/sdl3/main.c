@@ -106,7 +106,15 @@ legacy_int main(legacy_int argc, legacy_char **argv)
 		fputs("Cannot register command-line cleanup\n", stderr);
 		return 1;
 	}
-	if (!SDL_Init(0)) {
+#ifdef __ANDROID__
+	SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
+	SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");
+	/* Keep a TV remote available for menus instead of opening it as the gamepad. */
+	SDL_SetHint(SDL_HINT_TV_REMOTE_AS_JOYSTICK, "0");
+#endif
+	/* Keyboard setup polls before video is initialized. Establish event ownership
+	 * on the game thread first; batch tools do not need interactive events. */
+	if (!SDL_Init(sdl3_batch_mode ? 0 : SDL_INIT_EVENTS)) {
 		free_game_arguments();
 		fprintf(stderr, "SDL initialization failed: %s\n", SDL_GetError());
 		return 1;

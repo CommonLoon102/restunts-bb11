@@ -167,6 +167,7 @@ legacy_s8 resID_buffer[RESID_BUFFER_SIZE];
 legacy_s8 g_is_busy;
 legacy_u16 dialog_border_color;
 legacy_s8 file_load_dialog_id[4] = "loa";
+legacy_s8 file_save_dialog_id[4] = "sav";
 legacy_s8 file_scroll_up_label_id[4] = "lsu";
 legacy_s8 file_scroll_down_label_id[4] = "lsd";
 static legacy_u16 keyboard_keys[512];
@@ -277,6 +278,9 @@ void far *locate_text_res(void far *resource, const legacy_s8 *id)
 		"Prompt @]Directory @]Up @]Row @]Row @]Row @]Row @]Row @]Row @]Row @]";
 	if (strcmp(id, "loa") == 0) {
 		return layout;
+	}
+	if (strcmp(id, "sav") == 0) {
+		return (void *)"Prompt @]Directory @]Name @]";
 	}
 	return (void *)(strcmp(id, "lsu") == 0 ? "UP" : "DOWN");
 }
@@ -596,6 +600,57 @@ static void test_character_limit(void)
 	check_hash("character limits", UINT64_C(0x9e0d9cfda6cf1f47));
 }
 
+#define SAVE_TEST_DIRECTORY_CAPACITY 32
+#define SAVE_TEST_FILENAME_CAPACITY 16
+
+enum SAVE_TEST_ACTION {
+	SAVE_TEST_CONFIRM,
+	SAVE_TEST_CANCEL,
+	SAVE_TEST_EDIT_DIRECTORY,
+	SAVE_TEST_BACKGROUND_FAILURE,
+	SAVE_TEST_ACTION_COUNT
+};
+
+static void test_save_dialog(void)
+{
+	static const legacy_u16 confirm_keys[] = {'N', 'E', 'W', ' ', 'R', KEY_ENTER};
+	static const legacy_u16 cancel_keys[] = {'N', KEY_ESCAPE};
+	static const legacy_u16 directory_keys[] = {'N', 'E', 'W',		 KEY_TAB,  'D',
+												'I', 'R', KEY_ENTER, KEY_ENTER};
+	for (enum SAVE_TEST_ACTION action = SAVE_TEST_CONFIRM; action < SAVE_TEST_ACTION_COUNT;
+		 action++) {
+		reset_case();
+		legacy_s8 directory[SAVE_TEST_DIRECTORY_CAPACITY] = "OLDIR";
+		legacy_s8 filename[SAVE_TEST_FILENAME_CAPACITY] = "OLD";
+		const legacy_u16 *keys = confirm_keys;
+		legacy_u32 key_count = sizeof(confirm_keys) / sizeof(confirm_keys[0]);
+		if (action == SAVE_TEST_CANCEL) {
+			keys = cancel_keys;
+			key_count = sizeof(cancel_keys) / sizeof(cancel_keys[0]);
+		} else if (action == SAVE_TEST_EDIT_DIRECTORY) {
+			keys = directory_keys;
+			key_count = sizeof(directory_keys) / sizeof(directory_keys[0]);
+		} else if (action == SAVE_TEST_BACKGROUND_FAILURE) {
+			save_succeeds = 0;
+		}
+		for (legacy_u32 i = 0; i < key_count; i++) {
+			keyboard_keys[i] = keys[i];
+		}
+		keyboard_count = key_count;
+		legacy_s16 result = do_savefile_dialog(directory, filename, "Save file");
+		assert(result == (action == SAVE_TEST_CONFIRM || action == SAVE_TEST_EDIT_DIRECTORY));
+		assert(pop_calls == (action != SAVE_TEST_BACKGROUND_FAILURE));
+		assert(keyboard_index == (action == SAVE_TEST_BACKGROUND_FAILURE ? 0U : key_count));
+		assert(strcmp(directory, action == SAVE_TEST_EDIT_DIRECTORY ? "DIR" : "OLDIR") == 0);
+		const legacy_char *expected_name = action == SAVE_TEST_CONFIRM			? "NEW_R"
+										   : action == SAVE_TEST_CANCEL			? "N"
+										   : action == SAVE_TEST_EDIT_DIRECTORY ? "NEW"
+																				: "OLD";
+		assert(strcmp(filename, expected_name) == 0);
+	}
+	puts("Save dialog text editing, confirmation, cancellation and background restoration passed.");
+}
+
 int main(void)
 {
 	test_file_dialog();
@@ -603,6 +658,7 @@ int main(void)
 	test_read_line_wrapper();
 	test_read_line_empty_fields();
 	test_character_limit();
+	test_save_dialog();
 	puts("UI file-selection and text-editing regression checks passed.");
 	return 0;
 }

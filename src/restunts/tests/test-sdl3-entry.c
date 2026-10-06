@@ -16,6 +16,8 @@
 #define TEST_ARGUMENT_COUNT(arguments)                                                             \
 	((legacy_int)(sizeof(arguments) / sizeof((arguments)[0]) - 1U))
 
+legacy_s32 sdl3_batch_mode;
+
 static bool SDLCALL test_sdl_init(SDL_InitFlags flags);
 static const legacy_char *SDLCALL test_sdl_error(void);
 static legacy_int test_chdir(const legacy_char *directory);
@@ -54,6 +56,7 @@ static legacy_int fail_allocation;
 static legacy_int fail_registration;
 static legacy_int fail_initialization;
 static legacy_int exit_from_game;
+static legacy_u8 real_event_startup;
 static void *live_allocation;
 static void (*exit_handlers[TEST_EXIT_HANDLER_CAPACITY])(void);
 static legacy_int exit_handler_count;
@@ -138,7 +141,12 @@ static legacy_int test_chdir(const legacy_char *directory)
 
 static bool SDLCALL test_sdl_init(SDL_InitFlags flags)
 {
-	assert(flags == 0);
+	if (real_event_startup != 0) {
+		assert_original_arguments();
+		initialization_calls++;
+		return SDL_Init(flags);
+	}
+	assert(flags == (sdl3_batch_mode ? 0 : SDL_INIT_EVENTS));
 	assert_original_arguments();
 	initialization_calls++;
 	return fail_initialization == 0;
@@ -173,10 +181,21 @@ void sdl3_platform_shutdown(void)
 	/* The argument storage survives shutdown, including a direct exit(). */
 	assert(live_allocation != NULL);
 	assert_original_arguments();
+	if (real_event_startup != 0) {
+		SDL_QuitSubSystem(SDL_INIT_EVENTS);
+	}
 }
 
 legacy_s16 run_main_menu_loop(legacy_s16 argc, legacy_s8 *argv[])
 {
+	if (real_event_startup != 0) {
+		/* Android prepares JNI on its UI thread but runs the game on SDLThread. */
+		assert(SDL_IsMainThread());
+		assert(SDL_WasInit(SDL_INIT_EVENTS) != 0);
+		assert(SDL_WasInit(SDL_INIT_VIDEO) == 0);
+		SDL_Event event;
+		(void)SDL_PollEvent(&event);
+	}
 	game_calls++;
 	assert(argc == expected_count);
 	assert((legacy_char **)argv != original_arguments);
@@ -215,6 +234,38 @@ static void test_dispatch(legacy_int argc, legacy_char **argv, legacy_int game_a
 	}
 	assert(game_calls == 1);
 	assert(initialization_calls == 1);
+}
+
+static legacy_int SDLCALL test_game_thread(void *unused)
+{
+	(void)unused;
+	legacy_char program[] = "restunts";
+	legacy_char *arguments[] = {program, NULL};
+	const legacy_char *expected[] = {"restunts"};
+	test_dispatch(TEST_ARGUMENT_COUNT(arguments), arguments, TEST_ARGUMENT_COUNT(arguments),
+				  expected, 0);
+	return COMMAND_LINE_SUCCESS;
+}
+
+static void test_event_thread_startup(void)
+{
+	/* Match SDL's Android JNI setup before the dedicated game thread starts. */
+	SDL_SetMainReady();
+	assert(SDL_IsMainThread());
+	assert(SDL_WasInit(SDL_INIT_EVENTS) == 0);
+	real_event_startup = 1;
+	SDL_Thread *thread = SDL_CreateThread(test_game_thread, "game-startup", NULL);
+	assert(thread != NULL);
+	legacy_int result;
+	SDL_WaitThread(thread, &result);
+	real_event_startup = 0;
+	assert(result == COMMAND_LINE_SUCCESS);
+	assert(SDL_WasInit(SDL_INIT_EVENTS) == 0);
+	/* Join before full shutdown invalidates SDL thread handles. Event cleanup
+	 * happens on the game thread; the bootstrap thread owns the remaining SDL state. */
+	assert(SDL_IsMainThread());
+	SDL_Quit();
+	puts("SDL3 event polling before video on a dedicated game thread passed");
 }
 
 legacy_int main(void)
@@ -262,6 +313,12 @@ legacy_int main(void)
 	assert(test_entry_main(original_count, plain) == COMMAND_LINE_FAILURE);
 	assert(game_calls == 0 && live_allocation == NULL);
 	run_exit_handlers();
+	test_event_thread_startup();
+	reset_test(TEST_ARGUMENT_COUNT(plain), plain, TEST_ARGUMENT_COUNT(plain), expected);
+	sdl3_batch_mode = 1;
+	assert(test_entry_main(original_count, plain) == TEST_GAME_RESULT);
+	run_exit_handlers();
+	sdl3_batch_mode = 0;
 	puts("SDL3 entry-point argument tests passed");
 	return 0;
 }

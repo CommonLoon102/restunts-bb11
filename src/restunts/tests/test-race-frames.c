@@ -61,6 +61,18 @@ legacy_u8 supersight_enabled;
 
 #ifdef RESTUNTS_SDL3
 #define TEST_GHOST_DISTANCE_PER_FRAME 100L
+#define TEST_REWIND_TOUCH_TRANSITIONS 2U
+
+static legacy_u8 touch_rewind_active;
+static legacy_u32 touch_rewind_transitions;
+
+void sdl3_touch_set_rewind_active(legacy_u8 active)
+{
+	assert(active != touch_rewind_active);
+	assert(game_replay_mode == REPLAY_MODE_LIVE);
+	touch_rewind_active = active;
+	touch_rewind_transitions++;
+}
 
 legacy_s16 camera_track_height_offset;
 static legacy_u8 scheduled_mode;
@@ -818,6 +830,9 @@ static void test_rewind_frame_loop(void)
 	memset(&state, 0, sizeof(state));
 	memset(&gameconfig, 0, sizeof(gameconfig));
 	scripted_rewind = 1;
+#ifdef RESTUNTS_SDL3
+	touch_rewind_transitions = 0;
+#endif
 	frames = keys = 0;
 	state.game_frame = elapsed_time2 = 10;
 	state.game_inputmode = GAME_INPUT_MODE_ACTIVE;
@@ -841,6 +856,9 @@ static void test_rewind_frame_loop(void)
 	assert(state.game_frame == 7 && elapsed_time2 == 7);
 	assert(gameconfig.game_recordedframes == 7);
 	assert(game_replay_mode == REPLAY_MODE_LIVE && is_in_replay == 0);
+#ifdef RESTUNTS_SDL3
+	assert(!touch_rewind_active && touch_rewind_transitions == TEST_REWIND_TOUCH_TRANSITIONS);
+#endif
 }
 
 #ifdef RESTUNTS_SDL3
