@@ -17,9 +17,10 @@ opponents, graphics, tracks, replays, high scores and any other game files.
 The choice is remembered. Copy custom content into this folder with a file
 manager, then press **Start game** again to load it.
 
-For **Import Stunts ZIP**, first select the ZIP. After validation, Android's
-folder picker asks you to create or select **Documents/Chocolate Stunts** (or
-another destination). The app extracts the game into that exact folder and
+For **Import Stunts ZIP**, first select the ZIP. After validation, a dialog
+explains that you need to choose its extraction folder. Tap **OK** to open
+Android's folder picker, then create or select **Documents/Chocolate Stunts**
+(or another destination). The app extracts the game into that exact folder and
 remembers it. Only the selected game folder receives persistent read/write
 access; no grant for all of Documents or the whole storage is needed. ZIPs may
 contain a parent directory around the game files; its game root is extracted
