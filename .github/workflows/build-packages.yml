@@ -43,12 +43,20 @@ jobs:
         run: |
           "$JAVA_HOME/bin/javac" -d "$RUNNER_TEMP/android-import-tests" \
             android/app/src/main/java/org/restunts/android/GameDataImport.java \
+            android/app/src/main/java/org/restunts/android/GameDataVersion.java \
             android/app/src/main/java/org/restunts/android/LaunchOptions.java \
-            android/tests/GameDataImportTest.java android/tests/LaunchOptionsTest.java
+            android/app/src/main/java/org/restunts/android/GameDataSync.java \
+            android/tests/GameDataImportTest.java android/tests/GameDataVersionTest.java \
+            android/tests/LaunchOptionsTest.java \
+            android/tests/GameDataSyncTest.java
           "$JAVA_HOME/bin/java" -cp "$RUNNER_TEMP/android-import-tests" \
             org.restunts.android.GameDataImportTest
           "$JAVA_HOME/bin/java" -cp "$RUNNER_TEMP/android-import-tests" \
+            org.restunts.android.GameDataVersionTest
+          "$JAVA_HOME/bin/java" -cp "$RUNNER_TEMP/android-import-tests" \
             org.restunts.android.LaunchOptionsTest
+          "$JAVA_HOME/bin/java" -cp "$RUNNER_TEMP/android-import-tests" \
+            org.restunts.android.GameDataSyncTest
           python3 tools/scripts/test-release-packages.py
 
       - name: Build and verify the ABI-specific APK and runtime archive

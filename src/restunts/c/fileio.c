@@ -369,12 +369,14 @@ legacy_s16 file_write(const legacy_s8 *filename, void far *src, legacy_u32 lengt
 #endif
 		}
 
-#ifdef __EMSCRIPTEN__
-		/* Browser writes reach disk only when the asynchronous close commits.
-		 * Report that failure through the same path as an incomplete write. */
+#if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
+		/* A save is complete only after close flushes all local bytes. Browser
+		 * close also commits the asynchronous persistent copy. */
 		if (fileio_close(file) != 0) {
 			retval = 1;
+#ifdef __EMSCRIPTEN__
 			close_failed = 1;
+#endif
 		}
 #else
 		/* Preserve the original DOS behavior, which ignores close failures. */
@@ -383,6 +385,10 @@ legacy_s16 file_write(const legacy_s8 *filename, void far *src, legacy_u32 lengt
 		(void)fileio_error();
 
 		if (retval == 0) {
+#ifdef __ANDROID__
+			/* The shared copy is optional; its failure must retain the local save. */
+			android_saved_file_written(filename);
+#endif
 			return 0;
 		}
 	} else {

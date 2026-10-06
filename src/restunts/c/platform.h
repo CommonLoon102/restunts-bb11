@@ -62,6 +62,10 @@ legacy_s16 dos_file_remove(const legacy_s8 *path);
 const legacy_s8 *dos_file_find_first(const legacy_s8 *query);
 const legacy_s8 *dos_file_find_next(void);
 
+#ifdef __ANDROID__
+void android_saved_file_written(const legacy_s8 *path);
+#endif
+
 void dos_install_divide_error_handler(void);
 
 void dos_interrupts_disable(void);
