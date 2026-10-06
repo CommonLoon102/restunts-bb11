@@ -433,7 +433,7 @@ public final class LauncherActivity extends Activity {
                 .setItems(new String[] {"Choose destination folder", "Choose another ZIP"},
                     (dialog, selected) -> {
                         if (selected == 0) {
-                            chooseFolder(REQUEST_ZIP_FOLDER);
+                            showZipDestinationDialog();
                         } else {
                             chooseZipFile();
                         }
@@ -441,6 +441,16 @@ public final class LauncherActivity extends Activity {
         } else {
             chooseZipFile();
         }
+    }
+
+    private void showZipDestinationDialog() {
+        new AlertDialog.Builder(this).setTitle("Choose ZIP extraction folder")
+            .setMessage("Next, select the target folder where the ZIP will be extracted.\n\n"
+                + "Create or select Documents/Chocolate Stunts, or another folder. "
+                + "This will be your game folder.")
+            .setPositiveButton(android.R.string.ok,
+                (dialog, selected) -> chooseFolder(REQUEST_ZIP_FOLDER))
+            .show();
     }
 
     private void chooseZipFile() {
@@ -537,7 +547,7 @@ public final class LauncherActivity extends Activity {
                     refreshActive();
                     LauncherActivity activity = active.get();
                     if (activity != null) {
-                        activity.chooseFolder(REQUEST_ZIP_FOLDER);
+                        activity.showZipDestinationDialog();
                     }
                 });
             } catch (IOException | RuntimeException error) {
