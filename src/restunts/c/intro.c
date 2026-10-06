@@ -10,6 +10,9 @@
 #include "ui_input.h"
 #include "audio_control.h"
 #include "externs.h"
+#ifdef RESTUNTS_SDL3
+#include "../platform/sdl3/touch_game.h"
+#endif
 
 #define INTRO_SCREEN_WIDTH 320
 #define INTRO_SCREEN_HEIGHT 200
@@ -133,6 +136,9 @@ static legacy_s16 run_intro(void far *audio_resource)
 
 legacy_s16 run_intro_looped(void)
 {
+#ifdef RESTUNTS_SDL3
+	sdl3_touch_set_intro_active(1);
+#endif
 	void far *audio_resource = file_prepare_audiores("skidtitl", "skidms", "TITL");
 	ui_temp_resource = file_load_resource(FILE_RESOURCE_SHAPE2D, "sdtitl");
 	render_window_sprite =
@@ -156,6 +162,9 @@ legacy_s16 run_intro_looped(void)
 	}
 
 	audio_unload();
+#ifdef RESTUNTS_SDL3
+	sdl3_touch_set_intro_active(0);
+#endif
 	return result;
 }
 

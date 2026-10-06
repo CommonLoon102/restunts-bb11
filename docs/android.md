@@ -73,7 +73,8 @@ defaults use original AdLib music, hide FPS, and leave HyperVision off.
 ## Touch controls
 
 With **Keyboard** input selected in Options, transparent circles appear at the
-screen edges. Left/right steer; upper/lower right accelerate/brake. They support
+screen edges. The circles are hidden throughout the intro; tap the screen to
+skip it. Left/right steer; upper/lower right accelerate/brake. They support
 simultaneous held touches. Moving outside a circle releases that control.
 The steering cluster has no inset from the usable left edge; display cutouts
 and system bars are respected.
