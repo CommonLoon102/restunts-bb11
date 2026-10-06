@@ -10,18 +10,58 @@ ARMv7 APK. Android 4.x is below the supported SDL3/native-toolchain minimum.
 
 ## Game files
 
-The APK does not contain original Stunts game data. At first launch, choose
-**Import Stunts folder** or **Import Stunts ZIP** using Android's file picker.
-Select your Brøderbund Stunts 1.1 (12 Feb. 1991) game folder. ZIPs may contain
-a parent directory around the game folder. The import requires `MAIN.RES` (or
-`MAIN.PRE`), `FONTDEF.FNT`, and `FONTN.FNT`; the game reports other missing resources.
+The APK does not contain original Stunts game data. Use **Choose game folder**
+to select the folder containing your Brøderbund Stunts 1.1 (12 Feb. 1991) game
+files. This is the single visible folder for original resources, custom cars,
+opponents, graphics, tracks, replays, high scores and any other game files.
+The choice is remembered. Copy custom content into this folder with a file
+manager, then press **Start game** again to load it.
 
-Files are copied locally into writable app storage, where configuration,
-tracks, high scores, and replays also persist. No network or broad storage
-permission is required by the app. A failed import leaves the previous game
-folder intact. Reimporting replaces that folder, including its saved files.
-Android removes app storage on uninstall. The APK bundles the same optional
-port artwork/music and dependency notices as the desktop port.
+For **Import Stunts ZIP**, first select the ZIP. After validation, Android's
+folder picker asks you to create or select **Documents/Chocolate Stunts** (or
+another destination). The app extracts the game into that exact folder and
+remembers it. Only the selected game folder receives persistent read/write
+access; no grant for all of Documents or the whole storage is needed. ZIPs may
+contain a parent directory around the game files; its game root is extracted
+without that wrapper. Choose an empty destination for different game data:
+ZIP import preserves existing files and refuses to replace different contents.
+An interrupted extraction can leave completed files in the destination; retrying
+the same ZIP reuses identical copies and finishes missing files.
+
+Both folder selection and ZIP import require `MAIN.RES` (or `MAIN.PRE`),
+`FONTDEF.FNT` and `FONTN.FNT`, and validate the `gver` resource in `MISC.RES`, or
+`MISC.PRE` when no unpacked resource exists. The accepted value is exactly
+`Version 1.1 (Feb 12 1991)`, matching the common SDL3 startup check. A present
+but invalid `MISC.RES` does not fall back to `MISC.PRE`. Other game resources
+are not compared, so custom content remains supported. Validation also runs
+before every start; bad or missing data does not replace the last working cache.
+The game reports other missing resources during loading.
+
+No network or broad storage permission is declared. Access follows the
+[Android Storage Access Framework](https://developer.android.com/training/data-storage/shared/documents-files),
+using the system picker's grant for one folder. Prefer a normal shared folder
+such as Documents rather than `Android/data`, which newer Android versions
+restrict. The document provider must support creating, renaming and deleting
+files so failed replacements can preserve previous data. Game content is limited
+to 4096 files/subfolders and 256 MiB in total, including custom videos.
+
+The native game uses a private working cache because document-provider URIs
+cannot be opened as normal filesystem paths. Every **Start game** refreshes
+that cache from the selected folder, including externally edited, added and
+deleted files and empty subfolders. This cache is managed automatically; users only manage the one
+selected public game folder. Bundled optional port artwork/music and launcher
+preferences remain in app storage, with custom content in the game folder
+available to the existing resource loaders.
+
+Completed game writes and screenshots are copied to the selected game folder
+immediately. Failed copies retain a durable pending copy outside the replaceable
+cache and show an explanation; **Start game** retries them before refreshing.
+If the shared file was also edited, the app preserves both versions and reports
+the conflict. Rename the shared version to keep it, then retry to publish the
+pending game write under its original name. Files in the chosen folder survive
+app uninstallation; after reinstalling, choose that same game folder. Private
+preferences, cached data and unexported pending writes are removed by clearing
+app storage or uninstalling.
 
 The options row above **Start game** contains **New MIDI** for replacement
 music, **Show FPS** for the FPS/render-time display, and **HyperVision** with
@@ -128,7 +168,8 @@ the exact Nuked OPL2 library sources/build settings. Release verifies and
 attests both archives with the other platform packages before publishing.
 Original Stunts data is never downloaded by the Android build or bundled.
 
-Each job tests the folder/ZIP importer, checks the APK signature and 16 KB
+Each job tests the folder/ZIP importer, version validation, launcher options and complete-folder synchronization,
+checks the APK signature and 16 KB
 alignment, verifies each target's minimum SDK (21 for both ARMv7 and ARM64)
 and common target SDK, and checks that all native libraries
 match the selected ABI. Package verification also checks required enhancement
@@ -140,7 +181,7 @@ newer systems can use their adaptive icons and newer signature schemes.
 
 CI APKs use the Android debug signing key generated on that runner. A later CI
 run may have a different key, so Android can require uninstalling the old APK
-first, which removes imported data and saves. Use one persistent private
+first, which removes private preferences and unexported writes but leaves the selected public folder. Use one persistent private
 release key for builds intended to update an installed copy.
 
 ## Replacing Nuked OPL2
@@ -157,12 +198,21 @@ app before installing the replacement. No game executable relinking is needed.
 
 ## Verification
 
-The importer can be tested without Android:
+The importer, version validation, launcher options and folder synchronization can be tested without Android:
 
 ```sh
-javac -d out/android-import-tests android/app/src/main/java/org/restunts/android/GameDataImport.java \
-    android/tests/GameDataImportTest.java
+javac -d out/android-import-tests \
+    android/app/src/main/java/org/restunts/android/GameDataImport.java \
+    android/app/src/main/java/org/restunts/android/GameDataVersion.java \
+    android/app/src/main/java/org/restunts/android/LaunchOptions.java \
+    android/app/src/main/java/org/restunts/android/GameDataSync.java \
+    android/tests/GameDataImportTest.java android/tests/GameDataVersionTest.java \
+    android/tests/LaunchOptionsTest.java \
+    android/tests/GameDataSyncTest.java
 java -cp out/android-import-tests org.restunts.android.GameDataImportTest
+java -cp out/android-import-tests org.restunts.android.GameDataVersionTest
+java -cp out/android-import-tests org.restunts.android.LaunchOptionsTest
+java -cp out/android-import-tests org.restunts.android.GameDataSyncTest
 ```
 
 Host CTest covers touch geometry, visibility, simultaneous holds, cancellation,

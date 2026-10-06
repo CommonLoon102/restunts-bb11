@@ -169,6 +169,10 @@ run_host_test test-end-hiscore highscore.c \
 run_host_test test-file-decompression fileio.c "$test_source_dir/resource.c" \
     "$test_source_dir/legacy.c" "$test_source_dir/strlib.c" \
     -DRESTUNTS_HEADLESS -Wno-pointer-sign
+run_host_test test-file-write fileio.c \
+    -DRESTUNTS_SDL3 -DRESTUNTS_HEADLESS -Wno-pointer-sign
+run_host_test test-file-write fileio.c \
+    -DRESTUNTS_SDL3 -DRESTUNTS_HEADLESS -D__ANDROID__ -Wno-pointer-sign
 run_host_test test-fatal-format legacy.c \
     "$test_source_dir/full_data.c" "$test_source_dir/full_strings.c" \
     "$test_source_dir/headless_data.c" -Wno-pointer-sign -Wno-missing-field-initializers

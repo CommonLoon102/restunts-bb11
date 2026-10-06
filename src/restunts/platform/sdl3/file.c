@@ -6,6 +6,10 @@
 #include <string.h>
 #include <sys/stat.h>
 #include "../../c/platform.h"
+#ifdef __ANDROID__
+#include <jni.h>
+#include <SDL3/SDL.h>
+#endif
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
@@ -14,6 +18,55 @@
 #define FILE_FIRST_HANDLE 5U
 #define FILE_PATH_SIZE 1024U
 #define FILE_NAME_SIZE 13U
+
+#ifdef __ANDROID__
+static const legacy_char android_save_method[] = "persistSavedFile";
+static const legacy_char android_save_signature[] = "(Ljava/lang/String;)V";
+
+void android_saved_file_written(const legacy_s8 *path)
+{
+	JNIEnv *env = SDL_GetAndroidJNIEnv();
+	if (env == NULL) {
+		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Cannot share saved file %s: %s", path,
+					SDL_GetError());
+		return;
+	}
+	jobject activity = SDL_GetAndroidActivity();
+	jclass activity_class = NULL;
+	jmethodID persist = NULL;
+	jstring filename = NULL;
+	if (activity != NULL && !(*env)->ExceptionCheck(env)) {
+		activity_class = (*env)->GetObjectClass(env, activity);
+	}
+	if (activity_class != NULL && !(*env)->ExceptionCheck(env)) {
+		persist = (*env)->GetStaticMethodID(env, activity_class, android_save_method,
+											android_save_signature);
+	}
+	if (persist != NULL && !(*env)->ExceptionCheck(env)) {
+		filename = (*env)->NewStringUTF(env, (const legacy_char *)path);
+	}
+	if (filename != NULL && !(*env)->ExceptionCheck(env)) {
+		(*env)->CallStaticVoidMethod(env, activity_class, persist, filename);
+	}
+	if ((*env)->ExceptionCheck(env)) {
+		(*env)->ExceptionClear(env);
+		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Cannot share saved file %s: Java exception",
+					path);
+	} else if (filename == NULL) {
+		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+					"Cannot share saved file %s: Android callback unavailable", path);
+	}
+	if (filename != NULL) {
+		(*env)->DeleteLocalRef(env, filename);
+	}
+	if (activity_class != NULL) {
+		(*env)->DeleteLocalRef(env, activity_class);
+	}
+	if (activity != NULL) {
+		(*env)->DeleteLocalRef(env, activity);
+	}
+}
+#endif
 
 enum FILE_IO_DIRECTION { FILE_IO_NONE, FILE_IO_READ, FILE_IO_WRITE };
 

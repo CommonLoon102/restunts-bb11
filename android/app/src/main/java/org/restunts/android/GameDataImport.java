@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Set;
 import java.util.Arrays;
 import java.security.MessageDigest;
@@ -44,16 +43,7 @@ public final class GameDataImport {
         if (++entries > MAX_ENTRIES || name == null || name.isEmpty()) {
             throw new IOException("Too many files or an empty filename.");
         }
-        String normalized = name.replace('\\', '/').toLowerCase(Locale.ROOT);
-        String[] components = normalized.split("/", -1);
-        if (components.length > MAX_DEPTH || normalized.startsWith("/") || normalized.indexOf(':') >= 0) {
-            throw new IOException("Invalid imported path: " + name);
-        }
-        for (String component : components) {
-            if (component.isEmpty() || component.equals(".") || component.equals("..")) {
-                throw new IOException("Invalid imported path: " + name);
-            }
-        }
+        String normalized = GameDataSync.normalizePath(name);
         File result = new File(staging, normalized);
         if (!result.getCanonicalPath().startsWith(staging.getCanonicalPath() + File.separator)) {
             throw new IOException("Imported path escapes the game folder.");
@@ -162,12 +152,19 @@ public final class GameDataImport {
         }
     }
 
-    public void install(File game) throws IOException {
-        recover(game);
+    /** Find a single game root and validate its actual Brøderbund 1.1 version resource. */
+    public File gameDirectory() throws IOException {
         File source = findGameDirectory(staging);
         if (source == null) {
             throw new IOException("Select the folder containing MAIN.RES (or MAIN.PRE), FONTDEF.FNT and FONTN.FNT.");
         }
+        GameDataVersion.validate(source);
+        return source;
+    }
+
+    public void install(File game) throws IOException {
+        recover(game);
+        File source = gameDirectory();
         File backup = new File(game.getParentFile(), "game-backup");
         delete(backup);
         boolean previous = game.exists();
@@ -184,7 +181,7 @@ public final class GameDataImport {
         delete(backup);
     }
 
-    private static void delete(File file) throws IOException {
+    public static void delete(File file) throws IOException {
         if (!file.exists()) {
             return;
         }

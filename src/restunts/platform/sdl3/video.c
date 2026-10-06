@@ -507,6 +507,9 @@ void sdl3_video_screenshot(void)
 		SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Cannot save screenshot %s: %s", filename,
 					SDL_GetError());
 	} else {
+#ifdef __ANDROID__
+		android_saved_file_written((const legacy_s8 *)filename);
+#endif
 #ifdef __EMSCRIPTEN__
 		if (!save_browser_screenshot(filename)) {
 			SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Cannot save browser screenshot %s", filename);

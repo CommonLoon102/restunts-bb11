@@ -4,6 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.zip.ZipEntry;
@@ -12,6 +15,24 @@ import java.util.zip.ZipOutputStream;
 public final class GameDataImportTest {
     private static final byte[] CONTENT = {1, 2, 3};
     private static final byte[] REPLACEMENT = {4, 5, 6};
+    private static final short ONE_RESOURCE = 1;
+    private static final int FIRST_RESOURCE_OFFSET = 0;
+    private static final int NUL_BYTES = 1;
+
+    private static byte[] versionResource() {
+        byte[] text = GameDataVersion.EXPECTED_VERSION.getBytes(StandardCharsets.US_ASCII);
+        int dataOffset = GameDataVersion.RESOURCE_DIRECTORY_OFFSET
+            + GameDataVersion.RESOURCE_IDENTIFIER_SIZE + GameDataVersion.RESOURCE_OFFSET_SIZE;
+        byte[] resource = new byte[dataOffset + text.length + NUL_BYTES];
+        ByteBuffer bytes = ByteBuffer.wrap(resource).order(ByteOrder.LITTLE_ENDIAN);
+        bytes.putInt(GameDataVersion.RESOURCE_SIZE_OFFSET, resource.length);
+        bytes.putShort(GameDataVersion.RESOURCE_COUNT_OFFSET, ONE_RESOURCE);
+        bytes.position(GameDataVersion.RESOURCE_DIRECTORY_OFFSET);
+        bytes.put("gver".getBytes(StandardCharsets.US_ASCII));
+        bytes.putInt(FIRST_RESOURCE_OFFSET);
+        bytes.put(text);
+        return resource;
+    }
 
     private static void require(boolean value) {
         if (!value) {
@@ -23,6 +44,7 @@ public final class GameDataImportTest {
         for (String name : new String[] {"MAIN.RES", "FONTDEF.FNT", "FONTN.FNT"}) {
             importer.file(name, new ByteArrayInputStream(content));
         }
+        importer.file("MISC.RES", new ByteArrayInputStream(versionResource()));
     }
 
     private static void requireContents(File file, byte[] expected) throws IOException {
@@ -51,6 +73,7 @@ public final class GameDataImportTest {
         importer.file("MAIN.RES", new ByteArrayInputStream(CONTENT));
         importer.file("FONTDEF.FNT", new ByteArrayInputStream(CONTENT));
         importer.file("FONTN.FNT", new ByteArrayInputStream(CONTENT));
+        importer.file("MISC.RES", new ByteArrayInputStream(versionResource()));
         importer.file("main.res", new ByteArrayInputStream(CONTENT));
         try {
             importer.file("main.res", new ByteArrayInputStream(new byte[] {4}));
@@ -75,10 +98,11 @@ public final class GameDataImportTest {
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
-            for (String name : new String[] {"Stunts/MAIN.PRE", "Stunts/FONTDEF.FNT", "Stunts/FONTN.FNT",
+            for (String name : new String[] {"Stunts/MAIN.PRE", "Stunts/FONTDEF.FNT",
+                    "Stunts/FONTN.FNT", "Stunts/MISC.RES",
                     "Stunts/opponents/animations/opp1win.webm"}) {
                 zip.putNextEntry(new ZipEntry(name));
-                zip.write(CONTENT);
+                zip.write(name.equals("Stunts/MISC.RES") ? versionResource() : CONTENT);
                 zip.closeEntry();
             }
         }
@@ -120,7 +144,7 @@ public final class GameDataImportTest {
         require(!staging.exists());
 
         // Renaming a directory into its own descendant fails on every supported filesystem.
-        // Exercise actual rename rollback without permission assumptions or mocked filesystem calls.
+        // Exercise rename rollback without permission assumptions or mocked filesystem calls.
         File rollbackStaging = new File(root, "rollback");
         File rollbackGame = new File(rollbackStaging, "game");
         File rollbackBackup = new File(rollbackStaging, "game-backup");
@@ -131,6 +155,7 @@ public final class GameDataImportTest {
         for (String name : new String[] {"main.res", "fontdef.fnt", "fontn.fnt"}) {
             Files.write(new File(rollbackBackup, name).toPath(), CONTENT);
         }
+        Files.write(new File(rollbackBackup, "misc.res").toPath(), versionResource());
         try {
             importer.install(rollbackGame);
             throw new AssertionError("Renamed a directory inside itself");
@@ -139,6 +164,7 @@ public final class GameDataImportTest {
             requireContents(new File(rollbackGame, "main.res"), CONTENT);
             require(!rollbackBackup.exists());
         }
-        System.out.println("Android folder/ZIP import, paths, conflicts, recovery and replacement passed.");
+        System.out.println("Android folder/ZIP import, paths, conflicts, recovery and replacement "
+            + "passed.");
     }
 }

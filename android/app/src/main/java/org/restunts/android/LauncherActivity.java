@@ -1,15 +1,16 @@
 package org.restunts.android;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.UriPermission;
 import android.content.res.Configuration;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.DocumentsContract;
@@ -33,10 +34,16 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** Import once into writable app storage, then launch the native game. */
+/** Choose one public game folder, validate a native working copy, then launch. */
 public final class LauncherActivity extends Activity {
     private static final int REQUEST_FOLDER = 1;
     private static final int REQUEST_ZIP = 2;
+    private static final int REQUEST_ZIP_FOLDER = 3;
+    private static final String ZIP_DIRECTORY = "zip-import";
+    private static final String ZIP_READY_KEY = "zip_ready";
+    private static final String INITIAL_URI_EXTRA = "android.provider.extra.INITIAL_URI";
+    private static final String DOCUMENTS_URI =
+        "content://com.android.externalstorage.documents/document/primary:Documents";
     private static final int PADDING_DP = 24;
     private static final int TV_PADDING_DP = 48;
     private static final int TEXT_SIZE_SP = 18;
@@ -45,22 +52,17 @@ public final class LauncherActivity extends Activity {
     private static final int OPTION_TEXT_SIZE_SP = 16;
     private static final int OPTION_SPACING_DP = 12;
     private static final String OPTIONS_PREFERENCES = "launch_options";
-    private static final String DIRECTORY_MIME = DocumentsContract.Document.MIME_TYPE_DIR;
-    private static final String[] DOCUMENT_COLUMNS = {
-        DocumentsContract.Document.COLUMN_DOCUMENT_ID,
-        DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-        DocumentsContract.Document.COLUMN_MIME_TYPE
-    };
     // Jobs and their state outlive an Activity; only the main thread changes this state.
     private static final ExecutorService WORKER = Executors.newSingleThreadExecutor();
     private static final Handler MAIN_THREAD = new Handler(Looper.getMainLooper());
     private static WeakReference<LauncherActivity> active = new WeakReference<>(null);
     private static boolean importing;
+    private static boolean synchronizing;
     private static boolean preparingAssets;
     private static boolean assetsReady;
     private static boolean permissionsCleaned;
     private static String currentStatus = "Import your Brøderbund Stunts 1.1 game files.\n"
-        + "Game files are stored locally; the APK does not include them.";
+        + "Choose the game folder itself, or a ZIP to extract into Chocolate Stunts.";
     private TextView status;
     private Button start;
     private Button folder;
@@ -94,17 +96,10 @@ public final class LauncherActivity extends Activity {
             controls.setGravity(Gravity.CENTER);
             layout.addView(controls);
         }
-        folder = button(layout, "Import Stunts folder", view -> chooseFolder());
+        folder = button(layout, "Choose game folder", view -> chooseFolder());
         zip = button(layout, "Import Stunts ZIP", view -> chooseZip());
         addOptions(layout);
-        start = button(layout, "Start game", view -> {
-            LaunchOptions options = selectedOptions();
-            Intent intent = new Intent(this, GameActivity.class);
-            intent.putExtra(LaunchOptions.NEW_MIDI_KEY, options.newMidi);
-            intent.putExtra(LaunchOptions.SHOW_FPS_KEY, options.showFps);
-            intent.putExtra(LaunchOptions.HYPERVISION_KEY, options.hyperVision.name());
-            startActivity(intent);
-        });
+        start = button(layout, "Start game", view -> startGame());
         ScrollView scroll = new ScrollView(this);
         scroll.setFillViewport(true);
         scroll.addView(layout, new ScrollView.LayoutParams(
@@ -116,8 +111,9 @@ public final class LauncherActivity extends Activity {
             permissionsCleaned = true;
             // A killed process cannot run the job's finally block. Its imports are not resumed.
             for (UriPermission previous : context.getContentResolver().getPersistedUriPermissions()) {
-                if (previous.isReadPermission()) {
-                    releaseReadPermission(context, previous.getUri());
+                if (previous.isReadPermission()
+                        && !previous.getUri().equals(GameDataStorage.folder(context))) {
+                    releaseFolderPermission(context, previous.getUri());
                 }
             }
         }
@@ -130,15 +126,17 @@ public final class LauncherActivity extends Activity {
                     MAIN_THREAD.post(() -> {
                         preparingAssets = false;
                         assetsReady = true;
-                        if (!importing) {
-                            currentStatus = "Import your Brøderbund Stunts 1.1 game files, or start the imported game.";
+                        if (!importing && !synchronizing) {
+                            currentStatus = GameDataStorage.folder(context) == null
+                                ? "Choose your Brøderbund Stunts 1.1 game folder, or import a ZIP."
+                                : "Game folder remembered. Start game to load its current contents.";
                         }
                         refreshActive();
                     });
                 } catch (IOException error) {
                     MAIN_THREAD.post(() -> {
                         preparingAssets = false;
-                        currentStatus = "Cannot prepare port assets: " + error.getMessage();
+                        currentStatus = "Cannot prepare game: " + error.getMessage();
                         refreshActive();
                     });
                 }
@@ -150,6 +148,10 @@ public final class LauncherActivity extends Activity {
     protected void onStart() {
         super.onStart();
         active = new WeakReference<>(this);
+        String saveError = GameDataStorage.lastError(this);
+        if (!saveError.isEmpty() && !importing && !synchronizing) {
+            currentStatus = saveError + " Start game to retry copying your files.";
+        }
         refresh();
     }
 
@@ -276,10 +278,12 @@ public final class LauncherActivity extends Activity {
 
     private void refresh() {
         status.setText(currentStatus);
-        folder.setEnabled(!importing);
-        zip.setEnabled(!importing);
-        start.setEnabled(!importing && assetsReady
-            && GameDataImport.isGameDirectory(new File(getFilesDir(), "game")));
+        boolean busy = importing || synchronizing || preparingAssets;
+        folder.setEnabled(!busy);
+        zip.setEnabled(!busy);
+        zip.setText(zipReady(this) ? "Continue ZIP import" : "Import Stunts ZIP");
+        folder.setText(GameDataStorage.folder(this) == null ? "Choose game folder" : "Change game folder");
+        start.setEnabled(!busy && assetsReady && GameDataStorage.folder(this) != null);
         View focused = getCurrentFocus();
         if (television && (focused == null || !focused.isEnabled())) {
             (start.isEnabled() ? start : folder).requestFocus();
@@ -293,14 +297,153 @@ public final class LauncherActivity extends Activity {
         }
     }
 
+    private void startGame() {
+        LaunchOptions options = selectedOptions();
+        Context context = getApplicationContext();
+        synchronizing = true;
+        currentStatus = "Loading and validating your game folder…";
+        refreshActive();
+        WORKER.execute(() -> {
+            try {
+                GameDataStorage.refresh(context);
+                MAIN_THREAD.post(() -> {
+                    synchronizing = false;
+                    currentStatus = "Ready to play.";
+                    refreshActive();
+                    LauncherActivity activity = active.get();
+                    if (activity != null) {
+                        Intent intent = new Intent(activity, GameActivity.class);
+                        intent.putExtra(LaunchOptions.NEW_MIDI_KEY, options.newMidi);
+                        intent.putExtra(LaunchOptions.SHOW_FPS_KEY, options.showFps);
+                        intent.putExtra(LaunchOptions.HYPERVISION_KEY, options.hyperVision.name());
+                        activity.startActivity(intent);
+                    }
+                });
+            } catch (IOException | RuntimeException error) {
+                MAIN_THREAD.post(() -> {
+                    synchronizing = false;
+                    // Leave Start available so a transient provider error can be retried.
+                    currentStatus = "Cannot prepare game folder: " + error.getMessage();
+                    refreshActive();
+                });
+            }
+        });
+    }
+
+    private void selectGameFolder(Intent data, boolean zipImport) {
+        Context context = getApplicationContext();
+        Uri selected = data.getData();
+        Uri previous = GameDataStorage.folder(context);
+        int permissions = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+        if ((data.getFlags() & permissions) != permissions) {
+            currentStatus = "Choose a folder that allows reading and writing game files.";
+            refresh();
+            return;
+        }
+        boolean alreadyGranted = false;
+        for (UriPermission permission : context.getContentResolver().getPersistedUriPermissions()) {
+            if (selected.equals(permission.getUri()) && permission.isReadPermission()
+                    && permission.isWritePermission()) {
+                alreadyGranted = true;
+            }
+        }
+        try {
+            context.getContentResolver().takePersistableUriPermission(selected, permissions);
+        } catch (SecurityException error) {
+            currentStatus = "Cannot keep access to the game folder: " + error.getMessage();
+            refresh();
+            return;
+        }
+        boolean acquired = !alreadyGranted;
+        importing = true;
+        currentStatus = zipImport ? "Extracting ZIP into your selected game folder…"
+            : "Loading and validating the selected game folder…";
+        refreshActive();
+        WORKER.execute(() -> {
+            try {
+                if (zipImport) {
+                    GameDataImport importer = new GameDataImport(
+                        new File(context.getFilesDir(), ZIP_DIRECTORY));
+                    GameDataStorage.importZip(context, selected, importer.gameDirectory());
+                    context.getSharedPreferences(OPTIONS_PREFERENCES, MODE_PRIVATE).edit()
+                        .putBoolean(ZIP_READY_KEY, false).apply();
+                    try {
+                        GameDataImport.delete(new File(context.getFilesDir(), ZIP_DIRECTORY));
+                    } catch (IOException cleanup) {
+                        // Import already committed. Unused staging must not revoke its grant.
+                    }
+                } else {
+                    GameDataStorage.select(context, selected);
+                }
+                if (previous != null && !previous.equals(selected)) {
+                    releaseFolderPermission(context, previous);
+                }
+                MAIN_THREAD.post(() -> {
+                    importing = false;
+                    currentStatus = "Game folder selected. Custom cars and all saves belong in this folder.";
+                    refreshActive();
+                });
+            } catch (IOException | RuntimeException error) {
+                if (acquired && !selected.equals(GameDataStorage.folder(context))) {
+                    releaseFolderPermission(context, selected);
+                }
+                MAIN_THREAD.post(() -> {
+                    importing = false;
+                    currentStatus = "Cannot use game folder: " + error.getMessage();
+                    refreshActive();
+                });
+            }
+        });
+    }
+
+    private static void releaseFolderPermission(Context context, Uri uri) {
+        try {
+            context.getContentResolver().releasePersistableUriPermission(uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        } catch (SecurityException error) {
+            // It may have been revoked already, or only a temporary grant was offered.
+        }
+    }
+
     private void chooseFolder() {
+        chooseFolder(REQUEST_FOLDER);
+    }
+
+    private void chooseFolder(int request) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-        openPicker(intent, REQUEST_FOLDER,
-            "No folder picker is available. Try ZIP import or install a document picker.");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Uri selected = GameDataStorage.folder(this);
+            intent.putExtra(INITIAL_URI_EXTRA, selected == null ? Uri.parse(DOCUMENTS_URI) : selected);
+        }
+        openPicker(intent, request,
+            "No folder picker is available. Install a document picker to choose your game folder.");
+    }
+
+    private static boolean zipReady(Context context) {
+        return context.getSharedPreferences(OPTIONS_PREFERENCES, MODE_PRIVATE)
+            .getBoolean(ZIP_READY_KEY, false)
+            && new File(context.getFilesDir(), ZIP_DIRECTORY).isDirectory();
     }
 
     private void chooseZip() {
+        if (zipReady(this)) {
+            new AlertDialog.Builder(this).setTitle("Game ZIP ready")
+                .setItems(new String[] {"Choose destination folder", "Choose another ZIP"},
+                    (dialog, selected) -> {
+                        if (selected == 0) {
+                            chooseFolder(REQUEST_ZIP_FOLDER);
+                        } else {
+                            chooseZipFile();
+                        }
+                    }).show();
+        } else {
+            chooseZipFile();
+        }
+    }
+
+    private void chooseZipFile() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
@@ -354,73 +497,61 @@ public final class LauncherActivity extends Activity {
     @Override
     protected void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
-        if (result != RESULT_OK || data == null || data.getData() == null || importing
-            || (request != REQUEST_FOLDER && request != REQUEST_ZIP)) {
+        if (result != RESULT_OK || data == null || data.getData() == null || importing || synchronizing) {
+            return;
+        }
+        if (request == REQUEST_FOLDER || request == REQUEST_ZIP_FOLDER) {
+            selectGameFolder(data, request == REQUEST_ZIP_FOLDER);
+            return;
+        }
+        if (request != REQUEST_ZIP) {
             return;
         }
         Uri uri = data.getData();
         Context context = getApplicationContext();
         boolean retainedGrant = retainReadPermission(context, uri, data.getFlags());
         importing = true;
-        currentStatus = "Importing game files…";
+        currentStatus = "Reading and validating game ZIP…";
         refreshActive();
         WORKER.execute(() -> {
-            File staging = new File(context.getFilesDir(), "importing");
-            String resultMessage;
             try {
+                SharedPreferences importPreferences = context.getSharedPreferences(
+                    OPTIONS_PREFERENCES, MODE_PRIVATE);
+                if (!importPreferences.edit().putBoolean(ZIP_READY_KEY, false).commit()) {
+                    throw new IOException("Cannot remember the ZIP import state.");
+                }
+                File staging = new File(context.getFilesDir(), ZIP_DIRECTORY);
                 GameDataImport.prepare(staging);
                 GameDataImport importer = new GameDataImport(staging);
-                if (request == REQUEST_ZIP) {
-                    try (InputStream input = context.getContentResolver().openInputStream(uri)) {
-                        importer.readZip(input);
-                    }
-                } else {
-                    readFolder(context, importer, uri, DocumentsContract.getTreeDocumentId(uri), "", 0);
+                try (InputStream input = context.getContentResolver().openInputStream(uri)) {
+                    importer.readZip(input);
                 }
-                importer.install(new File(context.getFilesDir(), "game"));
-                resultMessage = "Game files imported. Ready to play.";
+                importer.gameDirectory();
+                if (!importPreferences.edit().putBoolean(ZIP_READY_KEY, true).commit()) {
+                    throw new IOException("Cannot remember the ZIP import state.");
+                }
+                MAIN_THREAD.post(() -> {
+                    importing = false;
+                    currentStatus = "ZIP validated. Create or select Documents/Chocolate Stunts "
+                        + "as its game folder.";
+                    refreshActive();
+                    LauncherActivity activity = active.get();
+                    if (activity != null) {
+                        activity.chooseFolder(REQUEST_ZIP_FOLDER);
+                    }
+                });
             } catch (IOException | RuntimeException error) {
-                resultMessage = "Import failed: " + error.getMessage();
+                MAIN_THREAD.post(() -> {
+                    importing = false;
+                    currentStatus = "ZIP import failed: " + error.getMessage();
+                    refreshActive();
+                });
             } finally {
                 if (retainedGrant) {
                     releaseReadPermission(context, uri);
                 }
             }
-            String message = resultMessage;
-            MAIN_THREAD.post(() -> {
-                importing = false;
-                currentStatus = message;
-                refreshActive();
-            });
         });
-    }
-
-    private static void readFolder(Context context, GameDataImport importer, Uri tree,
-            String documentId, String parent, int depth) throws IOException {
-        if (depth > GameDataImport.MAX_DEPTH) {
-            throw new IOException("Game folder nesting is too deep.");
-        }
-        Uri children = DocumentsContract.buildChildDocumentsUriUsingTree(tree, documentId);
-        try (Cursor cursor = context.getContentResolver().query(children, DOCUMENT_COLUMNS, null, null, null)) {
-            if (cursor == null) {
-                throw new IOException("Cannot read the selected folder.");
-            }
-            while (cursor.moveToNext()) {
-                String id = cursor.getString(0);
-                String name = cursor.getString(1);
-                String mime = cursor.getString(2);
-                String path = parent + name;
-                if (DIRECTORY_MIME.equals(mime)) {
-                    importer.directory(path);
-                    readFolder(context, importer, tree, id, path + "/", depth + 1);
-                } else {
-                    Uri file = DocumentsContract.buildDocumentUriUsingTree(tree, id);
-                    try (InputStream input = context.getContentResolver().openInputStream(file)) {
-                        importer.file(path, input);
-                    }
-                }
-            }
-        }
     }
 
     private static void copyAssets(Context context, String path, File destination) throws IOException {
