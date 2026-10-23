@@ -66,10 +66,36 @@ void sdl3_platform_delay(legacy_u32 milliseconds)
 }
 
 #ifdef __EMSCRIPTEN__
+EM_JS(legacy_s32, sdl3_browser_is_mobile, (), { return Module['mobileDevice'] ? 1 : 0; });
+
+legacy_s32 sdl3_timer_is_dispatching(void)
+{
+	return dispatching;
+}
+
 void sdl3_browser_yield_if_due(void)
 {
+	legacy_s32 mobile = sdl3_browser_is_mobile();
+	if (mobile && dispatching) {
+		return;
+	}
 	if (SDL_GetTicks() - last_browser_yield >= BROWSER_EVENT_YIELD_INTERVAL_MS) {
+		/* Mobile rendering shares the audio thread. Keep desktop scheduling
+		 * unchanged while servicing audio on both sides of a mobile yield. */
+		if (mobile) {
+			sdl3_timer_pump();
+		}
 		sdl3_platform_delay(0);
+		if (mobile) {
+			sdl3_timer_pump();
+		}
+	}
+}
+
+void sdl3_browser_render_yield_if_due(void)
+{
+	if (sdl3_browser_is_mobile()) {
+		sdl3_browser_yield_if_due();
 	}
 }
 #endif

@@ -15,6 +15,8 @@ enum {
 };
 
 static legacy_u64 mock_time_ms = TEST_START_MS;
+static legacy_u32 test_audio_updates;
+static legacy_u32 test_callback_count;
 
 static legacy_u64 test_get_ticks(void)
 {
@@ -41,9 +43,20 @@ void sdl3_platform_pump(void)
 
 void sdl3_audio_update(void)
 {
+	test_audio_updates++;
+}
+
+static void test_timer_callback(void)
+{
+	assert(sdl3_timer_is_dispatching());
+	/* Callback input access must never suspend again while dispatching. */
+	sdl3_browser_render_yield_if_due();
+	test_callback_count++;
 }
 
 EM_JS(void, test_pacing_begin, (), { globalThis.resetPacingObservation(); });
+
+EM_JS(void, test_mobile, (), { Module['mobileDevice'] = true; });
 
 EM_JS(legacy_u32, test_resume_count, (), { return globalThis.pacingObservation.resumes; });
 
@@ -84,6 +97,21 @@ legacy_int main(void)
 		sdl3_browser_yield_if_due();
 		assert(test_resume_count() == expected_resumes);
 	}
+	/* Newly added render hooks must do nothing on the desktop browser path. */
+	mock_time_ms += TEST_IDLE_INTERVAL_MS;
+	sdl3_browser_render_yield_if_due();
+	assert(test_resume_count() == expected_resumes);
+	test_mobile();
+	/* A mobile render-only loop must service audio without polling input. */
+	dos_timer_setup_interrupt();
+	assert(dos_timer_register_callback(test_timer_callback) ==
+		   DOS_TIMER_CALLBACK_REGISTRATION_SUCCEEDED);
+	mock_time_ms += TIMER_TICK_MS;
+	sdl3_browser_render_yield_if_due();
+	assert(test_resume_count() == ++expected_resumes);
+	assert(test_audio_updates == 1 && test_callback_count == 1);
+	assert(!sdl3_timer_is_dispatching());
+	dos_timer_shutdown();
 	test_pacing_finish(expected_resumes, TEST_SEQUENTIAL_WAITS + 1U);
 	puts("WebAssembly pacing regression tests passed");
 	return 0;

@@ -1,4 +1,7 @@
 #include "hypervision.h"
+#ifdef __EMSCRIPTEN__
+#include "../platform/sdl3/sdl3.h"
+#endif
 #include "fatal.h"
 #include "render_workers.h"
 #include <float.h>
@@ -440,6 +443,11 @@ static void hv_draw_band(void *argument, legacy_s32 band)
 	struct HV_SPAN visible[HV_SPAN_CAPACITY];
 	struct HV_SPAN scratch[HV_SPAN_CAPACITY];
 	for (legacy_s32 y = bin->context.top; y < bin->context.bottom; y++) {
+#ifdef __EMSCRIPTEN__
+		/* A band can outlast an audio period on mobile CPUs. Yield between
+		 * complete rows while the browser services the queued audio. */
+		sdl3_browser_render_yield_if_due();
+#endif
 		legacy_s32 count = 1;
 		visible[0] = (struct HV_SPAN){bin->context.target->left, bin->context.target->right, 0, 0,
 									  HV_NO_COMMAND};

@@ -2,6 +2,9 @@
  * the main thread; SDL consumes a bounded queue of decoded samples. */
 #include "music.h"
 #include "sdl3.h"
+#ifdef __EMSCRIPTEN__
+#include "audio_queue.h"
+#endif
 #include "../../c/asset_path.h"
 #include "../../c/platform.h"
 #include "../../c/audio_internal.h"
@@ -230,6 +233,20 @@ static legacy_s32 music_open_current(void)
 	if (music_stream == NULL || !SDL_SetAudioStreamFormat(music_stream, &source_spec, NULL)) {
 		goto failed;
 	}
+#ifdef __EMSCRIPTEN__
+	if (sdl3_browser_is_mobile()) {
+		/* Mobile rendering and audio callbacks share the main thread. Recorded
+		 * music can cover brief stalls without delaying effects or input. */
+		legacy_s32 queue_frames = sdl3_audio_queue_frames(music_stream, info.sample_rate);
+		legacy_s32 minimum_frames =
+			(legacy_s32)(info.sample_rate * SDL3_AUDIO_BROWSER_STALL_MILLISECONDS /
+						 MUSIC_MILLISECONDS_PER_SECOND);
+		if (queue_frames < minimum_frames) {
+			queue_frames = minimum_frames;
+		}
+		music_queue_bytes = queue_frames * music_channels * sizeof(legacy_s16);
+	}
+#endif
 	/* Account for device/file setup before seeking. The original sequence keeps
 	 * running during a Shift+F10 switch, but is still stopped during song loading. */
 	sdl3_timer_pump();

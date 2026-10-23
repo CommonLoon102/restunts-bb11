@@ -13,7 +13,10 @@ extern legacy_s32 sdl3_batch_mode;
 void sdl3_platform_pump(void);
 void sdl3_platform_delay(legacy_u32 milliseconds);
 #ifdef __EMSCRIPTEN__
+legacy_s32 sdl3_browser_is_mobile(void);
 void sdl3_browser_yield_if_due(void);
+void sdl3_browser_render_yield_if_due(void);
+legacy_s32 sdl3_timer_is_dispatching(void);
 #endif
 void sdl3_platform_shutdown(void);
 void sdl3_timer_pump(void);

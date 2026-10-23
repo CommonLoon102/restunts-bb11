@@ -986,6 +986,14 @@ void sdl3_platform_pump(void)
 	if (pumping) {
 		return;
 	}
+#ifdef __EMSCRIPTEN__
+	/* Render-time audio servicing can dispatch the input-recording timer.
+	 * Its reads must use cached input: events such as F12 and resize can
+	 * invalidate the active raster buffers before the current frame ends. */
+	if (sdl3_browser_is_mobile() && sdl3_timer_is_dispatching()) {
+		return;
+	}
+#endif
 	pumping = true;
 	input_open_devices();
 	sdl3_touch_sync_game();

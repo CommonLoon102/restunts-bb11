@@ -1,4 +1,7 @@
 #include <stddef.h>
+#ifdef __EMSCRIPTEN__
+#include "../platform/sdl3/sdl3.h"
+#endif
 #include <limits.h>
 #if defined(RESTUNTS_SDL3)
 #include <stdlib.h>
@@ -1261,6 +1264,9 @@ static legacy_u16 hypervision_transform_and_queue(struct TRANSFORMEDSHAPE3D *ins
 
 legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 {
+#ifdef __EMSCRIPTEN__
+	sdl3_browser_render_yield_if_due();
+#endif
 #if defined(RESTUNTS_SDL3)
 	if (hires_enabled()) {
 		return hypervision_transform_and_queue(instance);
@@ -2012,6 +2018,9 @@ void shape3d_render_queued_primitives(void)
 		 * original 320x200 polygons as well only repeats the complete scene. */
 		shape3d_hires_batch_begin();
 		for (legacy_u32 index = 0; index < hypervision_scene_count; index++) {
+#ifdef __EMSCRIPTEN__
+			sdl3_browser_render_yield_if_due();
+#endif
 			shape3d_render_hires_primitive(index, &hypervision_scene[index]);
 		}
 		shape3d_hires_batch_end();
@@ -2026,6 +2035,9 @@ void shape3d_render_queued_primitives(void)
 	struct POINT2D points[POLYINFO_MAX_RENDER_POINTS];
 	for (polyinfo_index primitive_index = 0; primitive_index < polyinfonumpolys;
 		 primitive_index++) {
+#ifdef __EMSCRIPTEN__
+		sdl3_browser_render_yield_if_due();
+#endif
 		record_index = (polyinfo_index)polygon_next_index[record_index];
 		legacy_u8 far *record = polyinfoptr + polygon_record_offsets[record_index];
 		if ((record[POLYINFO_TYPE_OFFSET] & RENDER_PRIMITIVE_GHOST_FLAG) != 0U) {

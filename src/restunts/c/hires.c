@@ -1,4 +1,7 @@
 #include "hires.h"
+#ifdef __EMSCRIPTEN__
+#include "../platform/sdl3/sdl3.h"
+#endif
 #include "render_workers.h"
 #include "platform.h"
 #include "shape2d.h"
@@ -1173,6 +1176,10 @@ static void hires_compose_argb(const legacy_u8 *legacy, const legacy_u32 *palett
 	legacy_u32 fade = palette[HIRES_MENU_WHITE_INDEX];
 	const legacy_s32 scale = render_scale, cell_shift = render_cell_shift;
 	for (legacy_s32 y = 0; y < HIRES_LOGICAL_HEIGHT; y++) {
+#ifdef __EMSCRIPTEN__
+		/* The hidden page stays private until every row is complete. */
+		sdl3_browser_render_yield_if_due();
+#endif
 		for (legacy_s32 x = 0; x < HIRES_LOGICAL_WIDTH; x++) {
 			legacy_u32 offset = y * HIRES_LOGICAL_WIDTH + x;
 			legacy_u8 valid = surface != NULL ? surface->valid[offset] : HIRES_CELL_EMPTY;

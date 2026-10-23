@@ -182,7 +182,30 @@ so repeated short waits do not accumulate the browser's nested-timer minimum.
 The existing game clock still targets 60 visual FPS in HyperVision; physics and
 replay formats use the same game code as native builds. This does not require
 an Emscripten main-loop callback or change the native VSync setting.
-Background tabs may still be throttled by the browser.
+On mobile browsers, audio queues account for the actual output device's buffer
+size and sample rate. AdLib output keeps one device period plus a 10 ms
+synthesis tick in reserve. At 48 kHz with 2,048-frame device periods, this adds
+about 53 ms of queued audio, reduced from the earlier two-period reserve of
+85 ms. The synthesis-tick margin covers the changing phase between the 100 Hz
+producer and device reads; a complete initial device buffer alone does not
+cover later reads at every phase. Browser and device output latency is additional
+and is not measured by
+this reserve calculation. Its browser playback callback
+services overdue game timers before consuming PCM, so a delayed game task does
+not leave sound waiting for the next render or input poll. Initialization
+accounts for loading time before enabling synthesis. The reserve is restored
+after a queue reset or underrun, checking converted output rather than the
+resampler's retained input samples. Delayed mobile browser callbacks can
+accumulate up to half a second of backlog before an emergency reset; this does
+not enlarge the normal effects reserve. Replacement music keeps at least half a
+second of decoded audio ready. Long geometry, raster, shadow, and composition
+loops service audio and yield through the same scheduler. Timer callbacks use
+cached input during rendering so resize and graphics-setting events cannot
+replace buffers in the middle of a frame. These changes use the launcher's
+mobile-device detection; desktop browsers and native builds retain their existing
+audio queues and scheduling. Audio synthesis and decoding still share the game
+thread; long stalls, graphics switches, or background-tab throttling can
+interrupt playback.
 
 ## Distribution and rebuilding the audio library
 
@@ -208,7 +231,9 @@ in the kit. See its `wasm-relink.md` and `THIRD-PARTY-NOTICES.txt` for details.
 The pacing regression builds a small WebAssembly fixture with the real Asyncify
 wait implementation, then runs it in Playwright without original game data.
 It checks that input polling shares explicit waits, repeated short waits resume
-through browser message tasks without nesting timers, and waits complete even
+through browser message tasks without nesting timers, render-only yields service
+mobile audio without recursively suspending timer callbacks, desktop render hooks
+remain inactive, and waits complete even
 when animation callbacks are unavailable. Activate the Emscripten SDK and install
 Playwright as described below, then run:
 
@@ -219,6 +244,27 @@ NODE_PATH="$PWD/out/wasm-test-tools/node_modules" node tools/scripts/test-wasm-p
 
 Use `--browser firefox` for Firefox. `--emcc` accepts an explicit compiler path,
 and `--sdl-include` names the SDL3 public include directory from a configured build.
+
+The audio regression links the real SDL, AdLib synthesizer, Vorbis decoder,
+and browser timer code into a small fixture using synthetic instruments and
+an included test recording. It inspects the PCM delivered to WebAudio while
+introducing short main-thread stalls on the mobile browser path. It checks
+startup accounting, audio delivery when only the consumer services timers,
+render cooperation, music pause/resume, audio shutdown, and the unchanged
+desktop queue configuration without original game data. It covers normal and
+larger device periods at 44.1 and 48 kHz, sweeping every millisecond offset in
+the synthesis tick across repeated consumer reads.
+After building the browser game and installing Playwright, run:
+
+```sh
+NODE_PATH="$PWD/out/wasm-test-tools/node_modules" node tools/scripts/test-wasm-audio.js \
+    --build-dir out/sdl3-wasm
+```
+
+`--emcc`, `--sdl-include`, and `--browser-executable` accept explicit tool paths.
+Use `--cpu-slowdown 4` to repeat the audio cases with Chrome CPU throttling.
+The results include the physical device period and the added source reserve in
+milliseconds; they do not measure end-to-end speaker latency.
 
 The actual WebAssembly file I/O regression checks asynchronous commit ordering
 and failure propagation with Node.js (included in the SDK):

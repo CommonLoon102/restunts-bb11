@@ -1,4 +1,7 @@
 #include "shape3d_hires.h"
+#ifdef __EMSCRIPTEN__
+#include "../platform/sdl3/sdl3.h"
+#endif
 
 #if defined(RESTUNTS_SDL3)
 
@@ -1892,6 +1895,9 @@ void shape3d_hires_draw_shadows(void)
 			bounds.bottom = (legacy_s16)target.bottom;
 		}
 		for (legacy_s32 y = bounds.top; y < bounds.bottom; y++) {
+#ifdef __EMSCRIPTEN__
+			sdl3_browser_render_yield_if_due();
+#endif
 			legacy_f64 view_x =
 				(bounds.left + 0.5 - (legacy_s16)projection_center_x * scale) / focal_x;
 			legacy_f64 view_y = ((legacy_s16)projection_center_y * scale - y - 0.5) / focal_y;

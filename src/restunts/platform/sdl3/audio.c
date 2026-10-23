@@ -18,6 +18,9 @@
 #include <inlines/pc.h>
 #else
 #include "audio_trace.h"
+#ifdef __EMSCRIPTEN__
+#include "audio_queue.h"
+#endif
 #include "opl2.h"
 #define ADLIB_EMULATOR "nuked"
 #endif
@@ -212,6 +215,69 @@ static const legacy_u16 adlib_frequencies[] = {
 static opl2_chip *adlib_chip;
 static legacy_s32 adlib_initializing;
 static SDL_AudioStream *adlib_stream;
+#ifdef __EMSCRIPTEN__
+static legacy_s32 adlib_reserve_frames;
+static legacy_s32 adlib_device_reading;
+
+/* Buffer silence without advancing the chip or the portable sequencer. This
+ * gives the 100 Hz producer room to refill between complete device reads. */
+static legacy_s32 adlib_prime_stream(void)
+{
+	legacy_s16 silence[ADLIB_TICK_SAMPLES] = {0};
+	legacy_s32 remaining = adlib_reserve_frames;
+	while (remaining > 0) {
+		legacy_s32 frames =
+			remaining < (legacy_s32)ADLIB_TICK_SAMPLES ? remaining : (legacy_s32)ADLIB_TICK_SAMPLES;
+		if (!SDL_PutAudioStreamData(adlib_stream, silence, frames * sizeof(silence[0]))) {
+			return 0;
+		}
+		remaining -= frames;
+	}
+	return 1;
+}
+
+/* SDL's browser backend requests PCM on the main thread. Catch up before
+ * consuming it, including when several delayed device reads arrive together. */
+static void SDLCALL adlib_supply_audio(void *userdata, SDL_AudioStream *stream,
+									   legacy_int additional_amount, legacy_int total_amount)
+{
+	(void)userdata;
+	(void)stream;
+	(void)additional_amount;
+	(void)total_amount;
+	if (!adlib_ready || adlib_device_reading) {
+		return;
+	}
+	adlib_device_reading = 1;
+	sdl3_timer_pump();
+	adlib_device_reading = 0;
+}
+
+static legacy_s32 adlib_recover_mobile_stream(void)
+{
+	legacy_s32 queued = SDL_GetAudioStreamQueued(adlib_stream);
+	legacy_s32 available = SDL_GetAudioStreamAvailable(adlib_stream);
+	if (queued < 0 || available < 0) {
+		return 0;
+	}
+	/* Preserve the device reserve while bounding latency after a long stall. */
+	legacy_u64 reserve_bytes = (legacy_u64)adlib_reserve_frames * sizeof(legacy_s16);
+	legacy_u64 backlog_bytes = (legacy_u64)ADLIB_SAMPLE_RATE *
+							   SDL3_AUDIO_BROWSER_STALL_MILLISECONDS /
+							   SDL3_AUDIO_QUEUE_MILLISECONDS_PER_SECOND * sizeof(legacy_s16);
+	if (backlog_bytes < reserve_bytes) {
+		backlog_bytes = reserve_bytes;
+	}
+	if ((legacy_u64)queued > reserve_bytes + backlog_bytes) {
+		adlib_trace_clear();
+		SDL_ClearAudioStream(adlib_stream);
+		available = 0;
+	}
+	/* Resamplers can retain input history after usable PCM drains. During a
+	 * device read, overdue ticks supply real PCM instead of padding its head. */
+	return available != 0 || adlib_device_reading || adlib_prime_stream();
+}
+#endif
 
 static void adlib_delete_chip(void)
 {
@@ -537,8 +603,28 @@ legacy_u8 dos_audio_driver_initialize(void)
 		return ADLIB_CONTEXTS;
 	}
 	SDL_AudioSpec spec = {SDL_AUDIO_S16, 1, ADLIB_SAMPLE_RATE};
-	adlib_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, NULL, NULL);
-	if (!adlib_stream || !SDL_ResumeAudioStreamDevice(adlib_stream)) {
+	SDL_AudioStreamCallback callback = NULL;
+#ifdef __EMSCRIPTEN__
+	if (sdl3_browser_is_mobile()) {
+		callback = adlib_supply_audio;
+	}
+#endif
+	adlib_stream =
+		SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, callback, NULL);
+	legacy_s32 stream_ready = adlib_stream != NULL;
+#ifdef __EMSCRIPTEN__
+	if (stream_ready && sdl3_browser_is_mobile()) {
+		/* The consumer catches up before each read. One device period plus a
+		 * synthesis tick covers batched reads and the 100 Hz producer phase. */
+		adlib_reserve_frames =
+			sdl3_audio_queue_frames(adlib_stream, ADLIB_SAMPLE_RATE) + ADLIB_TICK_SAMPLES;
+		/* Device setup can take many ticks. Account for them before synthesis
+		 * starts, so elapsed initialization time never becomes queued PCM. */
+		sdl3_timer_pump();
+		stream_ready = adlib_prime_stream();
+	}
+#endif
+	if (!stream_ready || !SDL_ResumeAudioStreamDevice(adlib_stream)) {
 		fprintf(stderr, "Audio unavailable: %s; continuing silently.\n", SDL_GetError());
 		SDL_DestroyAudioStream(adlib_stream);
 		adlib_stream = NULL;
@@ -570,10 +656,19 @@ void sdl3_audio_update(void)
 	if (!adlib_ready || !adlib_stream) {
 		return;
 	}
-	/* Bound latency after a debugger stop or a catch-up burst. */
-	if (SDL_GetAudioStreamQueued(adlib_stream) > (legacy_s32)ADLIB_MAX_QUEUE_BYTES) {
-		adlib_trace_clear();
-		SDL_ClearAudioStream(adlib_stream);
+#ifdef __EMSCRIPTEN__
+	if (sdl3_browser_is_mobile()) {
+		if (!adlib_recover_mobile_stream()) {
+			return;
+		}
+	} else
+#endif
+	{
+		/* Bound latency after a debugger stop or a catch-up burst. */
+		if (SDL_GetAudioStreamQueued(adlib_stream) > (legacy_s32)ADLIB_MAX_QUEUE_BYTES) {
+			adlib_trace_clear();
+			SDL_ClearAudioStream(adlib_stream);
+		}
 	}
 	legacy_s16 samples[ADLIB_TICK_SAMPLES];
 	adlib_generate_samples(samples, ADLIB_TICK_SAMPLES);
