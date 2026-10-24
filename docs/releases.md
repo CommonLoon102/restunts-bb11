@@ -1,7 +1,7 @@
 # Release packages and verification
 
 The **PR validation** and manual **Release** workflows call the same
-`build-packages.yml` workflow. Every successful run produces these 22 archives
+`build-packages.yml` workflow. Every successful run produces these 25 archives
 and a SHA-256 sidecar for each archive:
 
 | Archive | Target baseline |
@@ -15,6 +15,9 @@ and a SHA-256 sidecar for each archive:
 | `restunts-linux-x86.tar.gz` | 32-bit x86 with SSE2, Debian 12+ |
 | `restunts-linux-x86-no-sse2.tar.gz` | 32-bit x86 without SSE2, Debian 12+ |
 | `restunts-linux-x64.tar.gz` | x86_64, Debian 12+ |
+| `restunts-linux-appimage-x64.tar.gz` | x86_64 AppImage, Ubuntu 10.04-compatible sysroot, glibc 2.11+ |
+| `restunts-linux-appimage-x86.tar.gz` | 32-bit x86 AppImage with SSE2, Ubuntu 10.04-compatible sysroot, glibc 2.11+ |
+| `restunts-linux-appimage-x86-no-sse2.tar.gz` | 32-bit x86 AppImage without SSE2, Ubuntu 10.04-compatible sysroot, glibc 2.11+ |
 | `restunts-windows-arm64.zip` | ARM64, Windows 10+ |
 | `restunts-windows-x86.zip` | 32-bit x86 with SSE2, Windows XP SP2+ |
 | `restunts-windows-x86-no-sse2.zip` | 32-bit x86 without SSE2, Windows XP SP2+ |
@@ -29,11 +32,14 @@ and a SHA-256 sidecar for each archive:
 | `restunts-macos-universal.tar.gz` | Intel and Apple Silicon, macOS 11.0+ |
 | `restunts-browser.zip` | Offline HTML/WebAssembly |
 
-Android targets build separate installable APKs, verify signatures, SDK levels,
-ABI-specific libraries and assets, and test folder/ZIP import. The APKs use CI
-debug signing keys; updates from a different key require uninstalling the old
-app, removing app data. See [Android builds and controls](android.md) for import,
-TV setup, development signing and device testing.
+Each Android target builds both the game and Genghost as separate installable
+APKs for its ABI. CI verifies both apps' signatures, SDK levels, native files and
+assets, and tests folder/ZIP import. PR packages use debug signing keys; trusted
+Release dispatches sign both apps with the configured persistent release key.
+Updates require the same signing key for each app. A different key may require
+uninstalling the old app and removing its private data. See
+[Android builds and controls](android.md) and [Genghost for Android](genghost-android.md)
+for setup, signing and device testing.
 
 These are build baselines, not a claim that CI exercises every OS version and
 CPU. The full golden replay suites run on native Linux SDL3 and/or 16-bit DOS,
@@ -52,25 +58,81 @@ are distributed in these archives. Enhanced opponent portraits and skyboxes
 are included for the SDL3 game; the browser embeds them in `restunts.html`.
 Packages retain their directory layout so the game can locate those assets.
 
+Every release includes the Tesla Roadster Rocket (`TERR`) and McMurtry Speirling
+PURE (`MCMU`). Only their eight `.RES`, `.3SH` and `.VSH` resources are shipped:
+native packages install them in `bin/cars/`, DOS16 uses `cars/` at the archive
+root, Android bundles them in both APKs, and the browser embeds `/assets/cars/`
+and retains the files in its relinking kit. The original game files remain
+required. Car authoring metadata, readmes and editable models are not packaged.
+
+Car discovery and loading search loose files in the selected game-data folder
+and beside the executable before their `cars/` subfolders and the bundled
+resource folder. Any compatible car placed in these folders is discovered
+automatically; duplicate car IDs appear once, with loose files taking priority.
+
 Desktop packages contain the game, physics dumper, renderer dumper, statically
 linked SDL, its license, and the replaceable Nuked OPL2 shared library. The
 exact Nuked source, license, standalone build files and build context are under
 `share/restunts/nuked-opl2-lite/`. Keep the complete package together.
+
+The Linux AppImage archive also contains `bin/restunts.AppImage`, embedding the
+complete runtime, enhancement artwork, notices, licenses and Nuked rebuild kit.
+The ordinary binaries and source kit remain available outside the AppImage.
+CI also uploads each standalone image as an `appimage-<target>` artifact for
+direct download; restore its executable bit with `chmod +x restunts.AppImage`
+after downloading. Release archives retain the complete package and its manifest.
+Run the AppImage with your original game directory:
+
+```sh
+bin/restunts.AppImage --data-dir /path/to/Stunts
+```
+
+AppImages use FUSE to mount their filesystem. Docker containers usually lack
+FUSE, so extract the image first and run its launcher from any working directory:
+
+```sh
+/path/to/bin/restunts.AppImage --appimage-extract
+./squashfs-root/AppRun --data-dir /path/to/Stunts
+```
+
+Extraction also allows replacing `squashfs-root/usr/lib/libnuked-opl2.so` with a
+library rebuilt from the included sources. All three AppImages use a verified
+legacy sysroot targeting Ubuntu 10.04's glibc 2.11. A modern compiler runs on the
+build host; the host's newer glibc is neither linked nor bundled. Each AppImage
+includes its X11 and ALSA dependencies, their licenses and required source.
+
+PR and Release CI build all three variants and test the exact uploaded archive
+bytes on Ubuntu 10.04, Ubuntu 26.10, Fedora 20 and Fedora 44. These are the oldest
+supported and newest stable Ubuntu/Fedora releases selected for this matrix.
+Ubuntu 10.04 tests run as an ordinary user in QEMU with its original kernel
+and userspace; current Ubuntu and Fedora tests use isolated Docker userspaces. The 32-bit packages run
+with compatible 32-bit system libraries, including on current 64-bit distributions.
+The no-SSE2 variant also runs on QEMU's Pentium III CPU model.
+
+The tests check launcher options and shared libraries, keep the game menu
+running with `--nointro`, verify a replay frame against its expected hash, and
+capture non-silent output from the bundled ALSA backend. The Ubuntu 10.04 VM
+also checks ordinary FUSE launching and records the actual X11 menu window.
+Container tests use AppImage extraction so they do not require FUSE. Original
+game data is downloaded separately for testing and is never included in a package. Compatibility failures block both
+PR validation and release publication.
 
 The browser package contains the single playable `restunts.html`, notices,
 licenses, and `share/restunts/wasm-relink/`. The relinking kit contains Nuked's
 source and the object/archive files needed to rebuild the HTML with a modified
 library. Only the HTML is needed to play; distribute the complete archive.
 
-Android ZIPs contain `bin/restunts.apk`, Android setup instructions, dependency
-notices/licenses, and the exact Nuked sources/build settings. Enhancement
-assets are inside the APK; original game data must be imported at launch.
+Each Android ZIP contains `bin/restunts.apk` for the game and `bin/genghost.apk`
+for the ghost generator, both matching the archive's ARMv7 or ARM64 ABI. It also
+includes both apps' setup guides, dependency notices/licenses, and the exact
+Nuked sources/build settings. Enhancement assets are inside the game APK;
+select your original game folder separately in each app.
 
 DOS uses hardware AdLib/OPL and includes neither Nuked binaries nor its sources.
 DOS32 includes `bin/CWSDPMI.EXE` and the accompanying CWSDPMI redistribution
 material. Copy the DOS32 executables, CWSDPMI and enhanced artwork directories
 into the writable directory containing your original game files. DOS16 keeps its executables at the archive root; copy them into the original
-game directory before running.
+game directory, including the `cars/` folder, before running.
 
 Each package also contains `PACKAGE-MANIFEST.json`, recording the source commit,
 build run and hashes of its packaged files. The corresponding `<archive>.sha256`

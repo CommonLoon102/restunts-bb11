@@ -301,12 +301,38 @@ the first argument. Existing game and dump parameters follow it unchanged:
 ```sh
 out/sdl3-linux-x64/restunts --data-dir stunts --nointro
 out/sdl3-linux-x64/repldump --data-dir stunts DEFAULT.RPL
+out/sdl3-linux-x64/repldump --data-dir stunts DEFAULT.RPL --time --owoot
 out/sdl3-linux-x64/pixldump --data-dir stunts DEFAULT.RPL 2 0 5
 ```
 
 Windows uses the corresponding `.exe` names. Dump outputs and saved game data
 are written in the selected data directory, so it must be writable. Keep the
 original game resources and replay/car additions together there.
+
+Custom cars are also discovered automatically in `cars/` inside the game-data
+folder, beside the executable, and in the bundled car resource directory.
+Native packages include Tesla (`TERR`) and McMurtry (`MCMU`) in `bin/cars/`.
+Keep each car's physics resource, 3D models and dashboard resources together.
+Loose car files in the game-data folder or beside the executable retain priority
+over files in `cars/`; duplicate IDs appear only once in the car menu. Source
+builds also search `assets/cars/`. Browser and Android builds bundle these same
+car resources automatically.
+
+`repldump --time` also writes a `.tim` file with the replay's basename, such as
+`DEFAULT.tim`. Its first line contains the player's driving time to the finish,
+excluding penalties and the recording tail after finishing, formatted like the
+replay viewer as `m:ss.hh` (for example, `3:03.00`). The second line contains the
+penalty counted at the finish as `m:ss`, such as `0:30` or `4:00`, with `0:00`
+for no penalty. The line separator is CRLF, with no surrounding spaces or
+trailing newline. The file
+starts empty; a replay that crashes before finishing
+or never finishes leaves it empty. Loading or writing errors return a nonzero
+exit code. The flag is case-insensitive and combines with physics switches and
+`--owoot`; the latter still writes its separate `.owo` result. Omitting `--time`
+leaves any existing `.tim` file untouched.
+
+Physics dumps use the recording's stored 10 or 20 Hz rate, matching the
+replay viewer. Adding `--time` does not change the `.BNI` or `.owo` output.
 
 On Linux, BSD, Haiku, Windows, and macOS, the interactive game defaults to serial rendering with
 zero background render workers. `RESTUNTS_RENDER_WORKERS=auto` enables automatic
@@ -350,9 +376,70 @@ at four times the original width and height. The 320x200 mode uses the original
 horizon strips. Banked and inverted views work at every HyperVision resolution.
 Runtime installs include the required
 `bin/skyboxes/` directory; retain it beside the executable when packaging.
-Missing or invalid textures fall back to the original artwork. Menus support
-keyboard, mouse, and an SDL joystick. Existing driving and replay controls remain
-available:
+Missing or invalid textures fall back to the original artwork. Menus accept
+keyboard, mouse, joystick, and controller input interchangeably, regardless of
+the driving input method selected in Options. SDL3 builds detect controllers
+automatically using SDL's standard gamepad mappings for Xbox, PlayStation, and
+other recognized controllers. Connecting or disconnecting a controller during
+play updates the available devices automatically.
+
+A connected controller with rumble support gives a short 40 ms pulse for the
+player's suspension bump, wall scrape, and crash sounds during racing and replay
+playback, when the controller was the last input used. Using the keyboard, mouse,
+touch, or tilt steering stops controller feedback until the controller is used
+again. Silent contacts, soft landings, opponent-only impacts, disabled sound
+effects, paused replays, and timeline seeking do not rumble. Controllers without
+rumble support skip the effect, and rumble stops when the game loses focus.
+Controller vibration starts on in non-Android SDL3 builds. Use
+`--controller-vibration:off` to disable it, or `--controller-vibration:on` to
+select the default explicitly. Supply the option once; its name and value are
+case-insensitive. Android uses the launcher's existing **Vibration** option
+instead.
+
+During a race, moving the right stick selects controller steering; pressing a
+keyboard steering key selects keyboard steering. Only the most recently used
+steering source affects the wheel. Returning the stick to center does not take
+steering back from the keyboard. Controller pedals and gear changes remain
+available independently of steering ownership. The original Mouse and Joystick
+driving selections also remain available.
+
+The right stick steers and navigates menus. Right-stick up accelerates and down
+brakes, using the existing joystick's on/off pedal behavior. Horizontal steering
+is graded and can be combined with either pedal. The left stick rotates the F3
+custom camera during driving and replay playback; it has no driving action.
+Moving the right stick also starts the race during the truck unloading sequence,
+just like pressing a keyboard arrow.
+Holding a right-stick or D-pad direction repeats menu navigation, including
+track and replay file selection. Both the right stick and all four D-pad
+directions navigate the replay controls. While driving, D-pad left retains Q
+and D-pad right has no action.
+
+| Controller input | Xbox / PlayStation label | Action |
+| --- | --- | --- |
+| Bottom face button | A / Cross | Enter |
+| Left or right trigger | LT or RT / L2 or R2 | Space |
+| Right stick click | R3 | Enter in menus and at replay controls |
+| D-pad up / down | Same | Up / Down in menus and replay controls; shift up / down while driving |
+| Right face button | B / Circle | Escape |
+| Left or right bumper | LB or RB / L1 or R1 | Escape |
+| Top face button | Y / Triangle | T: switch player / opponent view |
+| Left face button | X / Square | D: show / hide dashboard |
+| D-pad left | Same | Left in menus and replay controls; Q while driving |
+| D-pad right | Same | Right in menus and replay controls |
+| View button | View / Share or Create | C: cycle camera |
+| Menu button | Menu / Options | Open the race or replay menu |
+
+Escape or B / Circle returns from opponent selection or either car-selection
+screen to its previous menu without activating the highlighted button.
+Choosing Re-start driving from the replay menu asks "Re-start driving?" using
+the same No / Yes choices as Exit to Dos. Escape, B / Circle, or either bumper
+cancels without restarting the race.
+
+Controller steering uses the same incremental steering commands as the existing
+joystick implementation, so replay files keep their original format. Replays
+record gas and brake as on/off flags rather than pedal percentages.
+
+Existing keyboard driving and replay controls remain available:
 
 - **Up/Down** accelerate and brake; **Left/Right** steer.
 - **F1–F4** select cockpit, follow, custom, and trackside cameras.

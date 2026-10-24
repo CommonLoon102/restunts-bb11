@@ -10,6 +10,9 @@
 #include "camera.h"
 #include "video_frame.h"
 #include "shape2d.h"
+#ifdef RESTUNTS_AMIGA
+#include "shape2d_internal.h"
+#endif
 #include "car_model.h"
 #include "scene_resources.h"
 #include "projection.h"
@@ -477,6 +480,21 @@ static void frame_mark_changed_rects(void)
 
 void frame_present(struct RECTANGLE *cliprect)
 {
+#ifdef RESTUNTS_AMIGA
+	if (render_window_sprite == &screen_sprite) {
+		/* Native races draw into the indexed screen, already hidden behind
+		 * the displayed planar page. Presentation follows dashboard updates. */
+		sprite_select_screen_compat();
+		mouse_draw_transparent_check();
+		if (slow_video_mgmt_copy != 0) {
+			frame_buffer_camera_headings[1] = last_rendered_camera_heading;
+			for (legacy_s16 i = 0; i < FRAME_DIRTY_RECT_COUNT; i++) {
+				frame_rects_page1[i] = frame_rects_page0[i];
+			}
+		}
+		return;
+	}
+#endif
 	if (video_uses_page_flipping != 0) {
 		return;
 	}
@@ -1958,8 +1976,196 @@ static void frame_select_brake_paint(legacy_s16 shape_index)
 	}
 }
 
-static legacy_s16 frame_draw_sorted_shapes(struct FRAME_CAR_RENDER *cars)
+/* Resource models begin with eight enclosing-box vertices. Keep those in each
+ * batch so a clipped first segment cannot hide later segments in the same tile. */
+#define FRAME_RACING_LINE_BATCH_SIZE 60U
+#define FRAME_RACING_LINE_BOUNDS_VERTICES 8U
+#define FRAME_RACING_LINE_SEGMENT_VERTICES 4U
+#define FRAME_RACING_LINE_PRIMITIVE_SIZE 7U
+
+#if !defined(RESTUNTS_SDL3)
+extern legacy_u16 polygon_buffer_full;
+static legacy_u8 frame_racing_line_enabled = 1;
+static legacy_u8 frame_racing_line_submitted;
+
+static legacy_s16 frame_retry_without_racing_line(void)
 {
+	if (frame_racing_line_enabled != 0 && frame_racing_line_submitted != 0 &&
+		polygon_buffer_full != 0) {
+		/* Guidance must never spend the fixed queue budget needed by the world.
+		 * Retry the complete scene, including batches queued before exhaustion. */
+		frame_racing_line_enabled = 0;
+		return 1;
+	}
+	return 0;
+}
+#endif
+
+static legacy_s16 frame_has_racing_line(const struct FRAME_TILE *tile)
+{
+#if !defined(RESTUNTS_SDL3)
+	if (frame_racing_line_enabled == 0) {
+		return 0;
+	}
+#endif
+	if (tile == 0 || !ghost_is_active()) {
+		return 0;
+	}
+	for (legacy_s16 south = tile->south; south <= tile->last_south; south++) {
+		for (legacy_s16 east = tile->east; east <= tile->last_east; east++) {
+			if (ghost_racing_line_first(east, south) != 0) {
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+static struct VECTOR frame_racing_line_origin(const struct FRAME_TILE *tile,
+											  const struct FRAME_CAMERA *camera)
+{
+	if (tile->element != 0) {
+		return tile->position;
+	}
+	struct VECTOR origin;
+	origin.x = LEGACY_S16_WRAP_SUB(track_column_centers[tile->east], camera->position.x);
+	origin.y = LEGACY_S16_WRAP_SUB(tile->height, camera->position.y);
+	origin.z = LEGACY_S16_WRAP_SUB(track_row_centers[tile->south], camera->position.z);
+	return origin;
+}
+
+static legacy_s16 frame_draw_racing_line(const struct FRAME_TILE *tile,
+										 const struct FRAME_CAMERA *camera,
+										 legacy_s8 redraw_transform_flags)
+{
+	static const legacy_u8 paints[] = {12, 14, 10}; /* Bright red, yellow, green. */
+	legacy_u8 vertices[(FRAME_RACING_LINE_BOUNDS_VERTICES +
+						FRAME_RACING_LINE_BATCH_SIZE * FRAME_RACING_LINE_SEGMENT_VERTICES) *
+					   SHAPE3D_VERTEX_SIZE];
+	legacy_u8 primitives[FRAME_RACING_LINE_BATCH_SIZE * FRAME_RACING_LINE_PRIMITIVE_SIZE +
+						 SHAPE3D_PRIMITIVE_HEADER_SIZE];
+	legacy_u8 visibility[FRAME_RACING_LINE_BATCH_SIZE * SHAPE3D_VISIBILITY_MASK_SIZE];
+	struct SHAPE3D shape = {0};
+	struct TRANSFORMEDSHAPE3D instance = {0};
+	shape.shape3d_vertex_bytes = vertices;
+	shape.shape3d_primitives = primitives;
+	shape.shape3d_numpaints = 1;
+	shape.shape3d_visibility_masks = visibility;
+	shape.shape3d_front_facing_masks = visibility;
+	for (legacy_u16 byte = 0; byte < sizeof(visibility); byte++) {
+		visibility[byte] = 255;
+	}
+	instance.shapeptr = &shape;
+	instance.rectptr = &frame_sorted_shapes_rect;
+	instance.pos = frame_racing_line_origin(tile, camera);
+	instance.ts_flags =
+		redraw_transform_flags | FRAME_TRANSFORM_FLAGS_DEFAULT | SHAPE3D_NO_SHADOW_RECEIVE_FLAG;
+	instance.culling_distance = FRAME_DEFAULT_TRANSFORM_DISTANCE;
+	struct VECTOR origin;
+	origin.x = LEGACY_S16_WRAP_ADD(instance.pos.x, camera->position.x);
+	origin.y = LEGACY_S16_WRAP_ADD(instance.pos.y, camera->position.y);
+	origin.z = LEGACY_S16_WRAP_ADD(instance.pos.z, camera->position.z);
+
+	for (legacy_s16 south = tile->south; south <= tile->last_south; south++) {
+		for (legacy_s16 east = tile->east; east <= tile->last_east; east++) {
+			const struct GHOST_RACING_LINE_SEGMENT *segment = ghost_racing_line_first(east, south);
+			while (segment != 0) {
+				struct VECTOR minimum = {LEGACY_S16_MAX, LEGACY_S16_MAX, LEGACY_S16_MAX};
+				struct VECTOR maximum = {-32768, -32768, -32768};
+				legacy_u16 count = 0;
+				while (segment != 0 && count < FRAME_RACING_LINE_BATCH_SIZE) {
+					const struct VECTORLONG *corners[FRAME_RACING_LINE_SEGMENT_VERTICES];
+					corners[0] = &segment->start_left;
+					corners[1] = &segment->start_right;
+					corners[2] = &segment->end_right;
+					corners[3] = &segment->end_left;
+					legacy_u16 first = FRAME_RACING_LINE_BOUNDS_VERTICES +
+									   count * FRAME_RACING_LINE_SEGMENT_VERTICES;
+					legacy_u8 *primitive = primitives + count * FRAME_RACING_LINE_PRIMITIVE_SIZE;
+					primitive[0] = FRAME_RACING_LINE_SEGMENT_VERTICES;
+					/* A ribbon is visible from either side, including inside a loop.
+					 * Its surface lift supplies depth separation from road artwork. */
+					primitive[1] = 1;
+					primitive[2] = paints[ghost_racing_line_color(
+						frame_state->playerstate.car_actual_speed, segment->speed)];
+					for (legacy_u16 corner = 0; corner < FRAME_RACING_LINE_SEGMENT_VERTICES;
+						 corner++) {
+						struct VECTOR vertex;
+						vertex.x =
+							LEGACY_S16_WRAP_SUB(position_to_word(corners[corner]->lx), origin.x);
+						vertex.y =
+							LEGACY_S16_WRAP_SUB(position_to_word(corners[corner]->ly), origin.y);
+						vertex.z =
+							LEGACY_S16_WRAP_SUB(position_to_word(corners[corner]->lz), origin.z);
+						shape3d_vertex_write(&shape, first + corner, &vertex);
+						primitive[3 + corner] = (legacy_u8)(first + corner);
+						if (vertex.x < minimum.x) {
+							minimum.x = vertex.x;
+						}
+						if (vertex.y < minimum.y) {
+							minimum.y = vertex.y;
+						}
+						if (vertex.z < minimum.z) {
+							minimum.z = vertex.z;
+						}
+						if (vertex.x > maximum.x) {
+							maximum.x = vertex.x;
+						}
+						if (vertex.y > maximum.y) {
+							maximum.y = vertex.y;
+						}
+						if (vertex.z > maximum.z) {
+							maximum.z = vertex.z;
+						}
+					}
+					count++;
+					segment = ghost_racing_line_next(segment);
+				}
+				for (legacy_u16 corner = 0; corner < FRAME_RACING_LINE_BOUNDS_VERTICES; corner++) {
+					struct VECTOR vertex;
+					vertex.x = (corner & 1U) != 0 ? maximum.x : minimum.x;
+					vertex.y = (corner & 4U) != 0 ? maximum.y : minimum.y;
+					vertex.z = (corner & 2U) != 0 ? maximum.z : minimum.z;
+					shape3d_vertex_write(&shape, corner, &vertex);
+				}
+				shape.shape3d_numverts =
+					FRAME_RACING_LINE_BOUNDS_VERTICES + count * FRAME_RACING_LINE_SEGMENT_VERTICES;
+				shape.shape3d_numprimitives = count;
+				primitives[count * FRAME_RACING_LINE_PRIMITIVE_SIZE] = SHAPE3D_PRIMITIVE_EMPTY;
+				/* Classic clipping inspects the next primitive's flags before its
+				 * type, including when the last polygon in a full batch is hidden. */
+				primitives[count * FRAME_RACING_LINE_PRIMITIVE_SIZE + 1] = 0;
+#if !defined(RESTUNTS_SDL3)
+				frame_racing_line_submitted = 1;
+#endif
+				if ((legacy_s16)shape3d_transform_and_queue(&instance) > 0) {
+					return 1;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+static legacy_s16 frame_draw_sorted_shapes(struct FRAME_CAR_RENDER *cars,
+										   const struct FRAME_TILE *tile,
+										   const struct FRAME_CAMERA *camera,
+										   legacy_s8 redraw_transform_flags)
+{
+	legacy_s16 racing_line_pending = frame_has_racing_line(tile);
+	legacy_s16 racing_line_depth = 0;
+	legacy_s16 depth_sort_racing_line = 1;
+#if defined(RESTUNTS_SDL3)
+	depth_sort_racing_line = supersight_enabled == 0;
+#endif
+	if (racing_line_pending != 0 && depth_sort_racing_line != 0) {
+		struct VECTOR origin = frame_racing_line_origin(tile, camera);
+		struct VECTOR view;
+		mat_mul_vector(&origin, &mat_temp, &view);
+		/* Follow the road's own tile sort point, immediately above its paint.
+		 * Merge a virtual entry instead of using a slot needed by car/debris shapes. */
+		racing_line_depth = LEGACY_S16_WRAP_SUB(view.z, 1);
+	}
 	if (transformedshape_counter != 0) {
 		if (transformedshape_counter >= FRAME_SORT_MINIMUM_SHAPE_COUNT
 #if defined(RESTUNTS_SDL3)
@@ -1973,6 +2179,13 @@ static legacy_s16 frame_draw_sorted_shapes(struct FRAME_CAR_RENDER *cars)
 		// Draw red overlights on the brake lights on own and opponent's car
 		for (legacy_s16 sort_index = 0; sort_index < transformedshape_counter; sort_index++) {
 			legacy_s16 shape_index = transformedshape_indices[sort_index];
+			if (racing_line_pending != 0 &&
+				(depth_sort_racing_line == 0 ||
+				 racing_line_depth > transformedshape_zarray[shape_index])) {
+				racing_line_pending = 0;
+				/* A full optional line never suppresses the remaining world shapes. */
+				(void)frame_draw_racing_line(tile, camera, redraw_transform_flags);
+			}
 			frame_select_brake_paint(shape_index);
 
 			legacy_s16 transform_result =
@@ -1994,6 +2207,9 @@ static legacy_s16 frame_draw_sorted_shapes(struct FRAME_CAR_RENDER *cars)
 				}
 			}
 		}
+	}
+	if (racing_line_pending != 0) {
+		(void)frame_draw_racing_line(tile, camera, redraw_transform_flags);
 	}
 	return 0;
 }
@@ -2064,7 +2280,7 @@ static legacy_s16 frame_draw_adaptive_particles(const struct FRAME_CAMERA *camer
 			&particle_scene_objects[frame_state->game_particle_shape_index[index]];
 		frame_add_dynamic_shape(object, index, flags, material, 0, &camera->position);
 	}
-	return frame_draw_sorted_shapes(cars);
+	return frame_draw_sorted_shapes(cars, 0, 0, 0);
 }
 #endif
 
@@ -2270,7 +2486,8 @@ static legacy_s16 frame_draw_tiles(const struct FRAME_TILE_SELECTION *tiles,
 
 		frame_add_start_flag(&tile, camera, redraw_transform_flags);
 
-		if (frame_draw_sorted_shapes(cars) != 0 && supersight_enabled != 0) {
+		if (frame_draw_sorted_shapes(cars, &tile, camera, redraw_transform_flags) != 0 &&
+			supersight_enabled != 0) {
 			return 1;
 		}
 	}
@@ -2299,6 +2516,29 @@ static void frame_draw_supersight(struct FRAME_TILE_SELECTION *tiles, struct FRA
 	}
 }
 #else
+static void frame_draw_classic(const struct FRAME_TILE_SELECTION *tiles,
+							   struct FRAME_CAMERA *camera, struct FRAME_CAR_RENDER *cars,
+							   legacy_s8 buffer_index, legacy_s8 redraw_transform_flags,
+							   legacy_s8 animated_material)
+{
+	legacy_s8 initial_brake_paint = backlights_paint_override;
+	frame_racing_line_enabled = 1;
+	frame_racing_line_submitted = 0;
+	frame_place_cars(tiles, cars);
+	(void)frame_draw_tiles(tiles, camera, cars, redraw_transform_flags, animated_material);
+	if (frame_retry_without_racing_line() != 0) {
+		polyinfo_reset();
+		backlights_paint_override = initial_brake_paint;
+		frame_begin(buffer_index);
+		frame_draw_clouds(camera, redraw_transform_flags);
+		cars[PLAYER_CAR_INDEX].explosion_visible = 0;
+		cars[OPPONENT_CAR_INDEX].explosion_visible = 0;
+		frame_place_cars(tiles, cars);
+		(void)frame_draw_tiles(tiles, camera, cars, redraw_transform_flags, animated_material);
+	}
+	frame_racing_line_enabled = 1;
+}
+
 static legacy_s16 supersight_attempt_hint;
 static legacy_u8 supersight_probe_frames;
 static legacy_u8 supersight_view_valid;
@@ -2368,6 +2608,8 @@ static void frame_draw_supersight(struct FRAME_TILE_SELECTION *tiles, struct FRA
 		tiles->first = FRAME_SUPERSIGHT_TILE_COUNT - FRAME_SUPERSIGHT_MINIMUM_TILES;
 	}
 	legacy_s8 initial_brake_paint = backlights_paint_override;
+	frame_racing_line_enabled = 1;
+	frame_racing_line_submitted = 0;
 	for (;;) {
 		legacy_s16 threshold_index = attempt;
 		if (threshold_index >= (legacy_s16)sizeof(supersight_detail_thresholds)) {
@@ -2376,16 +2618,21 @@ static void frame_draw_supersight(struct FRAME_TILE_SELECTION *tiles, struct FRA
 		tiles->detail_threshold = supersight_detail_thresholds[threshold_index];
 		cars[PLAYER_CAR_INDEX] = placed_cars[PLAYER_CAR_INDEX];
 		cars[OPPONENT_CAR_INDEX] = placed_cars[OPPONENT_CAR_INDEX];
-		if (frame_draw_tiles(tiles, camera, cars, redraw_transform_flags, animated_material) == 0 ||
-			tiles->first == FRAME_SUPERSIGHT_TILE_COUNT - FRAME_SUPERSIGHT_MINIMUM_TILES) {
-			supersight_attempt_hint = attempt;
-			return;
-		}
-		attempt++;
-		if (attempt > 1) {
-			tiles->first += FRAME_SUPERSIGHT_DISCARD_BATCH;
-			if (tiles->first > FRAME_SUPERSIGHT_TILE_COUNT - FRAME_SUPERSIGHT_MINIMUM_TILES) {
-				tiles->first = FRAME_SUPERSIGHT_TILE_COUNT - FRAME_SUPERSIGHT_MINIMUM_TILES;
+		legacy_s16 exhausted =
+			frame_draw_tiles(tiles, camera, cars, redraw_transform_flags, animated_material);
+		if (frame_retry_without_racing_line() == 0) {
+			if (exhausted == 0 ||
+				tiles->first == FRAME_SUPERSIGHT_TILE_COUNT - FRAME_SUPERSIGHT_MINIMUM_TILES) {
+				supersight_attempt_hint = attempt;
+				frame_racing_line_enabled = 1;
+				return;
+			}
+			attempt++;
+			if (attempt > 1) {
+				tiles->first += FRAME_SUPERSIGHT_DISCARD_BATCH;
+				if (tiles->first > FRAME_SUPERSIGHT_TILE_COUNT - FRAME_SUPERSIGHT_MINIMUM_TILES) {
+					tiles->first = FRAME_SUPERSIGHT_TILE_COUNT - FRAME_SUPERSIGHT_MINIMUM_TILES;
+				}
 			}
 		}
 		polyinfo_reset();
@@ -2530,7 +2777,13 @@ static void frame_finish(legacy_s8 buffer_index, struct RECTANGLE *cliprect,
 
 void update_frame(legacy_s8 buffer_index, struct RECTANGLE *cliprect)
 {
-	polyinfo_set_supersight(supersight_enabled);
+	/* Ghost guidance adds many small polygons. Native queue growth keeps those
+	 * from consuming the classic scene's fixed budget before nearer cars/roads. */
+	polyinfo_set_supersight(supersight_enabled
+#if defined(RESTUNTS_SDL3)
+							|| ghost_is_active()
+#endif
+	);
 	if (supersight_enabled == 0) {
 		frame_supersight_reset();
 	}
@@ -2565,8 +2818,13 @@ void update_frame(legacy_s8 buffer_index, struct RECTANGLE *cliprect)
 		frame_draw_supersight(&tiles, &camera, cars, buffer_index, redraw_transform_flags,
 							  animated_material);
 	} else {
+#if defined(RESTUNTS_SDL3)
 		frame_place_cars(&tiles, cars);
 		frame_draw_tiles(&tiles, &camera, cars, redraw_transform_flags, animated_material);
+#else
+		frame_draw_classic(&tiles, &camera, cars, buffer_index, redraw_transform_flags,
+						   animated_material);
+#endif
 	}
 
 	legacy_s16 skybox_requires_full_redraw =

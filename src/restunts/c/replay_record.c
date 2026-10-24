@@ -9,6 +9,7 @@
 #include "car_audio.h"
 #ifdef RESTUNTS_SDL3
 #include "../platform/sdl3/touch_game.h"
+#include "../platform/sdl3/controller_game.h"
 #endif
 
 #define INPUT_STEERING_HISTORY_SIZE 64U
@@ -23,6 +24,8 @@
 #define MOUSE_STEERING_DEAD_ZONE 18
 #define MOUSE_LEFT_BUTTON_MASK 1U
 #define MOUSE_RIGHT_BUTTON_MASK 2U
+#define TILT_STEERING_AXIS_LIMIT 32
+#define TILT_STEERING_TARGET_LIMIT 127
 #define KEY_SCAN_GEAR_UP 30
 #define KEY_SCAN_GEAR_DOWN 44
 #define REPLAY_TOTAL_LIMIT_SECONDS 1500U
@@ -158,9 +161,37 @@ static legacy_s16 replay_read_mouse_input(void)
 	return input_flags;
 }
 
+#ifdef RESTUNTS_SDL3
+static legacy_s16 replay_read_joystick_input(enum SDL3_DRIVING_INPUT mode)
+#else
 static legacy_s16 replay_read_joystick_input(void)
+#endif
 {
+#ifdef RESTUNTS_SDL3
+	legacy_s16 axis;
+	switch (mode) {
+		case SDL3_DRIVING_CONTROLLER:
+			axis = sdl3_controller_scaled_x();
+			break;
+		case SDL3_DRIVING_TILT:
+			axis = sdl3_tilt_scaled_x();
+			if (axis > TILT_STEERING_AXIS_LIMIT) {
+				axis = TILT_STEERING_AXIS_LIMIT;
+			} else if (axis < -TILT_STEERING_AXIS_LIMIT) {
+				axis = -TILT_STEERING_AXIS_LIMIT;
+			}
+			/* The motion source applies its own dead zone before scaling the axis. */
+			input_steering_value =
+				LEGACY_S8_FROM_BITS((axis * TILT_STEERING_TARGET_LIMIT) / TILT_STEERING_AXIS_LIMIT);
+			return (legacy_s16)((legacy_u16)get_kb_or_joy_flags() & INPUT_NON_STEERING_MASK);
+		default:
+			axis = joystick_get_scaled_x();
+			break;
+	}
+	legacy_s8 mapped_steering = LEGACY_S8_FROM_BITS(axis);
+#else
 	legacy_s8 mapped_steering = LEGACY_S8_FROM_BITS(joystick_get_scaled_x());
+#endif
 	input_steering_value = mapped_steering;
 	if (mapped_steering > 0) {
 		input_steering_value = joystick_steering_table[(legacy_u8)mapped_steering];
@@ -184,17 +215,30 @@ static legacy_s16 replay_read_live_input(void)
 	}
 
 	legacy_s16 input_flags;
+#ifdef RESTUNTS_SDL3
+	enum SDL3_DRIVING_INPUT mode = sdl3_input_driving_mode();
+	if (mode != SDL3_DRIVING_KEYBOARD) {
+		if (mode == SDL3_DRIVING_MOUSE) {
+#else
 	if (mouse_driving_enabled != 0 || dos_joystick_is_enabled() != 0) {
 		if (mouse_driving_enabled != 0) {
+#endif
 			input_flags = replay_read_mouse_input();
 		} else {
+#ifdef RESTUNTS_SDL3
+			input_flags = replay_read_joystick_input(mode);
+#else
 			input_flags = replay_read_joystick_input();
+#endif
 		}
 		legacy_u16 history_index = (legacy_u16)elapsed_time2 & INPUT_STEERING_HISTORY_MASK;
 		input_steering_history[history_index] = (legacy_u8)input_steering_value;
 		input_steering_history_valid[history_index] = 1;
 	} else {
 		input_flags = get_kb_or_joy_flags();
+#ifdef RESTUNTS_SDL3
+		input_steering_history_valid[(legacy_u16)elapsed_time2 & INPUT_STEERING_HISTORY_MASK] = 0;
+#endif
 	}
 
 	if (kb_get_key_state(KEY_SCAN_GEAR_UP) != 0) {
@@ -204,6 +248,9 @@ static legacy_s16 replay_read_live_input(void)
 		input_flags = (legacy_s16)((legacy_u16)input_flags | INPUT_SHIFT_DOWN_FLAG);
 	}
 #ifdef RESTUNTS_SDL3
+	/* Steering belongs to one device; pedals and gear requests remain independent. */
+	input_flags |= get_kb_or_joy_flags() & INPUT_NON_STEERING_MASK;
+	input_flags |= sdl3_controller_driving_flags() & INPUT_NON_STEERING_MASK;
 	input_flags |= sdl3_touch_take_shift_flags();
 #endif
 	return input_flags;
@@ -238,6 +285,9 @@ void replay_update_input_tick(legacy_s16 force_neutral_input)
 	legacy_s16 input_flags;
 	if (force_neutral_input != 0) {
 		input_flags = 0;
+#ifdef RESTUNTS_SDL3
+		input_steering_history_valid[(legacy_u16)elapsed_time2 & INPUT_STEERING_HISTORY_MASK] = 0;
+#endif
 	} else if (game_replay_mode == REPLAY_MODE_PLAYBACK) {
 		if (gameconfig.game_recordedframes > elapsed_time2) {
 			elapsed_time2++;
@@ -255,6 +305,10 @@ void replay_update_input_tick(legacy_s16 force_neutral_input)
 		input_flags = replay_read_live_input();
 	} else {
 		input_flags = 0;
+#ifdef RESTUNTS_SDL3
+		/* A neutral sample replaces any analog target left in this ring slot. */
+		input_steering_history_valid[(legacy_u16)elapsed_time2 & INPUT_STEERING_HISTORY_MASK] = 0;
+#endif
 	}
 
 	legacy_u16 recording_limit = LEGACY_U16_WRAP_MUL(REPLAY_TOTAL_LIMIT_SECONDS, framespersec);

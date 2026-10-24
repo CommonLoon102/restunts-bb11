@@ -1,6 +1,9 @@
 #include "../../c/legacy.h"
 #include "../../c/platform.h"
 
+#ifdef RESTUNTS_STARTUP_DIRECTORY
+#include "dos_interrupts.h"
+#endif
 #include <string.h>
 
 #define DOS_RUNTIME_INTERRUPT 33
@@ -9,6 +12,15 @@
 #define DOS_RUNTIME_STDOUT_HANDLE 1U
 #define DOS_RUNTIME_STDERR_HANDLE 2U
 #define DOS_RUNTIME_WRITE_ERROR (-1)
+
+/* Watcom's -fpc helpers inspect these byte-sized runtime flags before choosing
+ * hardware arithmetic. Keep them in software mode: our DOS entry point owns
+ * startup and deliberately does not run the CRT's 8087 detection/initializers.
+ * Defining the exact helper ABI symbols also avoids linking that CRT startup. */
+legacy_u8 dos_software_float = 0;
+legacy_u8 dos_software_real87 = 0;
+#pragma aux dos_software_float "__8087"
+#pragma aux dos_software_real87 "__real87"
 
 /* Keep the game's legacy entry points while using the Watcom memory routines. */
 void *_memcpy(void *destination, const void *source, legacy_u16 length)
@@ -59,6 +71,9 @@ void dos_show_startup_error(const legacy_s8 *message)
 
 void dos_process_exit(legacy_s16 status)
 {
+#ifdef RESTUNTS_STARTUP_DIRECTORY
+	dos_startup_restore_data_directory();
+#endif
 	__asm {
 		mov     ax, status
 		mov     ah, DOS_RUNTIME_EXIT_FUNCTION

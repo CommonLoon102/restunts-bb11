@@ -21,7 +21,8 @@ MANIFEST = "PACKAGE-MANIFEST.json"
 MANIFEST_VERSION = 1
 README = "README-PACKAGE.txt"
 DOS_EXECUTABLES = ("restunts", "restunto", "repldump", "repldumo", "pixldump", "pixldumo")
-NATIVE_EXECUTABLES = ("restunts", "repldump", "pixldump")
+DOS32_EXECUTABLES = ("restunts", "repldump", "pixldump")
+NATIVE_EXECUTABLES = (*DOS32_EXECUTABLES, "genghost")
 TARGETS = {
     "android-armv7": ".zip",
     "android-arm64": ".zip",
@@ -30,6 +31,9 @@ TARGETS = {
     "freebsd-x64": ".tar.gz",
     "haiku-x64": ".tar.gz",
     "haiku-x86": ".tar.gz",
+    "linux-appimage-x64": ".tar.gz",
+    "linux-appimage-x86": ".tar.gz",
+    "linux-appimage-x86-no-sse2": ".tar.gz",
     "linux-arm32": ".tar.gz",
     "linux-arm64": ".tar.gz",
     "linux-x86": ".tar.gz",
@@ -62,6 +66,7 @@ ANDROID_VERSIONS = {21: "5.0", 28: "9"}
 ANDROID_ADAPTIVE_ICON_API = 26
 ANDROID_FALLBACK_ICON = "res/mipmap-anydpi-v21/ic_launcher.xml"
 ANDROID_APK = "bin/restunts.apk"
+ANDROID_GENGHOST_APK = "bin/genghost.apk"
 ANDROID_LIBRARIES = ("libSDL3.so", "libmain.so", "libnuked-opl2.so")
 ANDROID_LICENSES = ("THIRD-PARTY-NOTICES.txt", "SDL-LICENSE.txt", "Nuked-OPL2-LICENSE.txt",
                     "stb-LICENSE.txt", "libvpx-LICENSE.txt", "libvpx-PATENTS.txt", "nestegg-LICENSE.txt")
@@ -74,7 +79,20 @@ ANDROID_RESOURCES = {"res/drawable/ic_launcher_foreground.xml", "res/drawable/tv
 ANDROID_METADATA = {"AndroidManifest.xml", "resources.arsc", "META-INF/MANIFEST.MF",
                     "META-INF/com/android/build/gradle/app-metadata.properties",
                     "META-INF/version-control-info.textproto"}
+ANDROID_GENGHOST_ASSETS = {"assets/genghost.md", "assets/genghost-android.md",
+                           "assets/licenses/SDL-LICENSE.txt",
+                           "assets/licenses/Android-NDK-NOTICE.txt",
+                           "assets/licenses/Android-NDK-NOTICE.toolchain.txt"}
+ANDROID_GENGHOST_RESOURCES = {"res/drawable/ic_genghost.xml"}
 ELF_MAGIC = b"\x7fELF"
+APPIMAGE = "bin/restunts.AppImage"
+APPIMAGE_TARGETS = {
+    "linux-appimage-x64": "x64",
+    "linux-appimage-x86": "x86",
+    "linux-appimage-x86-no-sse2": "x86",
+}
+APPIMAGE_MAGIC = b"AI\x02"
+APPIMAGE_MAGIC_OFFSET = 8
 ELF_CLASS_32 = 1
 ELF_CLASS_64 = 2
 ELF_DATA_LSB = 1
@@ -105,6 +123,10 @@ SKYBOX_IMAGES = ("scen", "sce2", "sce3", "sce4")
 OPPONENT_COUNT = 6
 MENU_BACKGROUNDS = ("main", "showroom", "opponent")
 MUSIC_TRACKS = ("titl", "slct", "over", "vict")
+CUSTOM_CAR_FILES = ("CARMCMU.RES", "CARTERR.RES", "STMCMU.3SH", "STTERR.3SH",
+                    "STDAMCMU.VSH", "STDATERR.VSH", "STDBMCMU.VSH", "STDBTERR.VSH")
+CUSTOM_CAR_DIRECTORIES = {"cars", "bin/cars", "assets/cars",
+                          "share/restunts/wasm-relink/data/assets/cars"}
 SDL_DECODER_LICENSES = ("stb-LICENSE", "libvpx-LICENSE", "libvpx-PATENTS", "nestegg-LICENSE")
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 COMMIT_PATTERN = re.compile(r"[0-9a-f]{40}")
@@ -127,13 +149,33 @@ def archive_name(target):
     return f"restunts-{target}{TARGETS[target]}"
 
 
+def custom_car_source(name):
+    path = PurePosixPath(name)
+    if str(path.parent) in CUSTOM_CAR_DIRECTORIES and path.name in CUSTOM_CAR_FILES:
+        return ROOT / "assets/cars" / path.name
+    return None
+
+
+def validate_custom_car_resources(files):
+    for name, content in files.items():
+        source = custom_car_source(name)
+        if source is not None:
+            require(source.is_file(), f"Missing custom car source resource: {source}")
+            require(content == source.read_bytes(),
+                    f"Custom car resource differs from source: {name}")
+
+
+def custom_car_files(directory):
+    return {f"{directory}/{name}" for name in CUSTOM_CAR_FILES}
+
+
 def checked_path(name):
     path = PurePosixPath(name)
     require(name and path.parts and not path.is_absolute() and ".." not in path.parts and
             ":" not in name and not any(ord(character) < 32 for character in name) and
             "\\" not in name and str(path) == name,
             f"Unsafe or noncanonical package path: {name!r}")
-    require(path.suffix.lower() not in ORIGINAL_SUFFIXES,
+    require(path.suffix.lower() not in ORIGINAL_SUFFIXES or custom_car_source(name) is not None,
             f"Original game content or regression output is forbidden: {name}")
     require("stunts" not in (part.lower() for part in path.parts),
             f"Original game directory is forbidden: {name}")
@@ -182,6 +224,7 @@ def android_required_resources(target):
 
 def android_required_assets():
     required = {f"assets/licenses/{name}" for name in ANDROID_LICENSES}
+    required |= custom_car_files("assets/cars")
     required |= {f"assets/skyboxes/{theme}-{image}.png"
                  for theme in SKYBOX_THEMES for image in SKYBOX_IMAGES}
     required |= {f"assets/menus/{background}.png" for background in MENU_BACKGROUNDS}
@@ -199,6 +242,31 @@ def validate_elf(target, name, content, elf_class, machine):
             content[ELF_DATA_OFFSET] == ELF_DATA_LSB and
             struct.unpack_from("<H", content, ELF_MACHINE_OFFSET)[0] == machine,
             f"Wrong ELF architecture for {target}: {name}")
+
+
+def validate_android_pie(target, name, content):
+    elf_class, machine = ELF_ARCHITECTURES[target.split("-")[1]]
+    validate_elf(target, name, content, elf_class, machine)
+    word = "<I" if elf_class == ELF_CLASS_32 else "<Q"
+    entry = struct.unpack_from(word, content, 24)[0]
+    phoff = struct.unpack_from(word, content, 28 if elf_class == ELF_CLASS_32 else 32)[0]
+    phsize, phcount = struct.unpack_from("<HH", content, 42 if elf_class == ELF_CLASS_32 else 54)
+    require(struct.unpack_from("<H", content, ELF_TYPE_OFFSET)[0] == ELF_TYPE_SHARED and entry,
+            f"Expected an Android ELF PIE executable: {name}")
+    require(phsize == (32 if elf_class == ELF_CLASS_32 else 56) and phcount and
+            phoff >= ELF_HEADER_SIZES[elf_class] and phoff + phsize * phcount <= len(content),
+            f"Missing or truncated ELF program headers: {name}")
+    interpreters = []
+    for index in range(phcount):
+        header = phoff + phsize * index
+        kind = struct.unpack_from("<I", content, header)[0]
+        offset = struct.unpack_from(word, content, header + (4 if elf_class == ELF_CLASS_32 else 8))[0]
+        size = struct.unpack_from(word, content, header + (16 if elf_class == ELF_CLASS_32 else 32))[0]
+        require(offset + size <= len(content), f"Truncated ELF program segment: {name}")
+        if kind == 3:  # PT_INTERP identifies a dynamically linked executable.
+            interpreters.append(content[offset:offset + size])
+    interpreter = b"/system/bin/linker\0" if elf_class == ELF_CLASS_32 else b"/system/bin/linker64\0"
+    require(interpreters == [interpreter], f"Wrong or missing Android ELF PIE interpreter: {name}")
 
 
 def validate_android_apk(target, content):
@@ -236,11 +304,48 @@ def validate_android_apk(target, content):
             require(files[name], f"Empty APK member: {name}")
     missing = required - files.keys()
     require(not missing, f"{target}: missing APK members: {', '.join(sorted(missing))}")
+    validate_custom_car_resources(files)
     elf_class, machine = ELF_ARCHITECTURES[target.split("-")[1]]
     for name in native:
         validate_elf(target, name, files[name], elf_class, machine)
         require(struct.unpack_from("<H", files[name], ELF_TYPE_OFFSET)[0] == ELF_TYPE_SHARED,
                 f"Expected an Android ELF shared library: {name}")
+
+
+def validate_android_genghost_apk(target, content):
+    abi = ANDROID_TARGETS[target]
+    native = f"lib/{abi}/libgenghost_exec.so"
+    required = {"AndroidManifest.xml", "classes.dex", "resources.arsc", native}
+    allowed_assets = ANDROID_GENGHOST_ASSETS | custom_car_files("assets/cars")
+    required |= allowed_assets | ANDROID_GENGHOST_RESOURCES
+    files = {}
+    names = set()
+    with zipfile.ZipFile(io.BytesIO(content)) as apk:
+        for entry in apk.infolist():
+            name = entry.filename
+            checked_path(name[:-1] if entry.is_dir() else name)
+            require(name not in names, f"Duplicate APK member: {name}")
+            names.add(name)
+            mode = entry.external_attr >> 16
+            require(not stat.S_IFMT(mode) or stat.S_ISREG(mode) or
+                    (entry.is_dir() and stat.S_ISDIR(mode)), f"Unsupported APK member: {name}")
+            require(not entry.flag_bits & 1, f"Encrypted APK member: {name}")
+            if entry.is_dir():
+                continue
+            if name.startswith("lib/"):
+                require(name == native, f"Unexpected Android ABI or native library for {target}: {name}")
+            elif name.startswith("assets/"):
+                require(name in allowed_assets, f"Unexpected APK asset: {name}")
+            else:
+                require(name in ANDROID_METADATA or name in ANDROID_GENGHOST_RESOURCES or
+                        ANDROID_DEX_PATTERN.fullmatch(name) or
+                        ANDROID_SIGNATURE_PATTERN.fullmatch(name), f"Unexpected APK member: {name}")
+            files[name] = apk.read(entry)
+            require(files[name], f"Empty APK member: {name}")
+    missing = required - files.keys()
+    require(not missing, f"{target}: missing generator APK members: {', '.join(sorted(missing))}")
+    validate_custom_car_resources(files)
+    validate_android_pie(target, native, files[native])
 
 
 def required_files(target):
@@ -249,7 +354,8 @@ def required_files(target):
         required.add("THIRD-PARTY-NOTICES.txt")
         required |= {f"share/licenses/restunts/{name}" for name in SDL_DECODER_LICENSES}
     if target in ANDROID_TARGETS:
-        required |= {ANDROID_APK, "share/docs/restunts/android.md",
+        required |= {ANDROID_APK, ANDROID_GENGHOST_APK, "share/docs/restunts/android.md",
+                     "share/docs/restunts/genghost.md", "share/docs/restunts/genghost-android.md",
                      "share/licenses/restunts/SDL-LICENSE.txt",
                      "share/licenses/restunts/Nuked-OPL2-LICENSE"}
         return required | nuked_source_files()
@@ -269,13 +375,19 @@ def required_files(target):
                      for background in MENU_BACKGROUNDS}
         required |= {f"{relink}/data/assets/opponents/game/opp{opponent}.png"
                      for opponent in range(1, OPPONENT_COUNT + 1)}
-        return required
-    names = DOS_EXECUTABLES if target == "dos16" else NATIVE_EXECUTABLES
+        return required | custom_car_files(f"{relink}/data/assets/cars")
+    if target == "dos16":
+        names = DOS_EXECUTABLES
+    elif target == "dos32":
+        names = DOS32_EXECUTABLES
+    else:
+        names = NATIVE_EXECUTABLES
     extension = ".exe" if target.startswith(("dos", "windows")) else ""
     prefix = "" if target == "dos16" else "bin/"
     required |= {f"{prefix}{name}{extension}" for name in names}
     if target == "dos16":
-        return required
+        return required | custom_car_files("cars")
+    required |= custom_car_files("bin/cars")
     required |= {"share/docs/restunts/sdl3.md", "share/licenses/restunts/SDL-LICENSE.txt"}
     if target in HAIKU_TARGETS:
         required.add("share/docs/restunts/haiku.md")
@@ -287,6 +399,7 @@ def required_files(target):
                  for opponent in range(1, OPPONENT_COUNT + 1)}
     if target == "dos32":
         return required | {"bin/CWSDPMI.EXE", "share/licenses/restunts/CWSDPMI.DOC"}
+    required |= {"share/docs/restunts/genghost.md", "share/docs/restunts/genghost-state-planner.md"}
     required |= {"THIRD-PARTY-NOTICES.txt", "share/licenses/restunts/Nuked-OPL2-LICENSE"}
     required |= nuked_source_files()
     if target.startswith("windows"):
@@ -295,6 +408,8 @@ def required_files(target):
         required |= {"lib/libnuked-opl2.dylib", "run-restunts.sh"}
     else:
         required.add("lib/libnuked-opl2.so")
+    if target in APPIMAGE_TARGETS:
+        required.add(APPIMAGE)
     return required
 
 
@@ -311,6 +426,7 @@ def validate_contents(target, files, modes):
         require(name in required, f"Unexpected package file: {name}")
         if target.startswith("dos"):
             require("nuked" not in name.lower(), f"DOS package must omit Nuked: {name}")
+    validate_custom_car_resources(files)
     if target == "browser":
         require(any(name.startswith("share/restunts/wasm-relink/objects/") for name in files),
                 "Browser package is missing application entry objects for relinking")
@@ -318,6 +434,8 @@ def validate_contents(target, files, modes):
         executables = {f"bin/{name}" for name in NATIVE_EXECUTABLES}
         if target == "macos-universal":
             executables.add("run-restunts.sh")
+        if target in APPIMAGE_TARGETS:
+            executables.add(APPIMAGE)
         for name in executables:
             require(modes[name] & stat.S_IXUSR, f"Missing executable permission: {name}")
     if target in ELF_TARGETS:
@@ -326,6 +444,15 @@ def validate_contents(target, files, modes):
             validate_elf(target, name, files[name], elf_class, machine)
     if target in ANDROID_TARGETS:
         validate_android_apk(target, files[ANDROID_APK])
+        validate_android_genghost_apk(target, files[ANDROID_GENGHOST_APK])
+    if target in APPIMAGE_TARGETS:
+        elf_class, machine = ELF_ARCHITECTURES[APPIMAGE_TARGETS[target]]
+        for name in ELF_FILES:
+            validate_elf(target, name, files[name], elf_class, machine)
+        content = files[APPIMAGE]
+        validate_elf(target, APPIMAGE, content, elf_class, machine)
+        require(content[APPIMAGE_MAGIC_OFFSET:APPIMAGE_MAGIC_OFFSET + len(APPIMAGE_MAGIC)] ==
+                APPIMAGE_MAGIC, f"Expected a Type-2 AppImage: {APPIMAGE}")
 
 
 def readme(target, commit):
@@ -335,19 +462,25 @@ def readme(target, commit):
     if target in ANDROID_TARGETS:
         minimum = android_minimum_sdk(target)
         version = ANDROID_VERSIONS[minimum]
-        lines += [f"Requires Android {version} (API {minimum}) or newer; runs in landscape only.",
-                  f"This APK contains only {ANDROID_TARGETS[target]} native libraries.",
+        lines += [f"Requires Android {version} (API {minimum}) or newer. The game runs in landscape.",
+                  f"Both APKs contain only {ANDROID_TARGETS[target]} native code.",
                   "Install bin/restunts.apk, then use Choose game folder or Import Stunts ZIP.",
+                  "Install bin/genghost.apk to generate ghosts on the same Android device.",
+                  "See share/docs/restunts/genghost-android.md for generator setup and exports,",
+                  "and share/docs/restunts/genghost.md for search options and driving rules.",
                   "Original resources and custom game files use one selected public folder.",
                   "ZIP import extracts into the exact destination folder you select.",
                   "The app manages its private working cache and copies completed game writes",
                   "back to your selected folder, including tracks, replays and screenshots.",
-                  "Enhanced artwork/music and dependency notices are included in the APK.",
+                  "Custom cars are inside both APKs; enhanced artwork/music are inside the game APK.",
+                  "Both APKs include dependency notices.",
                   "Release workflow APKs use the project's persistent release signing key.",
                   "PR/local debug APKs use debug keys, which may differ between builds.",
                   "Android updates require the same signing key. A different key may require",
-                  "uninstalling the old app. Your selected public game folder is preserved;",
-                  "uninstalling removes private preferences, cache and unexported pending writes.",
+                  "uninstalling the old app. Folders selected through the system picker survive.",
+                  "The app-owned TV fallback media folder, including game files, saves and source",
+                  "ZIPs, is deleted on uninstall. Back up those files outside it beforehand.",
+                  "Uninstalling removes private preferences, cache and unexported pending writes.",
                   "See share/docs/restunts/android.md for import, controls and rebuild/signing",
                   "details. Nuked source and build context are in share/restunts/nuked-opl2-lite."]
         if target == "android-armv7":
@@ -356,21 +489,42 @@ def readme(target, commit):
             lines += ["Requires a 64-bit ARM Android operating system."]
     elif target == "browser":
         lines += ["Open restunts.html in your browser and choose your game-data folder.",
+                  "Custom cars are embedded under /assets/cars and loaded automatically.",
                   "The HTML runs offline by itself. Keep the licenses and Nuked source/relink",
                   "kit with redistributed packages; see wasm.md for instructions."]
     elif target == "dos16":
-        lines += ["Copy the executable files into your original game's directory.",
+        lines += ["Copy the executables and cars folder into your original game's directory.",
                   "Run restunts.exe in DOS or DOSBox with core=dynamic and cycles=max.",
                   "The other executables are original/rebuilt game and regression tools."]
     else:
         executable = "restunts.exe" if target.startswith(("windows", "dos")) else "restunts"
         lines += [f"Run bin/{executable} --data-dir PATH_TO_YOUR_STUNTS_FOLDER.",
                   "Enhanced skyboxes, opponent portraits, and menu backgrounds are included",
-                  "beside the game.",
+                  "beside the game. Custom cars in bin/cars are loaded automatically.",
                   "See share/docs/restunts/sdl3.md for controls and platform details."]
+        if target != "dos32":
+            generator = "genghost.exe" if target.startswith("windows") else "genghost"
+            lines += [f"Generate ghosts offline with bin/{generator} TRACK.TRK CAR_CODE",
+                      "--data-dir PATH_TO_YOUR_STUNTS_FOLDER. Track input can also be an .RPL file.",
+                      "See share/docs/restunts/genghost.md for search options and physics settings."]
     if target == "macos-universal":
         lines += ["macOS 11.0 or newer; Intel and Apple Silicon are in the same binary.",
                   "You can also use: bash run-restunts.sh --data-dir PATH_TO_YOUR_STUNTS_FOLDER"]
+    if target in APPIMAGE_TARGETS:
+        architecture = "x86-64" if APPIMAGE_TARGETS[target] == "x64" else "32-bit x86"
+        lines += [f"Linux {architecture}; targets Ubuntu 10.04 (glibc 2.11) or newer.",
+                  "Built using a verified legacy sysroot; the host's glibc is not bundled.",
+                  "Start the AppImage with:",
+                  "bin/restunts.AppImage --data-dir PATH_TO_YOUR_STUNTS_FOLDER",
+                  "The AppImage embeds the complete runtime and dependency notices.",
+                  "If FUSE is unavailable, run it with --appimage-extract, then use",
+                  "squashfs-root/AppRun --data-dir PATH_TO_YOUR_STUNTS_FOLDER.",
+                  "The unpacked runtime, tools, licenses and Nuked rebuild kit are retained",
+                  "in this archive; redistribute the complete archive."]
+        if target.endswith("-no-sse2"):
+            lines += ["The game and bundled dependencies are built without SSE2 instructions."]
+        elif APPIMAGE_TARGETS[target] == "x86":
+            lines += ["This 32-bit AppImage requires a processor with SSE2."]
     if target.startswith("windows-x86"):
         lines += ["Requires Windows XP SP2 or newer (the pinned SDL system API minimum)."]
     if target in ELF_TARGETS:

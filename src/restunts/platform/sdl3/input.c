@@ -1,18 +1,46 @@
 #include "sdl3.h"
 #include "music.h"
 #include "touch.h"
+#include "soft_keyboard.h"
+#include "controller_game.h"
 #include "../../c/platform.h"
 #include "../../c/keyboard.h"
 #include "../../c/game_input.h"
 #include "../../c/fatal.h"
 #include "../../c/hires.h"
 #include <string.h>
+#ifdef __ANDROID__
+#include <jni.h>
+#endif
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+
+EM_JS(legacy_int, browser_mobile_device, (), { return Module['mobileDevice'] ? 1 : 0; });
+#endif
 
 #define KEY_BUFFER_CAPACITY 64U
 #define INPUT_POLL_DELAY_MS 1U
 #define JOYSTICK_AXIS_COUNT 2
 #define JOYSTICK_AXIS_SCALE 32
 #define JOYSTICK_AXIS_DEADZONE 16384
+#define JOYSTICK_X_AXIS 0U
+#define JOYSTICK_Y_AXIS 1U
+#define CONTROLLER_STEERING_ACTIVITY_DEADZONE 2048
+#define CONTROLLER_STEERING_ACTIVITY_DELTA 1024
+#define CONTROLLER_IMPACT_RUMBLE_MS 40U
+#define CONTROLLER_IMPACT_RUMBLE_STRENGTH 32768U
+#define TILT_STEERING_ACTIVITY_DEADZONE 6
+#define TILT_STEERING_ACTIVITY_DELTA 3
+#define TILT_SAMPLE_TIMEOUT_MS 500U
+#define TILT_SAMPLE_AXIS_MASK 127U
+#define TILT_SAMPLE_ENABLED 128U
+#define TILT_SAMPLE_TIME_SHIFT 8U
+#define TILT_SAMPLE_TIME_MASK 0x7FFFFFU
+#define CONTROLLER_MENU_REPEAT_DELAY_MS 350U
+#define CONTROLLER_MENU_REPEAT_INTERVAL_MS 100U
+#define CONTROLLER_CAMERA_REPEAT_INTERVAL_MS 50U
+#define CONTROLLER_PRIMARY_CONFIRM_KEY ((legacy_u16)KEY_ENTER)
+#define CONTROLLER_TRIGGER_CONFIRM_KEY ((legacy_u16)KEY_SPACE)
 #define MOUSE_BUTTON_COUNT 3
 
 enum MOUSE_BUTTON_FLAG { MOUSE_LEFT_FLAG = 1, MOUSE_RIGHT_FLAG = 2, MOUSE_MIDDLE_FLAG = 4 };
@@ -43,11 +71,103 @@ struct MOUSE_TRANSITION {
 static struct MOUSE_TRANSITION mouse_transitions[KEY_BUFFER_CAPACITY];
 static legacy_u32 mouse_transition_read;
 static legacy_u32 mouse_transition_count;
-static legacy_u8 joystick_initialized;
+static legacy_u8 input_devices_initialized;
 static legacy_u8 joystick_enabled;
 static SDL_Joystick *joystick;
+static legacy_s16 joystick_feedback_axes[JOYSTICK_AXIS_COUNT];
+static SDL_Gamepad *controller;
+static legacy_s16 controller_axes[SDL_GAMEPAD_AXIS_COUNT];
+static legacy_u8 controller_buttons[SDL_GAMEPAD_BUTTON_COUNT];
+static enum SDL3_DRIVING_INPUT driving_mode = SDL3_DRIVING_KEYBOARD;
+static legacy_u8 gameplay_active;
+static legacy_u8 replay_active;
+static legacy_u16 modal_depth;
+static legacy_u8 input_focused = true;
+static legacy_u8 controller_menu_requested;
+static legacy_u8 controller_race_start_requested;
+static legacy_s16 controller_shift_pending;
+static legacy_s16 controller_menu_direction;
+static legacy_u64 controller_menu_repeat_at;
+static legacy_u16 controller_dpad_key;
+static legacy_u64 controller_dpad_repeat_at;
+static legacy_s16 controller_camera_direction;
+static legacy_u64 controller_camera_repeat_at;
+static legacy_s16 controller_steering_activity_axis;
+/* Feedback follows the last device used, independently of steering selection. */
+static legacy_u8 controller_feedback_active;
+static legacy_u8 controller_rumbling;
+static legacy_s16 controller_feedback_axes[SDL_GAMEPAD_AXIS_COUNT];
+#ifdef __ANDROID__
+static SDL_AtomicInt controller_vibration_disabled;
+#else
+static legacy_u8 controller_vibration_enabled = true;
+#endif
 static legacy_u8 pumping;
+static legacy_u8 soft_keyboard_captured;
 static legacy_u64 last_event_poll;
+/* One atomic packet keeps the filtered sensor axis and timestamp coherent. */
+static SDL_AtomicInt tilt_sample;
+static legacy_u32 tilt_last_sample;
+static legacy_s16 tilt_axis;
+static legacy_s16 tilt_previous_axis;
+static legacy_s16 tilt_steering_activity_axis;
+static legacy_u8 tilt_manual_override;
+
+static void controller_stop_rumble(void)
+{
+	if (controller_rumbling) {
+		if (controller != NULL) {
+			SDL_RumbleGamepad(controller, 0, 0, 0);
+		}
+		controller_rumbling = false;
+	}
+}
+
+static void input_feedback_use_controller(legacy_u8 active)
+{
+	if (!active) {
+		controller_stop_rumble();
+	}
+	controller_feedback_active = active;
+}
+
+#ifndef __ANDROID__
+legacy_u8 sdl3_controller_vibration_enabled(void)
+{
+	return controller_vibration_enabled;
+}
+
+void sdl3_controller_set_vibration_enabled(legacy_u8 enabled)
+{
+	controller_vibration_enabled = enabled != 0;
+	if (!controller_vibration_enabled) {
+		controller_stop_rumble();
+	}
+}
+#endif
+
+void sdl3_car_impact_feedback(void)
+{
+	if (sdl3_batch_mode || !input_focused || !gameplay_active || modal_depth != 0) {
+		return;
+	}
+#ifdef __ANDROID__
+	android_car_impact_feedback();
+	if (SDL_GetAtomicInt(&controller_vibration_disabled)) {
+		return;
+	}
+#else
+	if (!controller_vibration_enabled) {
+		return;
+	}
+#endif
+	if (controller_feedback_active && controller != NULL && SDL_GamepadConnected(controller)) {
+		/* Unsupported rumble is optional; SDL simply reports failure. */
+		controller_rumbling =
+			SDL_RumbleGamepad(controller, CONTROLLER_IMPACT_RUMBLE_STRENGTH,
+							  CONTROLLER_IMPACT_RUMBLE_STRENGTH, CONTROLLER_IMPACT_RUMBLE_MS);
+	}
+}
 
 static const legacy_u8 dos_kb_keymap1[DOS_KB_PRIMARY_KEYMAP_SIZE] = {
 	0,	 27,  49,  50,	51,	 52,  53,  54,	55,	 56,  57,  48,	45,	 61,  8,   9,	113, 119, 101,
@@ -214,10 +334,117 @@ static legacy_u32 legacy_scancode(legacy_u32 code)
 	return 0;
 }
 
+static legacy_u8 input_steering_scancode(SDL_Scancode code)
+{
+	return code == SDL_SCANCODE_LEFT || code == SDL_SCANCODE_RIGHT || code == SDL_SCANCODE_HOME ||
+		   code == SDL_SCANCODE_PAGEUP || code == SDL_SCANCODE_END ||
+		   code == SDL_SCANCODE_PAGEDOWN || code == SDL_SCANCODE_KP_4 ||
+		   code == SDL_SCANCODE_KP_6 || code == SDL_SCANCODE_KP_7 || code == SDL_SCANCODE_KP_9 ||
+		   code == SDL_SCANCODE_KP_1 || code == SDL_SCANCODE_KP_3;
+}
+
+void sdl3_input_set_tilt(legacy_s16 axis, legacy_u8 enabled)
+{
+	axis = SDL_clamp(axis, -JOYSTICK_AXIS_SCALE, JOYSTICK_AXIS_SCALE);
+	legacy_u32 timestamp = (legacy_u32)SDL_GetTicks() & TILT_SAMPLE_TIME_MASK;
+	legacy_u32 sample = (timestamp << TILT_SAMPLE_TIME_SHIFT) |
+						(enabled ? TILT_SAMPLE_ENABLED : 0U) |
+						(legacy_u32)(axis + JOYSTICK_AXIS_SCALE);
+	SDL_SetAtomicInt(&tilt_sample, (legacy_int)sample);
+}
+
+static legacy_s16 input_tilt_sample_axis(legacy_u32 sample)
+{
+	return (legacy_s16)(sample & TILT_SAMPLE_AXIS_MASK) - JOYSTICK_AXIS_SCALE;
+}
+
+static void input_tilt_reset(void)
+{
+	tilt_last_sample = (legacy_u32)SDL_GetAtomicInt(&tilt_sample);
+	tilt_previous_axis = (tilt_last_sample & TILT_SAMPLE_ENABLED) != 0
+							 ? input_tilt_sample_axis(tilt_last_sample)
+							 : 0;
+	tilt_steering_activity_axis = tilt_previous_axis;
+	tilt_axis = 0;
+	tilt_manual_override =
+		tilt_previous_axis != 0 && (driving_mode == SDL3_DRIVING_TILT || tilt_manual_override);
+	if (driving_mode == SDL3_DRIVING_TILT) {
+		driving_mode = SDL3_DRIVING_KEYBOARD;
+	}
+}
+
+static legacy_u8 input_manual_steering_held(void)
+{
+	for (legacy_u32 code = 1; code < SDL_SCANCODE_COUNT; code++) {
+		if (keys[code] && !consumed_keys[code] && input_steering_scancode((SDL_Scancode)code)) {
+			return true;
+		}
+	}
+	return sdl3_touch_key_state(SDL_SCANCODE_LEFT) || sdl3_touch_key_state(SDL_SCANCODE_RIGHT);
+}
+
+static void input_tilt_update(void)
+{
+	legacy_u32 sample = (legacy_u32)SDL_GetAtomicInt(&tilt_sample);
+	legacy_u32 now = (legacy_u32)SDL_GetTicks() & TILT_SAMPLE_TIME_MASK;
+	legacy_u32 age = (now - (sample >> TILT_SAMPLE_TIME_SHIFT)) & TILT_SAMPLE_TIME_MASK;
+	if (!input_focused || !gameplay_active || replay_active || modal_depth != 0 ||
+		(sample & TILT_SAMPLE_ENABLED) == 0 || age > TILT_SAMPLE_TIMEOUT_MS) {
+		input_tilt_reset();
+		return;
+	}
+	legacy_s16 axis = input_tilt_sample_axis(sample);
+	legacy_u8 manual_held = input_manual_steering_held();
+	if (manual_held) {
+		tilt_manual_override = true;
+		tilt_steering_activity_axis = axis;
+		if (driving_mode == SDL3_DRIVING_TILT) {
+			driving_mode = SDL3_DRIVING_KEYBOARD;
+		}
+	}
+	if (sample == tilt_last_sample) {
+		return;
+	}
+	tilt_last_sample = sample;
+	legacy_s16 previous = tilt_previous_axis;
+	tilt_previous_axis = axis;
+	tilt_axis = axis;
+	if (axis == 0) {
+		tilt_steering_activity_axis = 0;
+		tilt_manual_override = false;
+		if (driving_mode == SDL3_DRIVING_TILT) {
+			driving_mode = SDL3_DRIVING_KEYBOARD;
+		}
+		return;
+	}
+	if (manual_held) {
+		return;
+	}
+	legacy_s16 magnitude = axis < 0 ? -axis : axis;
+	legacy_s16 previous_magnitude = previous < 0 ? -previous : previous;
+	legacy_s16 delta = axis - tilt_steering_activity_axis;
+	legacy_u8 changed_side = (axis < 0 && previous > 0) || (axis > 0 && previous < 0);
+	/* A fresh gentle tilt starts steering from neutral. Other active devices
+	 * keep ownership until a meaningful movement, never a noisy static sample. */
+	if ((driving_mode == SDL3_DRIVING_KEYBOARD && !tilt_manual_override) ||
+		(magnitude >= TILT_STEERING_ACTIVITY_DEADZONE &&
+		 (changed_side || magnitude > previous_magnitude) &&
+		 (delta <= -TILT_STEERING_ACTIVITY_DELTA || delta >= TILT_STEERING_ACTIVITY_DELTA))) {
+		driving_mode = SDL3_DRIVING_TILT;
+		input_feedback_use_controller(false);
+		tilt_steering_activity_axis = axis;
+	} else if (!changed_side && magnitude <= previous_magnitude) {
+		tilt_steering_activity_axis = axis;
+	}
+}
+
 static void input_key(const SDL_KeyboardEvent *event)
 {
 	if ((legacy_u32)event->scancode >= SDL_SCANCODE_COUNT) {
 		return;
+	}
+	if (input_focused && event->down && !event->repeat) {
+		input_feedback_use_controller(false);
 	}
 #ifdef __ANDROID__
 	if (event->scancode == SDL_SCANCODE_AC_BACK && event->down && !event->repeat) {
@@ -229,6 +456,12 @@ static void input_key(const SDL_KeyboardEvent *event)
 		return;
 	}
 #endif
+	if (event->down && !event->repeat && gameplay_active && !replay_active && modal_depth == 0 &&
+		input_steering_scancode(event->scancode)) {
+		driving_mode = SDL3_DRIVING_KEYBOARD;
+		tilt_manual_override = true;
+		tilt_steering_activity_axis = tilt_previous_axis;
+	}
 	legacy_u8 was_pressed = keys[event->scancode];
 	keys[event->scancode] = event->down;
 	if (!event->down) {
@@ -306,6 +539,15 @@ static void input_key(const SDL_KeyboardEvent *event)
 
 void sdl3_input_queue_key(legacy_u16 value)
 {
+	/* Touch arrows use this queue too, including a tap released before polling. */
+	if (input_focused && gameplay_active && !replay_active && modal_depth == 0 &&
+		(value == KEY_LEFT || value == KEY_RIGHT)) {
+		if (driving_mode == SDL3_DRIVING_TILT) {
+			driving_mode = SDL3_DRIVING_KEYBOARD;
+		}
+		tilt_manual_override = true;
+		tilt_steering_activity_axis = tilt_previous_axis;
+	}
 	if (key_count == KEY_BUFFER_CAPACITY) {
 		key_read = (key_read + 1U) % KEY_BUFFER_CAPACITY;
 		key_count--;
@@ -361,25 +603,379 @@ void sdl3_input_touch_mouse(legacy_f32 x, legacy_f32 y, legacy_u8 down)
 	}
 }
 
+static legacy_u8 controller_menu_active(void)
+{
+	return !gameplay_active || modal_depth != 0;
+}
+
+static legacy_u8 controller_navigation_active(void)
+{
+	return controller_menu_active() || replay_active;
+}
+
+static void controller_reset_state(void)
+{
+	input_feedback_use_controller(false);
+	memset(controller_feedback_axes, 0, sizeof(controller_feedback_axes));
+	memset(controller_axes, 0, sizeof(controller_axes));
+	memset(controller_buttons, 0, sizeof(controller_buttons));
+	controller_menu_requested = false;
+	controller_race_start_requested = false;
+	controller_shift_pending = INPUT_NONE;
+	controller_menu_direction = INPUT_NONE;
+	controller_menu_repeat_at = 0;
+	controller_dpad_key = INPUT_NONE;
+	controller_dpad_repeat_at = 0;
+	controller_camera_direction = INPUT_NONE;
+	controller_camera_repeat_at = 0;
+	controller_steering_activity_axis = 0;
+}
+
 static void open_joystick(void)
 {
-	if (sdl3_batch_mode || joystick != NULL) {
+	if (sdl3_batch_mode || joystick != NULL || !input_devices_initialized) {
 		return;
 	}
-	if (!joystick_initialized) {
-		joystick_initialized = SDL_InitSubSystem(SDL_INIT_JOYSTICK);
-		if (!joystick_initialized) {
-			return;
-		}
-	}
 	/* Match the output parameter type required by SDL. */
-	legacy_int count;
+	legacy_int count = 0;
 	SDL_JoystickID *ids = SDL_GetJoysticks(&count);
 	for (legacy_s32 index = 0; index < count && joystick == NULL; index++) {
-		joystick = SDL_OpenJoystick(ids[index]);
+		/* A mapped gamepad uses its standardized right stick, never raw axes. */
+		if (!SDL_IsGamepad(ids[index])) {
+			joystick = SDL_OpenJoystick(ids[index]);
+			if (joystick != NULL) {
+				for (legacy_u16 axis = 0; axis < JOYSTICK_AXIS_COUNT; axis++) {
+					joystick_feedback_axes[axis] = SDL_GetJoystickAxis(joystick, axis);
+				}
+			}
+		}
 	}
 	SDL_free(ids);
 }
+
+static void open_controller(void)
+{
+	if (sdl3_batch_mode || controller != NULL || !input_devices_initialized) {
+		return;
+	}
+	legacy_int count = 0;
+	SDL_JoystickID *ids = SDL_GetGamepads(&count);
+	for (legacy_s32 index = 0; index < count && controller == NULL; index++) {
+		controller = SDL_OpenGamepad(ids[index]);
+	}
+	SDL_free(ids);
+	if (controller != NULL) {
+		controller_reset_state();
+		for (legacy_u32 axis = 0; axis < SDL_GAMEPAD_AXIS_COUNT; axis++) {
+			controller_axes[axis] = SDL_GetGamepadAxis(controller, (SDL_GamepadAxis)axis);
+			controller_feedback_axes[axis] = controller_axes[axis];
+		}
+		for (legacy_u32 button = 0; button < SDL_GAMEPAD_BUTTON_COUNT; button++) {
+			controller_buttons[button] =
+				SDL_GetGamepadButton(controller, (SDL_GamepadButton)button);
+		}
+		controller_steering_activity_axis = controller_axes[SDL_GAMEPAD_AXIS_RIGHTX];
+	}
+}
+
+static void input_open_devices(void)
+{
+	if (sdl3_batch_mode || input_devices_initialized) {
+		return;
+	}
+#ifdef __EMSCRIPTEN__
+	sdl3_soft_keyboard_enable(browser_mobile_device());
+#endif
+	input_devices_initialized = SDL_InitSubSystem(SDL_INIT_GAMEPAD);
+	if (!input_devices_initialized) {
+		return;
+	}
+	open_controller();
+	open_joystick();
+}
+
+static legacy_u16 controller_button_key(SDL_GamepadButton button)
+{
+	switch (button) {
+		case SDL_GAMEPAD_BUTTON_SOUTH:
+			return CONTROLLER_PRIMARY_CONFIRM_KEY;
+		case SDL_GAMEPAD_BUTTON_RIGHT_STICK:
+			return controller_navigation_active() ? (legacy_u16)KEY_ENTER : 0;
+		case SDL_GAMEPAD_BUTTON_EAST:
+		case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
+		case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
+			return KEY_ESCAPE;
+		case SDL_GAMEPAD_BUTTON_WEST:
+			return 'd';
+		case SDL_GAMEPAD_BUTTON_NORTH:
+			return 't';
+		case SDL_GAMEPAD_BUTTON_BACK:
+			return 'c';
+		case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
+			return controller_navigation_active() ? (legacy_u16)KEY_LEFT : 'q';
+		case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
+			return controller_navigation_active() ? (legacy_u16)KEY_RIGHT : 0;
+		case SDL_GAMEPAD_BUTTON_DPAD_UP:
+			return controller_navigation_active() ? (legacy_u16)KEY_UP : 0;
+		case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
+			return controller_navigation_active() ? (legacy_u16)KEY_DOWN : 0;
+		default:
+			return 0;
+	}
+}
+
+static void controller_update_dpad_navigation(void);
+
+static void input_controller_button(const SDL_GamepadButtonEvent *event)
+{
+	if (!input_focused || controller == NULL || event->which != SDL_GetGamepadID(controller) ||
+		event->button >= SDL_GAMEPAD_BUTTON_COUNT) {
+		return;
+	}
+	legacy_u8 was_pressed = controller_buttons[event->button];
+	controller_buttons[event->button] = event->down;
+	if (event->down && !was_pressed) {
+		input_feedback_use_controller(true);
+	}
+	if (controller_navigation_active() && (event->button == SDL_GAMEPAD_BUTTON_DPAD_UP ||
+										   event->button == SDL_GAMEPAD_BUTTON_DPAD_DOWN ||
+										   event->button == SDL_GAMEPAD_BUTTON_DPAD_LEFT ||
+										   event->button == SDL_GAMEPAD_BUTTON_DPAD_RIGHT)) {
+		/* One path queues both the initial menu direction and its timed repeats. */
+		controller_update_dpad_navigation();
+		return;
+	}
+	if (!event->down || was_pressed) {
+		return;
+	}
+	if (event->button == SDL_GAMEPAD_BUTTON_START) {
+		if (gameplay_active && modal_depth == 0) {
+			controller_menu_requested = true;
+		} else {
+			sdl3_input_queue_key(KEY_ESCAPE);
+		}
+		return;
+	}
+	if (!controller_navigation_active()) {
+		if (event->button == SDL_GAMEPAD_BUTTON_DPAD_UP) {
+			controller_shift_pending |= INPUT_SHIFT_UP_FLAG;
+		} else if (event->button == SDL_GAMEPAD_BUTTON_DPAD_DOWN) {
+			controller_shift_pending |= INPUT_SHIFT_DOWN_FLAG;
+		}
+	}
+	legacy_u16 key = controller_button_key((SDL_GamepadButton)event->button);
+	if (key != 0) {
+		sdl3_input_queue_key(key);
+	}
+}
+
+static void input_controller_axis(const SDL_GamepadAxisEvent *event)
+{
+	if (!input_focused || controller == NULL || event->which != SDL_GetGamepadID(controller) ||
+		event->axis >= SDL_GAMEPAD_AXIS_COUNT) {
+		return;
+	}
+	legacy_s16 previous = controller_axes[event->axis];
+	controller_axes[event->axis] = event->value;
+	legacy_s32 feedback_delta = (legacy_s32)event->value - controller_feedback_axes[event->axis];
+	legacy_s32 feedback_magnitude = event->value < 0 ? -(legacy_s32)event->value : event->value;
+	legacy_s32 feedback_previous = previous < 0 ? -(legacy_s32)previous : previous;
+	legacy_u8 feedback_steering =
+		event->axis == SDL_GAMEPAD_AXIS_RIGHTX && !controller_navigation_active();
+	legacy_s16 feedback_deadzone =
+		feedback_steering ? CONTROLLER_STEERING_ACTIVITY_DEADZONE : JOYSTICK_AXIS_DEADZONE;
+	legacy_u8 feedback_changed_side =
+		(event->value < 0 && previous > 0) || (event->value > 0 && previous < 0);
+	/* Noise and returning to centre must not steal feedback from another device. */
+	if (feedback_magnitude < feedback_deadzone ||
+		(!feedback_changed_side && feedback_magnitude <= feedback_previous)) {
+		controller_feedback_axes[event->axis] = event->value;
+	} else if ((!feedback_steering &&
+				(feedback_previous < feedback_deadzone || feedback_changed_side)) ||
+			   feedback_delta <= -CONTROLLER_STEERING_ACTIVITY_DELTA ||
+			   feedback_delta >= CONTROLLER_STEERING_ACTIVITY_DELTA) {
+		input_feedback_use_controller(true);
+		controller_feedback_axes[event->axis] = event->value;
+	}
+	if (event->axis == SDL_GAMEPAD_AXIS_RIGHTX && gameplay_active && !replay_active &&
+		modal_depth == 0) {
+		legacy_s32 delta = (legacy_s32)event->value - controller_steering_activity_axis;
+		legacy_s32 previous_magnitude = previous < 0 ? -(legacy_s32)previous : previous;
+		legacy_s32 magnitude = event->value < 0 ? -(legacy_s32)event->value : event->value;
+		legacy_u8 changed_side =
+			(event->value < 0 && previous > 0) || (event->value > 0 && previous < 0);
+		/* Releasing a deflected stick must not take steering back from the keyboard. */
+		if (magnitude < CONTROLLER_STEERING_ACTIVITY_DEADZONE ||
+			(!changed_side && magnitude <= previous_magnitude)) {
+			controller_steering_activity_axis = event->value;
+		} else if (delta <= -CONTROLLER_STEERING_ACTIVITY_DELTA ||
+				   delta >= CONTROLLER_STEERING_ACTIVITY_DELTA) {
+			driving_mode = SDL3_DRIVING_CONTROLLER;
+			controller_steering_activity_axis = event->value;
+			controller_race_start_requested = true;
+		}
+	}
+	if (event->axis == SDL_GAMEPAD_AXIS_RIGHTY && gameplay_active && !replay_active &&
+		modal_depth == 0) {
+		legacy_u8 pedal_pressed =
+			event->value < -JOYSTICK_AXIS_DEADZONE || event->value >= JOYSTICK_AXIS_DEADZONE;
+		legacy_u8 pedal_was_pressed =
+			previous < -JOYSTICK_AXIS_DEADZONE || previous >= JOYSTICK_AXIS_DEADZONE;
+		legacy_u8 changed_side =
+			(event->value < 0 && previous > 0) || (event->value > 0 && previous < 0);
+		if (pedal_pressed && (!pedal_was_pressed || changed_side)) {
+			controller_race_start_requested = true;
+		}
+	}
+	if ((event->axis == SDL_GAMEPAD_AXIS_LEFT_TRIGGER ||
+		 event->axis == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) &&
+		previous < JOYSTICK_AXIS_DEADZONE && event->value >= JOYSTICK_AXIS_DEADZONE) {
+		sdl3_input_queue_key(CONTROLLER_TRIGGER_CONFIRM_KEY);
+	}
+}
+
+static legacy_s16 controller_axis_directions(SDL_GamepadAxis x_axis, SDL_GamepadAxis y_axis)
+{
+	legacy_s16 flags = INPUT_NONE;
+	legacy_s16 x = controller_axes[x_axis];
+	legacy_s16 y = controller_axes[y_axis];
+	if (x < -JOYSTICK_AXIS_DEADZONE) {
+		flags |= INPUT_STEER_LEFT_FLAG;
+	} else if (x >= JOYSTICK_AXIS_DEADZONE) {
+		flags |= INPUT_STEER_RIGHT_FLAG;
+	}
+	if (y < -JOYSTICK_AXIS_DEADZONE) {
+		flags |= INPUT_ACCELERATE_FLAG;
+	} else if (y >= JOYSTICK_AXIS_DEADZONE) {
+		flags |= INPUT_BRAKE_FLAG;
+	}
+	return flags;
+}
+
+static legacy_u16 controller_direction_key(legacy_s16 directions)
+{
+	if (directions & INPUT_ACCELERATE_FLAG) {
+		return KEY_UP;
+	}
+	if (directions & INPUT_BRAKE_FLAG) {
+		return KEY_DOWN;
+	}
+	if (directions & INPUT_STEER_LEFT_FLAG) {
+		return KEY_LEFT;
+	}
+	return directions & INPUT_STEER_RIGHT_FLAG ? (legacy_u16)KEY_RIGHT : 0;
+}
+
+static void controller_update_navigation(void)
+{
+	legacy_s16 direction =
+		controller_navigation_active() && controller != NULL && input_focused
+			? controller_axis_directions(SDL_GAMEPAD_AXIS_RIGHTX, SDL_GAMEPAD_AXIS_RIGHTY)
+			: (legacy_s16)INPUT_NONE;
+	legacy_u64 now = SDL_GetTicks();
+	if (direction != controller_menu_direction) {
+		controller_menu_direction = direction;
+		controller_menu_repeat_at = now + CONTROLLER_MENU_REPEAT_DELAY_MS;
+		legacy_u16 key = controller_direction_key(direction);
+		if (key != 0) {
+			sdl3_input_queue_key(key);
+		}
+	} else if (direction != INPUT_NONE && now >= controller_menu_repeat_at) {
+		sdl3_input_queue_key(controller_direction_key(direction));
+		controller_menu_repeat_at = now + CONTROLLER_MENU_REPEAT_INTERVAL_MS;
+	}
+}
+
+static void controller_update_dpad_navigation(void)
+{
+	legacy_s16 direction = INPUT_NONE;
+	if (controller_navigation_active() && controller != NULL && input_focused) {
+		if (controller_buttons[SDL_GAMEPAD_BUTTON_DPAD_UP]) {
+			direction |= INPUT_ACCELERATE_FLAG;
+		}
+		if (controller_buttons[SDL_GAMEPAD_BUTTON_DPAD_DOWN]) {
+			direction |= INPUT_BRAKE_FLAG;
+		}
+		if (controller_buttons[SDL_GAMEPAD_BUTTON_DPAD_LEFT]) {
+			direction |= INPUT_STEER_LEFT_FLAG;
+		}
+		if (controller_buttons[SDL_GAMEPAD_BUTTON_DPAD_RIGHT]) {
+			direction |= INPUT_STEER_RIGHT_FLAG;
+		}
+	}
+	legacy_u16 key = controller_direction_key(direction);
+	legacy_u64 now = SDL_GetTicks();
+	if (key != controller_dpad_key) {
+		controller_dpad_key = key;
+		controller_dpad_repeat_at = now + CONTROLLER_MENU_REPEAT_DELAY_MS;
+		if (key != 0) {
+			sdl3_input_queue_key(key);
+		}
+	} else if (key != 0 && now >= controller_dpad_repeat_at) {
+		sdl3_input_queue_key(key);
+		controller_dpad_repeat_at = now + CONTROLLER_MENU_REPEAT_INTERVAL_MS;
+	}
+}
+
+static legacy_u8 controller_key_state(SDL_Scancode code)
+{
+	if (controller == NULL || !input_focused) {
+		return false;
+	}
+	for (legacy_u32 button = 0; button < SDL_GAMEPAD_BUTTON_COUNT; button++) {
+		if (!controller_buttons[button]) {
+			continue;
+		}
+		legacy_u16 key = controller_button_key((SDL_GamepadButton)button);
+		if ((code == SDL_SCANCODE_Q && key == 'q') || (code == SDL_SCANCODE_R && key == 'r') ||
+			(code == SDL_SCANCODE_D && key == 'd') || (code == SDL_SCANCODE_T && key == 't') ||
+			(code == SDL_SCANCODE_C && key == 'c') ||
+			(code == SDL_SCANCODE_ESCAPE && key == KEY_ESCAPE) ||
+			(controller_navigation_active() && ((code == SDL_SCANCODE_LEFT && key == KEY_LEFT) ||
+												(code == SDL_SCANCODE_RIGHT && key == KEY_RIGHT) ||
+												(code == SDL_SCANCODE_UP && key == KEY_UP) ||
+												(code == SDL_SCANCODE_DOWN && key == KEY_DOWN))) ||
+			(controller_navigation_active() &&
+			 ((code == SDL_SCANCODE_RETURN && key == KEY_ENTER) ||
+			  (code == SDL_SCANCODE_SPACE && key == KEY_SPACE)))) {
+			return true;
+		}
+	}
+	return controller_navigation_active() &&
+		   ((code == SDL_SCANCODE_RETURN && CONTROLLER_TRIGGER_CONFIRM_KEY == KEY_ENTER) ||
+			(code == SDL_SCANCODE_SPACE && CONTROLLER_TRIGGER_CONFIRM_KEY == KEY_SPACE)) &&
+		   (controller_axes[SDL_GAMEPAD_AXIS_LEFT_TRIGGER] >= JOYSTICK_AXIS_DEADZONE ||
+			controller_axes[SDL_GAMEPAD_AXIS_RIGHT_TRIGGER] >= JOYSTICK_AXIS_DEADZONE);
+}
+
+#ifdef __ANDROID__
+JNIEXPORT void JNICALL Java_org_restunts_android_GameActivity_setControllerVibrationEnabled(
+	JNIEnv *env, jclass activity_class, jboolean enabled)
+{
+	(void)env;
+	(void)activity_class;
+	SDL_SetAtomicInt(&controller_vibration_disabled, enabled != JNI_TRUE);
+}
+
+JNIEXPORT void JNICALL Java_org_restunts_android_GameActivity_setTiltSteering(JNIEnv *env,
+																			  jclass activity_class,
+																			  jint axis,
+																			  jboolean enabled)
+{
+	(void)env;
+	(void)activity_class;
+	sdl3_input_set_tilt((legacy_s16)SDL_clamp(axis, -JOYSTICK_AXIS_SCALE, JOYSTICK_AXIS_SCALE),
+						enabled == JNI_TRUE);
+}
+
+JNIEXPORT jboolean JNICALL Java_org_restunts_android_GameActivity_requestRemoteShift(
+	JNIEnv *env, jclass activity_class, jboolean up)
+{
+	(void)env;
+	(void)activity_class;
+	return sdl3_input_request_shift(up == JNI_TRUE) ? JNI_TRUE : JNI_FALSE;
+}
+#endif
 
 void sdl3_platform_pump(void)
 {
@@ -391,6 +987,7 @@ void sdl3_platform_pump(void)
 		return;
 	}
 	pumping = true;
+	input_open_devices();
 	sdl3_touch_sync_game();
 #ifdef __EMSCRIPTEN__
 	/* Menus can poll only input. Share the yield budget with explicit waits
@@ -398,10 +995,26 @@ void sdl3_platform_pump(void)
 	sdl3_browser_yield_if_due();
 #endif
 	legacy_u8 redraw_requested = false;
+	legacy_u8 keyboard_active = sdl3_soft_keyboard_active();
+	if (keyboard_active != soft_keyboard_captured) {
+		/* Release the canvas click that opened this field. Keyboard taps must
+		 * never remain held as clicks in the underlying file selector. */
+		sdl3_touch_reset();
+		mouse_buttons = 0;
+		mouse_transition_count = 0;
+		if (keyboard_active) {
+			key_count = 0;
+		}
+		soft_keyboard_captured = keyboard_active;
+		redraw_requested = true;
+	}
 	SDL_Event event;
 	legacy_u8 poll_events =
 		SDL_GetTicks() != last_event_poll || SDL_HasEvents(SDL_EVENT_FIRST, SDL_EVENT_LAST);
 	while (poll_events && SDL_PollEvent(&event)) {
+		if (sdl3_soft_keyboard_event(&event, sdl3_video_window())) {
+			continue;
+		}
 		switch (event.type) {
 			case SDL_EVENT_QUIT:
 			case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
@@ -415,6 +1028,11 @@ void sdl3_platform_pump(void)
 				SDL_Rect area;
 				SDL_Window *window = sdl3_video_window();
 				if (window != NULL && SDL_GetWindowSafeArea(window, &area)) {
+					if (input_focused && (event.type == SDL_EVENT_FINGER_DOWN ||
+										  (event.type == SDL_EVENT_FINGER_MOTION &&
+										   (event.tfinger.dx != 0 || event.tfinger.dy != 0)))) {
+						input_feedback_use_controller(false);
+					}
 					sdl3_touch_event(&event.tfinger, &area);
 				}
 				break;
@@ -422,6 +1040,7 @@ void sdl3_platform_pump(void)
 #ifdef __ANDROID__
 			case SDL_EVENT_TEXT_INPUT:
 				if (SDL_TextInputActive(sdl3_video_window())) {
+					input_feedback_use_controller(false);
 					for (const legacy_char *text = event.text.text; *text != '\0'; text++) {
 						if ((legacy_u8)*text >= KEY_SPACE && (legacy_u8)*text < LEGACY_S8_MAX) {
 							sdl3_input_queue_key((legacy_u8)*text);
@@ -430,6 +1049,26 @@ void sdl3_platform_pump(void)
 				}
 				break;
 #endif
+			case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+			case SDL_EVENT_GAMEPAD_BUTTON_UP:
+				input_controller_button(&event.gbutton);
+				break;
+			case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+				input_controller_axis(&event.gaxis);
+				break;
+			case SDL_EVENT_GAMEPAD_UPDATE_COMPLETE:
+				if (controller != NULL && event.gdevice.which == SDL_GetGamepadID(controller)) {
+					/* Preserve quick stick flicks while keeping both axes in one update. */
+					controller_update_navigation();
+				}
+				break;
+			case SDL_EVENT_USER:
+				if (input_focused && gameplay_active && !replay_active && modal_depth == 0) {
+					if (sdl3_input_shift_event(&event.user)) {
+						input_feedback_use_controller(false);
+					}
+				}
+				break;
 			case SDL_EVENT_KEY_DOWN:
 			case SDL_EVENT_KEY_UP:
 				input_key(&event.key);
@@ -437,6 +1076,9 @@ void sdl3_platform_pump(void)
 			case SDL_EVENT_WINDOW_FOCUS_LOST:
 			case SDL_EVENT_WILL_ENTER_BACKGROUND:
 				sdl3_touch_reset();
+				input_focused = false;
+				input_tilt_reset();
+				controller_reset_state();
 				/* A fullscreen transition can change focus while Enter is held.
 				 * Keep consumed shortcuts latched until release or a fresh press. */
 				memset(keys, 0, sizeof(keys));
@@ -444,7 +1086,13 @@ void sdl3_platform_pump(void)
 				mouse_buttons = 0;
 				mouse_transition_count = 0;
 				break;
+			case SDL_EVENT_WINDOW_FOCUS_GAINED:
+				input_focused = true;
+				input_tilt_reset();
+				break;
 			case SDL_EVENT_DID_ENTER_FOREGROUND:
+				input_focused = true;
+				input_tilt_reset();
 				sdl3_timer_rebase();
 				redraw_requested = true;
 				break;
@@ -453,14 +1101,24 @@ void sdl3_platform_pump(void)
 				redraw_requested = true;
 				break;
 			case SDL_EVENT_WINDOW_EXPOSED:
+			case SDL_EVENT_WINDOW_RESIZED:
 			case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+			case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
+			case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
 				redraw_requested = true;
 				break;
 			case SDL_EVENT_MOUSE_MOTION:
+				if (input_focused && event.motion.which != SDL_TOUCH_MOUSEID &&
+					(event.motion.xrel != 0 || event.motion.yrel != 0)) {
+					input_feedback_use_controller(false);
+				}
 				input_mouse_position(event.motion.x, event.motion.y);
 				break;
 			case SDL_EVENT_MOUSE_BUTTON_DOWN:
 			case SDL_EVENT_MOUSE_BUTTON_UP: {
+				if (input_focused && event.button.down && event.button.which != SDL_TOUCH_MOUSEID) {
+					input_feedback_use_controller(false);
+				}
 				legacy_s16 flag = event.button.button == SDL_BUTTON_LEFT	 ? MOUSE_LEFT_FLAG
 								  : event.button.button == SDL_BUTTON_RIGHT	 ? MOUSE_RIGHT_FLAG
 								  : event.button.button == SDL_BUTTON_MIDDLE ? MOUSE_MIDDLE_FLAG
@@ -485,6 +1143,34 @@ void sdl3_platform_pump(void)
 				}
 				break;
 			}
+			case SDL_EVENT_JOYSTICK_AXIS_MOTION:
+				if (input_focused && joystick != NULL &&
+					event.jaxis.which == SDL_GetJoystickID(joystick) &&
+					event.jaxis.axis < JOYSTICK_AXIS_COUNT) {
+					legacy_s16 previous = joystick_feedback_axes[event.jaxis.axis];
+					legacy_s32 magnitude = SDL_abs((legacy_s32)event.jaxis.value);
+					joystick_feedback_axes[event.jaxis.axis] = event.jaxis.value;
+					if (magnitude >= JOYSTICK_AXIS_DEADZONE &&
+						(magnitude > SDL_abs((legacy_s32)previous) ||
+						 (event.jaxis.value < 0 && previous > 0) ||
+						 (event.jaxis.value > 0 && previous < 0))) {
+						input_feedback_use_controller(false);
+					}
+				}
+				break;
+			case SDL_EVENT_JOYSTICK_HAT_MOTION:
+				if (input_focused && joystick != NULL &&
+					event.jhat.which == SDL_GetJoystickID(joystick) &&
+					event.jhat.value != SDL_HAT_CENTERED) {
+					input_feedback_use_controller(false);
+				}
+				break;
+			case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
+				if (input_focused && joystick != NULL &&
+					event.jbutton.which == SDL_GetJoystickID(joystick)) {
+					input_feedback_use_controller(false);
+				}
+				break;
 			case SDL_EVENT_JOYSTICK_REMOVED:
 				if (joystick != NULL && event.jdevice.which == SDL_GetJoystickID(joystick)) {
 					SDL_CloseJoystick(joystick);
@@ -493,8 +1179,31 @@ void sdl3_platform_pump(void)
 				}
 				break;
 			case SDL_EVENT_JOYSTICK_ADDED:
-				if (joystick_enabled != 0) {
-					open_joystick();
+				open_joystick();
+				break;
+			case SDL_EVENT_GAMEPAD_ADDED:
+			case SDL_EVENT_GAMEPAD_REMAPPED:
+				/* A newly mapped device must no longer appear as a raw joystick. */
+				if (joystick != NULL && SDL_IsGamepad(SDL_GetJoystickID(joystick))) {
+					SDL_CloseJoystick(joystick);
+					joystick = NULL;
+				}
+				if (event.type == SDL_EVENT_GAMEPAD_REMAPPED && controller != NULL &&
+					event.gdevice.which == SDL_GetGamepadID(controller)) {
+					controller_reset_state();
+				}
+				open_controller();
+				open_joystick();
+				break;
+			case SDL_EVENT_GAMEPAD_REMOVED:
+				if (controller != NULL && event.gdevice.which == SDL_GetGamepadID(controller)) {
+					SDL_CloseGamepad(controller);
+					controller = NULL;
+					controller_reset_state();
+					if (driving_mode == SDL3_DRIVING_CONTROLLER) {
+						driving_mode = SDL3_DRIVING_KEYBOARD;
+					}
+					open_controller();
 				}
 				break;
 			default:
@@ -504,8 +1213,15 @@ void sdl3_platform_pump(void)
 	if (poll_events) {
 		last_event_poll = SDL_GetTicks();
 	}
+	controller_update_navigation();
+	controller_update_dpad_navigation();
+	input_tilt_update();
+	sdl3_touch_sync_game();
 	sdl3_touch_update();
 	sdl3_timer_pump();
+	if (sdl3_soft_keyboard_take_redraw()) {
+		redraw_requested = true;
+	}
 	if (redraw_requested) {
 		sdl3_video_redraw();
 	}
@@ -515,10 +1231,26 @@ void sdl3_platform_pump(void)
 
 void sdl3_input_shutdown(void)
 {
+	sdl3_soft_keyboard_enable(false);
+	soft_keyboard_captured = false;
+	sdl3_input_set_tilt(0, false);
+	input_tilt_reset();
 	sdl3_touch_reset();
 	SDL_CloseJoystick(joystick);
 	joystick = NULL;
-	joystick_initialized = false;
+	SDL_CloseGamepad(controller);
+	controller = NULL;
+	controller_reset_state();
+	if (input_devices_initialized) {
+		SDL_QuitSubSystem(SDL_INIT_GAMEPAD);
+	}
+	input_devices_initialized = false;
+	joystick_enabled = false;
+	driving_mode = SDL3_DRIVING_KEYBOARD;
+	gameplay_active = false;
+	replay_active = false;
+	modal_depth = 0;
+	input_focused = true;
 	memset(keys, 0, sizeof(keys));
 	memset(consumed_keys, 0, sizeof(consumed_keys));
 	key_count = 0;
@@ -558,7 +1290,8 @@ legacy_s16 kb_get_key_state(legacy_s16 key)
 	if (key <= 0 || (legacy_u32)key >= SDL_arraysize(scancodes)) {
 		return 0;
 	}
-	if (sdl3_touch_key_state((SDL_Scancode)scancodes[key]) ||
+	if (controller_key_state((SDL_Scancode)scancodes[key]) ||
+		sdl3_touch_key_state((SDL_Scancode)scancodes[key]) ||
 		(keys[scancodes[key]] && !consumed_keys[scancodes[key]])) {
 		return 1;
 	}
@@ -686,13 +1419,8 @@ void dos_joystick_reset_calibration(void)
 void dos_joystick_set_enabled(legacy_u8 enabled)
 {
 	joystick_enabled = enabled;
-	if (enabled != 0) {
-		open_joystick();
-	} else {
-		/* SDL Android routes unopened controllers back through keyboard events. */
-		SDL_CloseJoystick(joystick);
-		joystick = NULL;
-	}
+	/* Keep devices open for menus even when another racing input is selected. */
+	input_open_devices();
 }
 
 legacy_u8 dos_joystick_is_enabled(void)
@@ -703,7 +1431,8 @@ legacy_u8 dos_joystick_is_enabled(void)
 legacy_s16 dos_joystick_get_scaled_axis(legacy_u16 axis_index)
 {
 	sdl3_platform_pump();
-	if (joystick_enabled == 0 || joystick == NULL || axis_index >= JOYSTICK_AXIS_COUNT) {
+	if (joystick_enabled == 0 || joystick == NULL || !input_focused ||
+		axis_index >= JOYSTICK_AXIS_COUNT) {
 		return 0;
 	}
 	/* The game's analogue steering expects approximately -31 .. +32. */
@@ -712,10 +1441,10 @@ legacy_s16 dos_joystick_get_scaled_axis(legacy_u16 axis_index)
 					(legacy_s32)LEGACY_U16_SIGN_BIT);
 }
 
-legacy_s16 dos_get_joy_flags(void)
+legacy_s16 sdl3_joystick_menu_flags(void)
 {
 	sdl3_platform_pump();
-	if (joystick_enabled == 0 || joystick == NULL) {
+	if (joystick == NULL || !input_focused) {
 		return 0;
 	}
 	legacy_s16 flags = 0;
@@ -753,4 +1482,169 @@ legacy_s16 dos_get_joy_flags(void)
 		flags |= INPUT_SECONDARY_ACTION_FLAG;
 	}
 	return flags;
+}
+
+legacy_s16 dos_get_joy_flags(void)
+{
+	return joystick_enabled ? sdl3_joystick_menu_flags() : (legacy_s16)INPUT_NONE;
+}
+
+void sdl3_input_set_driving_mode(enum SDL3_DRIVING_INPUT mode)
+{
+	driving_mode = mode;
+	controller_steering_activity_axis = controller_axes[SDL_GAMEPAD_AXIS_RIGHTX];
+	tilt_steering_activity_axis = tilt_previous_axis;
+	tilt_manual_override = mode == SDL3_DRIVING_KEYBOARD && tilt_previous_axis != 0;
+}
+
+enum SDL3_DRIVING_INPUT sdl3_input_driving_mode(void)
+{
+	sdl3_platform_pump();
+	return driving_mode;
+}
+
+void sdl3_input_set_gameplay_active(legacy_u8 active)
+{
+	if (gameplay_active != active) {
+		if (!active) {
+			input_feedback_use_controller(false);
+		}
+		input_tilt_reset();
+		sdl3_input_reset_shifts();
+		controller_menu_direction = INPUT_NONE;
+		controller_menu_repeat_at = 0;
+		controller_dpad_key = INPUT_NONE;
+		controller_dpad_repeat_at = 0;
+		controller_camera_direction = INPUT_NONE;
+		controller_camera_repeat_at = 0;
+		controller_shift_pending = INPUT_NONE;
+		controller_race_start_requested = false;
+	}
+	gameplay_active = active;
+}
+
+void sdl3_input_set_replay_active(legacy_u8 active)
+{
+	if (replay_active != active) {
+		input_tilt_reset();
+		sdl3_input_reset_shifts();
+		controller_menu_direction = INPUT_NONE;
+		controller_menu_repeat_at = 0;
+		controller_dpad_key = INPUT_NONE;
+		controller_dpad_repeat_at = 0;
+		controller_camera_direction = INPUT_NONE;
+		controller_camera_repeat_at = 0;
+		controller_shift_pending = INPUT_NONE;
+		controller_race_start_requested = false;
+	}
+	replay_active = active;
+}
+
+void sdl3_input_push_modal(void)
+{
+	input_feedback_use_controller(false);
+	input_tilt_reset();
+	sdl3_input_reset_shifts();
+	if (modal_depth < LEGACY_U16_MAX) {
+		modal_depth++;
+	}
+	controller_menu_direction = INPUT_NONE;
+	controller_menu_repeat_at = 0;
+	controller_dpad_key = INPUT_NONE;
+	controller_dpad_repeat_at = 0;
+	controller_camera_direction = INPUT_NONE;
+	controller_camera_repeat_at = 0;
+	controller_shift_pending = INPUT_NONE;
+	controller_race_start_requested = false;
+}
+
+void sdl3_input_pop_modal(void)
+{
+	input_tilt_reset();
+	sdl3_input_reset_shifts();
+	if (modal_depth != 0) {
+		modal_depth--;
+	}
+	controller_menu_direction = INPUT_NONE;
+	controller_menu_repeat_at = 0;
+	controller_dpad_key = INPUT_NONE;
+	controller_dpad_repeat_at = 0;
+	controller_camera_direction = INPUT_NONE;
+	controller_camera_repeat_at = 0;
+	controller_shift_pending = INPUT_NONE;
+	controller_race_start_requested = false;
+}
+
+legacy_s16 sdl3_controller_driving_flags(void)
+{
+	sdl3_platform_pump();
+	if (controller == NULL || !input_focused || !gameplay_active || replay_active ||
+		modal_depth != 0) {
+		return INPUT_NONE;
+	}
+	legacy_s16 flags =
+		controller_axis_directions(SDL_GAMEPAD_AXIS_RIGHTX, SDL_GAMEPAD_AXIS_RIGHTY) &
+		INPUT_PEDAL_MASK;
+	if (controller_buttons[SDL_GAMEPAD_BUTTON_DPAD_UP]) {
+		flags |= INPUT_SHIFT_UP_FLAG;
+	}
+	if (controller_buttons[SDL_GAMEPAD_BUTTON_DPAD_DOWN]) {
+		flags |= INPUT_SHIFT_DOWN_FLAG;
+	}
+	flags |= controller_shift_pending;
+	controller_shift_pending = INPUT_NONE;
+	return flags;
+}
+
+legacy_s16 sdl3_controller_scaled_x(void)
+{
+	sdl3_platform_pump();
+	if (controller == NULL || !input_focused) {
+		return 0;
+	}
+	return (
+		legacy_s16)(((legacy_s32)controller_axes[SDL_GAMEPAD_AXIS_RIGHTX] * JOYSTICK_AXIS_SCALE) /
+					(legacy_s32)LEGACY_U16_SIGN_BIT);
+}
+
+legacy_s16 sdl3_tilt_scaled_x(void)
+{
+	sdl3_platform_pump();
+	return driving_mode == SDL3_DRIVING_TILT && input_focused && gameplay_active &&
+				   !replay_active && modal_depth == 0
+			   ? tilt_axis
+			   : 0;
+}
+
+legacy_s16 sdl3_controller_camera_flags(void)
+{
+	sdl3_platform_pump();
+	legacy_s16 direction =
+		controller != NULL && input_focused && gameplay_active && modal_depth == 0
+			? controller_axis_directions(SDL_GAMEPAD_AXIS_LEFTX, SDL_GAMEPAD_AXIS_LEFTY)
+			: (legacy_s16)INPUT_NONE;
+	legacy_u64 now = SDL_GetTicks();
+	if (direction != controller_camera_direction ||
+		(direction != INPUT_NONE && now >= controller_camera_repeat_at)) {
+		controller_camera_direction = direction;
+		controller_camera_repeat_at = now + CONTROLLER_CAMERA_REPEAT_INTERVAL_MS;
+		return direction;
+	}
+	return INPUT_NONE;
+}
+
+legacy_u8 sdl3_controller_take_menu_request(void)
+{
+	sdl3_platform_pump();
+	legacy_u8 requested = controller_menu_requested;
+	controller_menu_requested = false;
+	return requested;
+}
+
+legacy_u8 sdl3_controller_take_race_start_request(void)
+{
+	sdl3_platform_pump();
+	legacy_u8 requested = controller_race_start_requested;
+	controller_race_start_requested = false;
+	return requested;
 }

@@ -84,6 +84,12 @@ case "$target" in
         for executable in restunts restunto repldump repldumo pixldump pixldumo; do
             cp -- "$dos_directory/$executable.exe" "$package_dir/$executable.exe"
         done
+        mkdir -p "$package_dir/cars"
+        for car_code in MCMU TERR; do
+            for car_file in "CAR$car_code.RES" "ST$car_code.3SH" "STDA$car_code.VSH" "STDB$car_code.VSH"; do
+                cp -- "$repo_dir/assets/cars/$car_file" "$package_dir/cars/$car_file"
+            done
+        done
         ;;
     macos-universal)
         bash "$script_dir/build-macos.sh" --arch universal --build-dir "$build_dir" \
@@ -95,6 +101,24 @@ case "$target" in
     *)
         case "$target" in
             linux-x64) ;;
+            linux-appimage-x64|linux-appimage-x86|linux-appimage-x86-no-sse2)
+                appimage_environment="$tool_root/appimage-sysroots/$target.env"
+                [[ -f "$appimage_environment" ]] || {
+                    echo "Missing legacy AppImage environment; run install-package-dependencies.sh $target first." >&2
+                    exit 1
+                }
+                # shellcheck source=/dev/null
+                source "$appimage_environment"
+                cmake_options+=("-DCMAKE_TOOLCHAIN_FILE=$RESTUNTS_APPIMAGE_CMAKE_TOOLCHAIN"
+                    -DSDL_X11_XCURSOR=OFF -DSDL_X11_XINPUT=OFF -DSDL_X11_XFIXES=OFF
+                    -DSDL_X11_XRANDR=OFF -DSDL_X11_XTEST=OFF -DSDL_X11_XSCRNSAVER=OFF
+                    -DSDL_WAYLAND=OFF -DSDL_VULKAN=OFF -DSDL_GPU_VULKAN=OFF)
+                if [[ "$target" == linux-appimage-x86-no-sse2 ]]; then
+                    cmake_options+=(-DRESTUNTS_SSE2=OFF)
+                else
+                    cmake_options+=(-DRESTUNTS_SSE2=ON)
+                fi
+                ;;
             linux-x86) cmake_options+=(-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/linux-x86.cmake) ;;
             linux-x86-no-sse2)
                 cmake_options+=(-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/linux-x86.cmake -DRESTUNTS_SSE2=OFF) ;;
@@ -147,6 +171,10 @@ case "$target" in
         fi
         ;;
 esac
+
+if [[ "$target" == linux-appimage-* ]]; then
+    bash "$script_dir/build-appimage.sh" "$package_dir" "$target"
+fi
 
 case "$target" in
     freebsd-*|openbsd-*|netbsd-*|haiku-*)

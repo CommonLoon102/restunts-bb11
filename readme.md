@@ -34,6 +34,9 @@ Main repository: https://github.com/4d-stunts/restunts
 	src\restunts\platform\dos
 		DOS specific code.
 
+	src\restunts\platform\amiga
+		Native Amiga 500+ port: Motorola 68000, 320x200, 32 colors, Paula audio.
+
 	src\restunts\platform\templeos
 		Native HolyC port for TempleOS/TinkerOS: 640x400 rendering, 16 colors, PC speaker.
 
@@ -45,8 +48,15 @@ Main repository: https://github.com/4d-stunts/restunts
 		Replay-driven renderer test tool. It renders every frame incrementally
 		and hashes the 320x200 camera framebuffer at frame 0 and every subsequent frame.
 
+	src\restunts\genghost
+		SDL3 desktop tool that searches headless physics simulations for faster
+		driving inputs and writes a replay for use as a ghost.
+
 
 ## Running the game
+
+The experimental [Amiga 500+ port](docs/amiga.md) builds a native AmigaOS
+executable from the classic DOS game core. See its current performance limits.
 
 An SDL3 [WebAssembly build](docs/wasm.md) runs directly from a local HTML file
 without a web server. Only enhanced artwork is embedded; select your own
@@ -381,9 +391,9 @@ The main menu, opponent biographies, and track-selection menu hide F11 diagnosti
 the F11 setting is retained when returning to a screen that displays them.
 
 HyperVision and the FPS display start off by default. Use `--fps:on` to show
-FPS and render time from startup in SDL3 builds, or `--fps:off` to select the
-default explicitly. Like `--ogg:on|off`, the FPS option is case-insensitive and
-must appear only once. Their selections persist until changed or the game exits.
+FPS from startup on every port, or `--fps:off` to select the default explicitly.
+SDL3 also shows render time. The FPS option is case-insensitive and must appear
+only once. Its selection persists until changed or the game exits.
 The renderer and display shortcuts work in all driving and replay cameras,
 including opponent and ghost views and paused replays. Holding a shortcut key
 changes its selection only once.
@@ -399,6 +409,17 @@ it stays in its final position. Restarting or rewinding keeps it synchronized
 with your race time. Press **T** to switch between your view and the ghost's
 view; **F1** through **F4** select the camera mode for either car.
 
+All game builds also show the ghost's racing line. It follows
+the recorded path even when the ghost is too far ahead to see. Each 2-meter
+section compares the ghost's speed there with your current speed: **red** means
+you are more than 3 MPH faster and should slow down, **green** means you are
+more than 3 MPH slower and should accelerate, and **yellow** means you are
+within 3 MPH either way. The colors update as your speed changes. The line has
+the width of the road's center markings, so it appears wider nearby and narrower
+in the distance, and follows the recorded slopes and banking. DOS16 and
+TempleOS omit guidance for a frame if it would exceed the renderer's polygon
+budget, preserving the complete road and car scene.
+
 Choose **Clock** again to remove the ghost. Loading a different track, changing
 its layout in the editor, or selecting an AI opponent also clears the ghost.
 Canceling the replay picker keeps the previous selection. The ghost selection
@@ -408,6 +429,8 @@ format and do not include the ghost.
 Preparing the ghost reconstructs the selected replay before driving and caches
 its positions in a temporary `GHxxxxxx.TMP` file in the game directory. The game
 removes this file when the selection is cleared or the game exits normally.
+The 16-bit DOS build streams the racing line from a second temporary
+`GLxxxxxx.TMP` file, removed when the race ends.
 As with ordinary replay playback, use the physics switches used to record it.
 
 ### Rewind while driving
@@ -420,6 +443,9 @@ with your new driving; the run is marked as modified, like continuing from a
 replay, and does not qualify for the normal high-score table.
 
 ### Optional parameters
+
+See [startup settings by platform](docs/parameters.md) for the complete common
+options, Android/web controls, TempleOS calls, and platform-specific features.
 
 Run `restunts.exe --nointro` to skip the startup intro and open the main menu
 immediately after initialization. The intro remains available when leaving the
@@ -466,9 +492,23 @@ selects it. These switches are case-insensitive, and the last one wins. They
 can be combined with `--pg:off`, `--lc:off`, `--nointro`, and other startup
 options. Collision recovery rounding remains controlled separately by `--lc:off`.
 
+Run `restunts.exe --dws:off` to disable **Dual-Way Switching**, correcting the
+penalty calculation when cutting from one branch of a split track to the other.
+The original switching behavior remains the default; `--dws:on` explicitly
+selects it. These switches are case-insensitive, and the last value wins.
+They are available on every port and can be combined with other startup options.
+
+Run `restunts.exe /amigagrass` to use original Amiga grass grip for the 11 stock
+cars. This option is off by default and leaves road grip unchanged. Custom car
+IDs retain their authored grass grip. The switch is case-insensitive and can
+be combined with the other physics and startup options. As in the original,
+the Indycar, Jaguar XJR-9 and Porsche 962 skid earlier on grass; some stock
+cars gain grass grip, while the NSX, Countach, Ferrari GTO and Corvette
+retain their DOS grass grip.
+
 The ported physics dump tool accepts the same switches after the replay name:
-`repldump.exe 0681 --pg:off --lc:off --lcb:off`. Replays do not store these
-options, so use the same physics settings for recording and playback. Original
+`repldump.exe 0681 --pg:off --lc:off --lcb:off --dws:off`. Replays do not store
+these options, so use the same physics settings for recording and playback. Original
 assembly executables and the renderer dump tools retain their existing interfaces.
 
 ### OWOOT driving rules
@@ -505,6 +545,36 @@ as `fail` and changes to `pass` only after successful processing. File-writing
 or replay-loading errors return a nonzero exit code; check that code as well
 when validating a batch. Without `--owoot`, no `.owo` file is created or updated.
 
+### Replay driving-time reports
+
+In the ported DOS16 and SDL3 physics dump tools, `repldump.exe R0019.RPL --time`
+also writes `R0019.tim` beside the normal dump output. The file contains the
+player's driving time to the finish on the first line, excluding penalties and
+any recording frames after finishing. The second line contains the penalty
+counted at the finish, in minutes and seconds (`0:00` when there is no penalty).
+The first line uses the replay viewer's minutes, seconds, and hundredths format.
+The two lines are separated by CRLF, with no alignment spaces or trailing
+newline. For example:
+
+```text
+3:03.00
+0:30
+```
+
+The `.tim` file starts empty before replay loading and receives a time only if
+the player finishes. A replay that crashes before finishing or never finishes
+leaves it empty. Replay-loading and file-writing errors return a nonzero exit
+code; check that code when processing batches. Without `--time`, no `.tim` file
+is created or updated.
+
+The flag is case-insensitive and can be combined with physics switches and
+`--owoot`: `repldump.exe R0019.RPL --time --owoot --dws:off` writes both the
+`.tim` driving and penalty times and the independent `.owo` verdict.
+
+Physics dumps always simulate at the recording's stored 10 or 20 Hz rate,
+matching the replay viewer. `--time` only adds its report; it does not change
+the `.BNI` dump or an `.owo` verdict.
+
 ### Needle colours
 
 The ported game includes the [needle colour mod](https://wiki.stunts.hu/wiki/Needle_colour_mod).
@@ -516,13 +586,66 @@ For example, `0x040F` selects palette index 15 for the speedometer and 4 for
 the tachometer. The stock value `0x0010` keeps both needles white, and
 `0x0000` makes both black. Digital speedometer digits are unaffected.
 
+### McMurtry Speirling PURE custom car
+
+The `MCMU` car has new showroom/racing meshes rebuilt from the supplied
+high-resolution Speirling model, seven paints, a digital race cockpit,
+single-speed electric drive and fan adhesion. Driving specifications retain
+the 2026 production PURE tuning; exterior proportions follow the source mesh.
+Install it with:
+
+```sh
+python3 tools/scripts/generate-mcmurtry-speirling.py --install stunts
+```
+
+See [car details, specifications and model sources](docs/mcmurtry-speirling.md).
+Verify the generated package with the same command plus `--check`.
+
+### Tesla Roadster Rocket custom car
+
+The `TERR` car includes a grey model based on the supplied reference photos,
+with black glazing, a digital cockpit, and one fixed forward ratio. Its
+performance approximates the October 2026 Rocket announcements. Install it with:
+
+```sh
+python3 tools/scripts/generate-tesla-roadster.py --install stunts
+```
+
+All release packages include the Tesla and McMurtry cars in their `cars/`
+resource folder, alongside `music/` and `skyboxes/` where those are supported.
+The repository stores only their `.RES`, `.3SH` and `.VSH` game resources in
+`assets/cars/`; authoring metadata remains in `tools/scripts/cars/`.
+The generator's `--install stunts` option writes the four resources to
+`stunts/cars/`. Restunts discovers compatible cars there automatically and
+continues to load loose cars from the game-data and executable folders.
+
+The generator checks both dashboard resources against DIA3 after extraction
+and game preparation. See [car details and references](tools/scripts/cars/READTERR.TXT).
+
+Fan adhesion activates automatically when a car includes the optional one-byte
+`fand` resource containing `1`; it needs no startup option or launcher control.
+The optional `adhs` resource customizes the maximum attachment distance,
+alignment angle, and allowed materials independently for each car. TERR uses
+12 world units, 60 degrees, and paved/dirt/ice/grass. Existing `fand=1` cars
+without `adhs` retain those defaults; invalid settings disable adhesion.
+Fan adhesion holds tire contacts against supported drivable surfaces,
+including inverted and vertical surfaces at a standstill, and releases when
+the car leaves the surface. Every ported platform supports it. Cars without
+that flag keep the original physics; original Stunts ignores both resources.
+See [adhesion resource settings](docs/car-adhesion.md) for the binary format,
+limits, and measurement rules.
+
 
 The [Android port](docs/android.md) runs in landscape on Android 5.0 or newer
 for both 32-bit ARM and ARM64. Import your original game folder or ZIP on first
 launch; game data is not bundled in the APK. Transparent touch circles support
 driving, menu navigation, and replay controls. Manual shift buttons appear only
 while racing with manual gears; replay swipes skip ten seconds. The launcher
-offers **New MIDI**, **Show FPS**, and all six **HyperVision** presets.
+offers **New MIDI**, **Show FPS**, **Show Control Layout**, **Tilt steering**,
+and all six **HyperVision** presets. **Driving rules** keeps **Power Gear**,
+**Original Collision Bugs**, **Left Corner Bias**, **Dual-Way Switching**,
+**OWOOT**, and **Amiga Grass**,
+with the same defaults as the command-line options.
 Upper-right **C**/**T** circles send the camera/follow keyboard shortcuts.
 
 ## How to build
@@ -533,8 +656,10 @@ SDL3 builds support Linux, BSD, Haiku, Windows, macOS, 32-bit DOS, and
 ### SDL3 native builds: Linux, BSD, Haiku, Windows, macOS, and 32-bit DOS
 
 The CMake build produces the game (`restunts`), physics dumper (`repldump`),
-and renderer dumper (`pixldump`) for all native targets. Run the commands below
-from the repository root. Use a separate build directory for each target,
+and renderer dumper (`pixldump`) for all native targets. SDL3 desktop builds also
+include the offline ghost generator (`genghost`); see [its guide](docs/genghost.md)
+for track/replay inputs, physics restrictions, and search settings. Run the commands
+below from the repository root. Use a separate build directory for each target,
 architecture, compiler, and host; do not reuse a native Windows build directory
 from WSL, or vice versa.
 
@@ -607,7 +732,7 @@ cmake -S . -B out/sdl3-linux-x86 -G Ninja -DCMAKE_BUILD_TYPE=Release \
 cmake --build out/sdl3-linux-x86 --parallel 2
 ```
 
-The build directory contains `restunts`, `repldump`, `pixldump`, and
+The build directory contains `restunts`, `repldump`, `pixldump`, `genghost`, and
 `libnuked-opl2.so`. After adding the game assets, test and run the x64 build:
 
 ```sh
@@ -632,9 +757,9 @@ cmake -S . -B out/sdl3-windows-x86 -G Ninja -DCMAKE_BUILD_TYPE=Release \
 cmake --build out/sdl3-windows-x86 --parallel 2
 ```
 
-Each directory contains `restunts.exe`, `repldump.exe`, `pixldump.exe`, and
-`nuked-opl2.dll`. Run the executables and test binaries on Windows. For a
-complete transferable package, use the packaging commands below.
+Each directory contains `restunts.exe`, `repldump.exe`, `pixldump.exe`,
+`genghost.exe`, and `nuked-opl2.dll`. Run the executables and test binaries on
+Windows. For a complete transferable package, use the packaging commands below.
 
 #### Linux host: DOS backend
 
@@ -815,7 +940,7 @@ cmake --install out/sdl3-macos-arm64 --prefix out/package-macos-arm64 --componen
 Use `x86_64` in both directory names and the architecture option for Intel;
 use `universal` in the directory names and
 `'-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64'` for a universal build.
-The build directory contains `restunts`, `repldump`, `pixldump`, and
+The build directory contains `restunts`, `repldump`, `pixldump`, `genghost`, and
 `libnuked-opl2.dylib`. The package keeps executables in `bin/`, the replaceable
 audio library in `lib/`, and enhanced artwork beside the executables.
 
@@ -878,9 +1003,10 @@ the terminal's working directory. The equivalent direct command is:
 ```
 
 Saved games, replays, and dump outputs go into the selected game-data folder.
-Use `repldump` or `pixldump` from the same `bin/` folder with their normal
-arguments. The runtime is a Terminal-launched program; there is no Finder
-`.app` bundle. On keyboards that assign system actions to function keys, use
+Use `repldump`, `pixldump`, or `genghost` from the same `bin/` folder with their
+normal arguments. The [ghost generator](docs/genghost.md) resolves input and output
+paths from your working directory. The runtime is a Terminal-launched program;
+there is no Finder `.app` bundle. On keyboards that assign system actions to function keys, use
 Fn/Globe with F11/F12 for the game's timing and HyperVision controls.
 
 #### BSD hosts: FreeBSD, OpenBSD, and NetBSD
@@ -1105,7 +1231,13 @@ The supported targets are:
 | `pixldump-original` | Builds `pixldumo.exe` from the original assembly and renderer dump wrapper. |
 | `test-dos-platform` | Builds the DOS platform ABI test, `tests/build/watcom/<configuration>/DOSPLAT.EXE`. |
 | `test-race-memory` | Builds the full-game race memory test, `tests/build/watcom/<configuration>/RACEMEM.EXE`. |
+| `test-ghost-racing-line` | Builds the DOS16 ghost reconstruction and racing-line renderer test, `tests/build/watcom/<configuration>/GHOSTLIN.EXE`. |
+| `test-driving-options` | Builds DOS16 startup, driving-settings, and command-tail regression executables. |
 | `clean` | Removes generated build objects and candidate executables. |
+
+Run the DOS16 racing-line check with
+`python3 tools/scripts/run-ghost-racing-line-dos-test.py` after building its target.
+It requires DOSBox and the original game resources in `stunts/`.
 
 The `*-original` dump targets assemble the original game code with WASM,
 compile the dump wrappers with WCC, and link them with WLINK. The resulting

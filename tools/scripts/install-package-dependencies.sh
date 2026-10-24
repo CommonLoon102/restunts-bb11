@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Install one release target's cross compiler and native driver headers.
 set -euo pipefail
+# Ubuntu's driver dependencies include tzdata; CI must never prompt for a zone.
+export DEBIAN_FRONTEND=noninteractive
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 source "$script_dir/package-toolchains.conf"
@@ -10,11 +12,32 @@ mkdir -p "$tool_root/downloads"
 
 download() {
     local url=$1 checksum=$2 destination=$3
+    if [[ -f "$destination" ]] && printf '%s  %s\n' "$checksum" "$destination" | sha256sum --check --status; then
+        return
+    fi
     curl --fail --location --retry 3 --connect-timeout 20 "$url" --output "$destination"
     printf '%s  %s\n' "$checksum" "$destination" | sha256sum --check --status
 }
 
 case "$target" in
+    linux-appimage-x64|linux-appimage-x86|linux-appimage-x86-no-sse2)
+        # The compiler is modern; all target headers, CRT objects and runtime
+        # libraries come from the verified historical sysroot instead of apt.
+        apt-get update
+        apt-get install -y --no-install-recommends \
+            build-essential gcc-multilib cmake ninja-build python3 curl ca-certificates \
+            pkg-config autoconf automake libtool libtool-bin meson patch gawk ripgrep qemu-user \
+            file bzip2 xz-utils
+        bash "$script_dir/prepare-appimage-sysroot.sh" "$target"
+        download "$APPIMAGETOOL_URL" "$APPIMAGETOOL_SHA256" "$tool_root/downloads/appimagetool.AppImage"
+        download "$APPIMAGE_RUNTIME_URL" "$APPIMAGE_RUNTIME_SHA256" "$tool_root/downloads/appimage-runtime-x86_64"
+        chmod +x "$tool_root/downloads/appimagetool.AppImage"
+        mkdir -p "$tool_root/appimagetool"
+        (cd "$tool_root/appimagetool"; "$tool_root/downloads/appimagetool.AppImage" --appimage-extract > /dev/null)
+        if [[ "$target" != linux-appimage-x64 ]]; then
+            bash "$script_dir/build-appimage-runtime.sh" "$target"
+        fi
+        ;;
     linux-*)
         case "$target" in
             linux-x64) architecture=amd64 ;;

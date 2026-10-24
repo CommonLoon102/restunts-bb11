@@ -1,7 +1,8 @@
 name: Build and validate
 
 # Checks formatting, regression services, host tests and sanitizers, and plans shards
-# in parallel. Then builds, validates physics, validates rendering, and reports.
+# in parallel. Then builds DOS, SDL3, Amiga and TempleOS, validates physics,
+# validates rendering, and reports. Replay selection applies only to DOS/SDL3.
 # PR and release workflows both gate on this validation.
 on:
   workflow_call:
@@ -51,7 +52,7 @@ on:
         default: 980
     outputs:
       exe-artifact:
-        description: Artifact holding the six DOS executables, when a DOS build is requested.
+        description: Artifact holding both original dump references and all six executables when requested.
         value: ${{ jobs.build.outputs.exe-artifact }}
 
 env:
@@ -104,10 +105,16 @@ jobs:
       - name: Compile and run the host tests
         run: bash src/restunts/tests/run-host-tests.sh
 
+      - name: Verify TempleOS argument construction with sanitizers
+        run: python3 src/restunts/platform/templeos/tools/TEST_LAUNCH.PY
+
+      - name: Verify TempleOS custom car packaging
+        run: python3 src/restunts/platform/templeos/tools/TEST_PACKAGE.PY
+
   sanitizers:
     name: Native sanitizer (${{ matrix.sanitizer }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: ${{ matrix.sanitizer == 'thread' && 60 || 45 }}
     strategy:
       fail-fast: false
       matrix:
@@ -117,10 +124,13 @@ jobs:
           - sanitizer: address
             compiler: clang-18
             linker-flags: -Wl,-z,start-stop-gc
+            timeout-multiplier: 2
           - sanitizer: thread
             compiler: gcc
+            timeout-multiplier: 20
           - sanitizer: undefined
             compiler: gcc
+            timeout-multiplier: 1
     env:
       CC: ${{ matrix.compiler }}
       CFLAGS: -O2 -g -fsanitize=${{ matrix.sanitizer }} -fno-omit-frame-pointer -fno-sanitize-recover=all
@@ -130,6 +140,9 @@ jobs:
       TSAN_OPTIONS: halt_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
       RESTUNTS_RENDER_REPLAY_TIMEOUT_SECONDS: 600
+      # Sanitizers slow fixed-budget native ghost searches. Apply
+      # matching limits in CTest and the Python subprocesses it launches.
+      RESTUNTS_GENGHOST_TEST_TIMEOUT_MULTIPLIER: ${{ matrix.timeout-multiplier }}
       CTEST_TIMEOUT_SECONDS: 1800
       SDL_VIDEODRIVER: dummy
       SDL_AUDIODRIVER: dummy
@@ -161,7 +174,8 @@ jobs:
       - name: Build instrumented native binaries
         run: |
           cmake -S . -B build/sanitizer -G Ninja -DCMAKE_BUILD_TYPE=Debug \
-            -DRESTUNTS_BUILD_TESTS=ON
+            -DRESTUNTS_BUILD_TESTS=ON \
+            -DRESTUNTS_GENGHOST_TEST_TIMEOUT_MULTIPLIER="$RESTUNTS_GENGHOST_TEST_TIMEOUT_MULTIPLIER"
           cmake --build build/sanitizer --parallel 2
 
       - name: Run instrumented host and SDL3 regressions
@@ -290,11 +304,12 @@ jobs:
   build:
     name: Build DOS executables
     needs: [formatting, dumpsrv-tests, host-tests, sanitizers, plan]
-    if: inputs.build-dos-artifact || contains(fromJSON(needs.plan.outputs.platforms), 'dos')
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     outputs:
       exe-artifact: ${{ steps.names.outputs.value }}
+    env:
+      BUILD_DOS_EXECUTABLES: ${{ inputs.build-dos-artifact || contains(fromJSON(needs.plan.outputs.platforms), 'dos') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -321,23 +336,42 @@ jobs:
               --connect-timeout 20 "$STUNTS_URL" --output "$zip_path"
           unzip -oq "$zip_path" -d stunts
 
+      - name: Build original dump references
+        run: make -C src/restunts repldump-original pixldump-original
+
       - name: Build all six DOS executables
+        if: env.BUILD_DOS_EXECUTABLES == 'true'
         run: |
           make -C src/restunts restunts repldump pixldump
-          make -C src/restunts restunts-original repldump-original pixldump-original
+          make -C src/restunts restunts-original
 
-      - name: Check the DOS platform ABI and dump timer masking
+      - name: Install DOSBox-X
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends dosbox-x
+
+      - name: Check the DOS platform ABI and dump timer masking
+        if: env.BUILD_DOS_EXECUTABLES == 'true'
+        run: |
           make -C src/restunts test-dos-platform
           python3 tools/scripts/run-dos-platform-test.py
+
+      - name: Verify DOS16 startup and driving settings
+        if: env.BUILD_DOS_EXECUTABLES == 'true'
+        run: |
+          python3 tools/scripts/generate-tesla-roadster.py --install stunts
+          make -C src/restunts test-driving-options
+          python3 tools/scripts/run-driving-options-dos-test.py
 
       - name: Collect the executables
         run: |
           set -eu
           mkdir -p dist
-          for exe in restunts restunto repldump repldumo pixldump pixldumo; do
+          executables=(repldumo pixldumo)
+          if [[ "$BUILD_DOS_EXECUTABLES" == true ]]; then
+              executables=(restunts restunto repldump repldumo pixldump pixldumo)
+          fi
+          for exe in "${executables[@]}"; do
               test -s "stunts/$exe.exe"
               cp -- "stunts/$exe.exe" "dist/$exe.exe"
           done
@@ -411,15 +445,176 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  build-amiga:
+    name: Build Amiga 500+ (68000)
+    needs: [formatting, dumpsrv-tests, host-tests, sanitizers, plan]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Install build tools and the pinned Amiga SDK
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends cmake ninja-build
+          bash tools/scripts/install-amiga-toolchain.sh "$RUNNER_TEMP/amiga-toolchain"
+          echo "AMIGA_TOOLCHAIN=$RUNNER_TEMP/amiga-toolchain" >> "$GITHUB_ENV"
+
+      - name: Verify original Amiga palette reference data
+        run: python3 tools/scripts/verify-amiga-palette-data.py
+
+      - name: Cross-compile the game and native regressions
+        run: |
+          cmake -S . -B build/amiga -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/amiga-m68k.cmake \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/amiga --parallel 2 --target restunts \
+            test-amiga-platform test-amiga-endian test-amiga-display \
+            test-amiga-rle test-amiga-unflip test-amiga-decompression \
+            test-amiga-command-line test-amiga-startup test-amiga-car-adhesion
+
+      - name: Archive the Amiga executable, custom cars and guide
+        run: |
+          cmake --install build/amiga --prefix "$RUNNER_TEMP/amiga-runtime" --component Runtime
+          cp docs/amiga.md "$RUNNER_TEMP/amiga-runtime/README.md"
+          cp build/amiga/restunts.map "$RUNNER_TEMP/amiga-runtime/restunts.map"
+          tar -C "$RUNNER_TEMP/amiga-runtime" -czf restunts-amiga-build.tar.gz .
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: restunts-amiga-build
+          path: restunts-amiga-build.tar.gz
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+  build-templeos:
+    name: Build stock TempleOS (HolyC)
+    needs: [formatting, dumpsrv-tests, host-tests, sanitizers, plan]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Install headless guest build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            qemu-system-x86 dosfstools mtools p7zip-full python3-pil python3-venv
+          python3 -m venv --system-site-packages "$RUNNER_TEMP/templeos-tools"
+          "$RUNNER_TEMP/templeos-tools/bin/python" -m pip install \
+            pycparser==2.22 clang-format==18.1.8
+          echo "$RUNNER_TEMP/templeos-tools/bin" >> "$GITHUB_PATH"
+
+      - name: Verify HolyC translation and build its semantic oracle
+        run: |
+          python3 src/restunts/platform/templeos/tools/TRANSLATE.PY \
+            --formatter "$(command -v clang-format)" --check
+          python3 src/restunts/platform/templeos/tools/TEST_TRANSLATE.PY \
+            src/restunts/platform/templeos/TEST_SEMANTICS.HC \
+            --formatter "$(command -v clang-format)"
+
+      - name: Download and verify the stock TempleOS ISO
+        run: |
+          curl --fail --location --silent --show-error --retry 3 --connect-timeout 20 \
+            https://github.com/Terry-Davis-Archive/TempleOS-ISO/releases/download/v1.0/TempleOS.7z \
+            --output "$RUNNER_TEMP/TempleOS.7z"
+          echo '573e303aede546531b9810e05bc651d14c3de1289d60030e38a45a09201b0d5e' \
+            " $RUNNER_TEMP/TempleOS.7z" | sha256sum --check --strict
+          7z x -o"$RUNNER_TEMP/templeos-iso" "$RUNNER_TEMP/TempleOS.7z" TempleOS.ISO
+          echo '5d0fc944e5d89c155c0fc17c148646715bc1db6fa5750c0b913772cfec19ba26' \
+            " $RUNNER_TEMP/templeos-iso/TempleOS.ISO" | sha256sum --check --strict
+
+      - name: Compile the complete port with stock HolyC
+        run: |
+          python3 src/restunts/platform/templeos/tools/VM.PY \
+            --work "$RUNNER_TEMP/templeos-compile" run \
+            --iso "$RUNNER_TEMP/templeos-iso/TempleOS.ISO" \
+            --source src/restunts/platform/templeos --entry COMPILE.HC \
+            --boot-seconds 35 --timeout 300
+
+      - name: Verify TempleOS launcher and shared startup options
+        run: |
+          python3 src/restunts/platform/templeos/tools/VM.PY \
+            --work "$RUNNER_TEMP/templeos-options" run \
+            --iso "$RUNNER_TEMP/templeos-iso/TempleOS.ISO" \
+            --source src/restunts/platform/templeos --entry TEST_LAUNCH.HC \
+            --boot-seconds 35 --timeout 300
+
+      - name: Verify bundled TempleOS cars and resource overrides
+        run: |
+          python3 src/restunts/platform/templeos/tools/PREPARE.PY \
+            --output "$RUNNER_TEMP/templeos-car-package"
+          cp src/restunts/platform/templeos/TEST_CARS.HC \
+            "$RUNNER_TEMP/templeos-car-package/PORT/"
+          python3 src/restunts/platform/templeos/tools/VM.PY \
+            --work "$RUNNER_TEMP/templeos-cars" run \
+            --iso "$RUNNER_TEMP/templeos-iso/TempleOS.ISO" \
+            --source "$RUNNER_TEMP/templeos-car-package/PORT" --entry TEST_CARS.HC \
+            --boot-seconds 35 --timeout 300
+
+      - name: Verify Dual-Way Switching penalties with stock HolyC
+        run: |
+          python3 src/restunts/platform/templeos/tools/VM.PY \
+            --work "$RUNNER_TEMP/templeos-dws" run \
+            --iso "$RUNNER_TEMP/templeos-iso/TempleOS.ISO" \
+            --source src/restunts/platform/templeos --entry TEST_DWS.HC \
+            --boot-seconds 35 --timeout 300
+
+      - name: Verify C semantics with stock HolyC
+        run: |
+          python3 src/restunts/platform/templeos/tools/VM.PY \
+            --work "$RUNNER_TEMP/templeos-semantics" run \
+            --iso "$RUNNER_TEMP/templeos-iso/TempleOS.ISO" \
+            --source src/restunts/platform/templeos --entry TEST_SEMANTICS.HC \
+            --boot-seconds 35 --timeout 300
+
+      - name: Build the installation CD and ZIP with custom cars
+        run: |
+          python3 src/restunts/platform/templeos/tools/PACKAGE.PY \
+            --iso "$RUNNER_TEMP/templeos-iso/TempleOS.ISO" \
+            --output build/templeos/RESTUNTS_STOCK_TEMPLEOS
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: restunts-templeos-build
+          path: build/templeos/RESTUNTS_STOCK_TEMPLEOS.ZIP
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+      - name: Upload HolyC compiler diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: templeos-build-logs
+          path: |
+            ${{ runner.temp }}/templeos-compile/DEBUG.LOG
+            ${{ runner.temp }}/templeos-compile/VMRUN.HC
+            ${{ runner.temp }}/templeos-compile/SCREEN.*
+            ${{ runner.temp }}/templeos-options/DEBUG.LOG
+            ${{ runner.temp }}/templeos-options/VMRUN.HC
+            ${{ runner.temp }}/templeos-options/SCREEN.*
+            ${{ runner.temp }}/templeos-cars/DEBUG.LOG
+            ${{ runner.temp }}/templeos-cars/VMRUN.HC
+            ${{ runner.temp }}/templeos-cars/SCREEN.*
+            ${{ runner.temp }}/templeos-semantics/DEBUG.LOG
+            ${{ runner.temp }}/templeos-semantics/VMRUN.HC
+            ${{ runner.temp }}/templeos-semantics/SCREEN.*
+          if-no-files-found: warn
+          retention-days: 14
+
   physics:
     name: Physics replays (${{ matrix.platform }})
     needs: [build, build-sdl3, plan]
-    # An unselected build is intentionally skipped; selected builds must pass.
+    # Every platform uses the freshly built original physics reference.
     if: >-
       ${{ !cancelled() && needs.plan.result == 'success' &&
-          (needs.build.result == 'success' ||
-           (needs.build.result == 'skipped' && !inputs.build-dos-artifact &&
-            !contains(fromJSON(needs.plan.outputs.platforms), 'dos'))) &&
+          needs.build.result == 'success' &&
           (needs.build-sdl3.result == 'success' ||
            (needs.build-sdl3.result == 'skipped' &&
             !contains(fromJSON(needs.plan.outputs.platforms), 'sdl3'))) }}

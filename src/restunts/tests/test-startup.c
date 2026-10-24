@@ -2,6 +2,7 @@
  * captured from the pre-refactor implementation with stubbed DOS endpoints. */
 #include <assert.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <setjmp.h>
@@ -24,9 +25,23 @@ static legacy_u16 startup_error_calls, startup_cleanup_calls;
 static legacy_u16 startup_audio_calls, startup_video_calls;
 static legacy_s16 startup_exit_status;
 static jmp_buf exit_jump;
+legacy_u8 fps_display_enabled;
+static legacy_u8 expected_fps_display_enabled;
+static legacy_u32 startup_fps_reset_calls;
+
+void frame_fps_reset(void)
+{
+	++startup_fps_reset_calls;
+}
+
+legacy_s16 dos_write_stderr(const legacy_s8 *text, legacy_u16 length)
+{
+	assert(text != NULL);
+	return length;
+}
+
 #ifdef RESTUNTS_SDL3
 legacy_u8 supersight_enabled;
-legacy_u8 fps_display_enabled;
 static legacy_s32 startup_render_enabled;
 static legacy_s32 startup_render_scale = HIRES_SCALE;
 static legacy_u16 expected_hypervision_preset;
@@ -35,13 +50,28 @@ static legacy_s32 startup_audio_driver_loaded;
 static legacy_s32 startup_ogg_music_enabled;
 static legacy_s32 expected_ogg_music_enabled;
 static legacy_u32 startup_ogg_set_calls;
-static legacy_u8 expected_fps_display_enabled;
-static legacy_u32 startup_fps_reset_calls;
+#ifndef __ANDROID__
+static legacy_u8 startup_controller_vibration_enabled = 1;
+static legacy_u32 startup_controller_vibration_set_calls;
 
-void frame_fps_reset(void)
+void sdl3_controller_set_vibration_enabled(legacy_u8 enabled)
 {
-	++startup_fps_reset_calls;
+	assert(enabled == 0 || enabled == 1);
+	startup_controller_vibration_enabled = enabled;
+	++startup_controller_vibration_set_calls;
 }
+#endif
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+static legacy_u8 startup_control_layout_visible = STARTUP_CONTROL_LAYOUT_ON;
+static legacy_u32 startup_control_layout_set_calls;
+
+void sdl3_touch_set_layout_visible(legacy_u8 visible)
+{
+	assert(visible == STARTUP_CONTROL_LAYOUT_OFF || visible == STARTUP_CONTROL_LAYOUT_ON);
+	startup_control_layout_visible = visible;
+	++startup_control_layout_set_calls;
+}
+#endif
 
 void sdl3_music_set_enabled(legacy_s32 enabled)
 {
@@ -168,8 +198,8 @@ void dos_video_set_mode_13h(void)
 	startup_video_calls++;
 #ifdef RESTUNTS_SDL3
 	check_startup_hypervision();
-	assert(fps_display_enabled == expected_fps_display_enabled);
 #endif
+	assert(fps_display_enabled == expected_fps_display_enabled);
 	trace(8);
 }
 void dos_video_set_mode4(void)
@@ -384,8 +414,8 @@ legacy_s16 run_intro_looped(void)
 #ifdef RESTUNTS_SDL3
 	check_startup_hypervision();
 	assert(startup_ogg_music_enabled == expected_ogg_music_enabled);
-	assert(fps_display_enabled == expected_fps_display_enabled);
 #endif
+	assert(fps_display_enabled == expected_fps_display_enabled);
 	trace(44);
 	assert(intro_calls < 3);
 	if (expected_initial_intro_calls >= 0) {
@@ -450,14 +480,18 @@ legacy_s8 run_menu(void)
 #endif
 #ifdef RESTUNTS_SDL3
 	assert(startup_ogg_music_enabled == expected_ogg_music_enabled);
-	assert(fps_display_enabled == expected_fps_display_enabled);
 #endif
+	assert(fps_display_enabled == expected_fps_display_enabled);
 	legacy_u32 call = menu_calls++;
 	trace(52);
 	assert(menu_calls < 10);
 	if (expected_initial_intro_calls >= 0) {
 		assert(menu_calls == 1);
 		assert(intro_calls == (legacy_u32)expected_initial_intro_calls);
+		if (expected_initial_intro_calls == 0) {
+			/* A zero Y makes the waiting dialog draw above the screen. */
+			assert(waitflag == 180);
+		}
 		assert(is_audioloaded != 0);
 		return -1;
 	}
@@ -611,6 +645,7 @@ static void test_startup_intro_option(void)
 	static const legacy_s16 counts[] = {2, 4, 4, 3, 2, 2, 2, 2, 2, 2, 1};
 	for (legacy_u32 scenario = 0; scenario < sizeof(counts) / sizeof(counts[0]); scenario++) {
 		expected_initial_intro_calls = scenario < 4 ? 0 : 1;
+		waitflag = 0;
 		menu_calls = intro_calls = game_calls = score_calls = 0;
 		timer_calls = status_calls = 0;
 		audio_failure = 0;
@@ -687,15 +722,16 @@ static void test_startup_physics_options(void)
 	}
 }
 
-#ifdef RESTUNTS_SDL3
 static void reset_startup_hypervision(void)
 {
+#ifdef RESTUNTS_SDL3
 	supersight_enabled = 0;
 	startup_render_enabled = 0;
 	startup_render_scale = HIRES_SCALE;
 	expected_hypervision_preset = FRAME_ADAPTIVE_PRESET_AUTO;
 	expected_hypervision_enabled = 0;
 	frame_adaptive_reset(&frame_adaptive);
+#endif
 	timer_calls = status_calls = 0;
 	audio_failure = 0;
 }
@@ -703,6 +739,14 @@ static void reset_startup_hypervision(void)
 static void expect_startup_option_error(legacy_s16 count, legacy_s8 *arguments[])
 {
 	reset_startup_hypervision();
+#if defined(RESTUNTS_SDL3) && !defined(__ANDROID__)
+	legacy_u32 before_vibration_calls = startup_controller_vibration_set_calls;
+	legacy_u8 before_vibration_enabled = startup_controller_vibration_enabled;
+#endif
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+	legacy_u32 before_layout_calls = startup_control_layout_set_calls;
+	legacy_u8 before_layout_visible = startup_control_layout_visible;
+#endif
 	startup_exit_status = EXIT_SUCCESS;
 	if (setjmp(exit_jump) == 0) {
 		init_main(count, arguments);
@@ -710,15 +754,26 @@ static void expect_startup_option_error(legacy_s16 count, legacy_s8 *arguments[]
 	}
 	assert(startup_exit_status == EXIT_FAILURE);
 	/* Validate all arguments before enabling rendering or starting the timer. */
+#ifdef RESTUNTS_SDL3
 	assert(startup_render_enabled == 0 && supersight_enabled == 0);
 	assert(frame_adaptive.preset == FRAME_ADAPTIVE_PRESET_AUTO);
+#endif
 	assert(timer_calls == 0);
+#if defined(RESTUNTS_SDL3) && !defined(__ANDROID__)
+	assert(startup_controller_vibration_set_calls == before_vibration_calls);
+	assert(startup_controller_vibration_enabled == before_vibration_enabled);
+#endif
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+	assert(startup_control_layout_set_calls == before_layout_calls);
+	assert(startup_control_layout_visible == before_layout_visible);
+#endif
 }
 
 #define STARTUP_TEST_GEOMETRY_TICKS 55U
 #define STARTUP_TEST_CLEAR_TICKS 15U
 #define STARTUP_TEST_PARTIAL_TICKS 16U
 
+#ifdef RESTUNTS_SDL3
 static void test_startup_hypervision_options(void)
 {
 	static const struct {
@@ -867,6 +922,8 @@ static void test_startup_ogg_music_options(void)
 	}
 }
 
+#endif
+
 static void test_startup_fps_display_options(void)
 {
 	static const struct {
@@ -881,9 +938,11 @@ static void test_startup_fps_display_options(void)
 								  (legacy_s8 *)"/ns",	   (legacy_s8 *)"--hv:low",
 								  (legacy_s8 *)"--ogg:on", (legacy_s8 *)"--nointro"};
 		reset_startup_hypervision();
+#ifdef RESTUNTS_SDL3
 		expected_hypervision_preset = FRAME_ADAPTIVE_PRESET_LOW;
 		expected_hypervision_enabled = 1;
 		expected_ogg_music_enabled = 1;
+#endif
 		expected_fps_display_enabled = cases[index].mode;
 		fps_display_enabled = cases[index].mode == FRAME_FPS_DISPLAY_OFF ? FRAME_FPS_DISPLAY_ON
 																		 : FRAME_FPS_DISPLAY_OFF;
@@ -907,7 +966,9 @@ static void test_startup_fps_display_options(void)
 		assert(menu_calls == 1 && intro_calls == (legacy_u32)expected_initial_intro_calls + 1U);
 	}
 	expected_initial_intro_calls = -1;
+#ifdef RESTUNTS_SDL3
 	expected_ogg_music_enabled = 0;
+#endif
 	expected_fps_display_enabled = FRAME_FPS_DISPLAY_OFF;
 
 	/* Default startup clears a prior session's display choice and FPS samples. */
@@ -942,6 +1003,7 @@ static void test_startup_fps_display_options(void)
 		assert(startup_fps_reset_calls == before);
 		assert(fps_display_enabled == FRAME_FPS_DISPLAY_ON);
 	}
+#ifdef RESTUNTS_SDL3
 	/* A later invalid option must leave the display and sample state untouched. */
 	static const legacy_s8 *other_invalid[] = {"--ogg:invalid", "--hv:invalid"};
 	for (legacy_u16 index = 0; index < sizeof(other_invalid) / sizeof(other_invalid[0]); ++index) {
@@ -953,6 +1015,7 @@ static void test_startup_fps_display_options(void)
 		assert(startup_fps_reset_calls == before);
 		assert(fps_display_enabled == FRAME_FPS_DISPLAY_ON);
 	}
+#endif
 	static const legacy_s8 *ignored[] = {"", "--fps", "fps:on", "--fps=on", "--fpson"};
 	for (legacy_u16 index = 0; index < sizeof(ignored) / sizeof(ignored[0]); ++index) {
 		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)ignored[index]};
@@ -962,7 +1025,117 @@ static void test_startup_fps_display_options(void)
 		assert(!startup_options.fps_display_specified);
 	}
 }
+#ifdef RESTUNTS_SDL3
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+static void test_startup_control_layout_options(void)
+{
+	static const struct {
+		const legacy_s8 *argument;
+		legacy_u8 visible;
+	} cases[] = {{"--control-layout:off", STARTUP_CONTROL_LAYOUT_OFF},
+				 {"--CONTROL-LAYOUT:On", STARTUP_CONTROL_LAYOUT_ON}};
+	for (legacy_u16 index = 0; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)cases[index].argument};
+		reset_startup_hypervision();
+		startup_control_layout_visible = cases[index].visible == STARTUP_CONTROL_LAYOUT_ON
+											 ? STARTUP_CONTROL_LAYOUT_OFF
+											 : STARTUP_CONTROL_LAYOUT_ON;
+		legacy_u32 before = startup_control_layout_set_calls;
+		init_main(sizeof(arguments) / sizeof(arguments[0]), arguments);
+		assert(startup_control_layout_set_calls == before + 1U);
+		assert(startup_control_layout_visible == cases[index].visible);
+		assert(startup_options.control_layout_enabled == cases[index].visible);
+		assert(startup_options.control_layout_specified != 0);
+	}
+
+	/* A later session without an explicit option restores the enabled default. */
+	legacy_s8 *defaults[] = {(legacy_s8 *)"game"};
+	reset_startup_hypervision();
+	startup_control_layout_visible = STARTUP_CONTROL_LAYOUT_OFF;
+	legacy_u32 before = startup_control_layout_set_calls;
+	init_main(sizeof(defaults) / sizeof(defaults[0]), defaults);
+	assert(startup_control_layout_set_calls == before + 1U);
+	assert(startup_control_layout_visible == STARTUP_CONTROL_LAYOUT_ON);
+	assert(startup_options.control_layout_enabled == STARTUP_CONTROL_LAYOUT_ON);
+	assert(startup_options.control_layout_specified == 0);
+
+	static const legacy_s8 *invalid[] = {"--control-layout:", "--control-layout:auto"};
+	for (legacy_u16 index = 0; index < sizeof(invalid) / sizeof(invalid[0]); ++index) {
+		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)invalid[index]};
+		expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
+	}
+	legacy_s8 *duplicate[] = {(legacy_s8 *)"game", (legacy_s8 *)"--control-layout:off",
+							  (legacy_s8 *)"--control-layout:on"};
+	expect_startup_option_error(sizeof(duplicate) / sizeof(duplicate[0]), duplicate);
+	/* Validation of a later option must finish before touching the current layout. */
+	legacy_s8 *later_invalid[] = {(legacy_s8 *)"game", (legacy_s8 *)"--control-layout:off",
+								  (legacy_s8 *)"--fps:invalid"};
+	expect_startup_option_error(sizeof(later_invalid) / sizeof(later_invalid[0]), later_invalid);
+}
 #endif
+#endif
+
+static void test_startup_controller_vibration_options(void)
+{
+#if defined(RESTUNTS_SDL3) && !defined(__ANDROID__)
+	static const struct {
+		const legacy_s8 *argument;
+		legacy_u8 enabled;
+	} cases[] = {{"--controller-vibration:on", 1},
+				 {"--controller-vibration:off", 0},
+				 {"--CONTROLLER-VIBRATION:On", 1},
+				 {"--Controller-Vibration:OfF", 0}};
+	for (legacy_u16 index = 0; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)cases[index].argument};
+		reset_startup_hypervision();
+		startup_controller_vibration_enabled = !cases[index].enabled;
+		legacy_u32 before = startup_controller_vibration_set_calls;
+		init_main(sizeof(arguments) / sizeof(arguments[0]), arguments);
+		assert(startup_controller_vibration_set_calls == before + 1U);
+		assert(startup_controller_vibration_enabled == cases[index].enabled);
+		assert(startup_options.controller_vibration_enabled == cases[index].enabled);
+		assert(startup_options.controller_vibration_specified != 0);
+	}
+
+	/* A startup without the option restores On after an earlier Off session. */
+	legacy_s8 *defaults[] = {(legacy_s8 *)"game"};
+	reset_startup_hypervision();
+	startup_controller_vibration_enabled = 0;
+	legacy_u32 before = startup_controller_vibration_set_calls;
+	init_main(sizeof(defaults) / sizeof(defaults[0]), defaults);
+	assert(startup_controller_vibration_set_calls == before + 1U);
+	assert(startup_controller_vibration_enabled == 1);
+	assert(startup_options.controller_vibration_enabled == 1);
+	assert(startup_options.controller_vibration_specified == 0);
+
+	for (legacy_u16 first = 0; first < sizeof(cases) / sizeof(cases[0]); ++first) {
+		for (legacy_u16 second = 0; second < sizeof(cases) / sizeof(cases[0]); ++second) {
+			legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)cases[first].argument,
+									  (legacy_s8 *)"--nointro",
+									  (legacy_s8 *)cases[second].argument};
+			expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
+		}
+	}
+	static const legacy_s8 *invalid[] = {"--controller-vibration:", "--controller-vibration:auto",
+										 "--controller-vibration:1", "--controller-vibration:onx",
+										 "--controller-vibration:off:on"};
+	for (legacy_u16 index = 0; index < sizeof(invalid) / sizeof(invalid[0]); ++index) {
+		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)invalid[index]};
+		expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
+	}
+	/* A valid vibration value must not apply before all later options validate. */
+	legacy_s8 *later_invalid[] = {(legacy_s8 *)"game", (legacy_s8 *)"--controller-vibration:off",
+								  (legacy_s8 *)"--fps:invalid"};
+	expect_startup_option_error(sizeof(later_invalid) / sizeof(later_invalid[0]), later_invalid);
+#else
+	/* Android uses its existing Vibration launcher setting. Other backends have no rumble option. */
+	legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)"--controller-vibration:off",
+							  (legacy_s8 *)"--controller-vibration:on",
+							  (legacy_s8 *)"--controller-vibration:invalid"};
+	reset_startup_hypervision();
+	init_main(sizeof(arguments) / sizeof(arguments[0]), arguments);
+#endif
+}
 
 static void test_startup_game_version(void)
 {
@@ -1031,7 +1204,12 @@ int main(void)
 #ifdef RESTUNTS_SDL3
 	test_startup_hypervision_options();
 	test_startup_ogg_music_options();
-	test_startup_fps_display_options();
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+	test_startup_control_layout_options();
 #endif
+#endif
+	test_startup_fps_display_options();
+	test_startup_controller_vibration_options();
+	puts("startup option tests passed");
 	return 0;
 }

@@ -3,6 +3,9 @@
 #include "memmgr.h"
 #include "menu_internal.h"
 #include "platform.h"
+#ifdef RESTUNTS_AMIGA
+#include "../platform/amiga/amiga.h"
+#endif
 #include "shape2d.h"
 #include "shape3d.h"
 #include "ui_text.h"
@@ -82,7 +85,7 @@ static void track_menu_draw_highscore(void)
 	struct HIGHSCORE_ENTRY far *scores;
 	if (highscore_load_or_create(0) == 0) {
 		scores = (struct HIGHSCORE_ENTRY far *)track_highscore_table;
-		legacy_u16 score = scores[ranking_entry_order[0]].time;
+		legacy_u16 score = highscore_entry_time(&scores[ranking_entry_order[0]]);
 		if (score != HIGHSCORE_UNSET_TIME) {
 			copy_string(&resID_byte1, locate_text_res(mainresptr, "hs0"));
 			intro_draw_text(&resID_byte1, font_centered_text_x(&resID_byte1),
@@ -211,6 +214,9 @@ static legacy_u8 track_menu_activate_key(struct TRACK_MENU_STATE *menu, legacy_u
 
 void run_tracks_menu(legacy_s16 reload_track)
 {
+#ifdef RESTUNTS_AMIGA
+	amiga_video_palette_scene("SDTITL", "!def");
+#endif
 	ensure_file_exists(TRACK_EDITOR_RESOURCE_FILE_INDEX);
 	legacy_s16 needs_track_setup = reload_track != 0;
 	struct TRACK_MENU_STATE menu;

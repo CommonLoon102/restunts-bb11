@@ -9,7 +9,9 @@
 #include "camera.h"
 #include "car_model.h"
 #include "car_resources.h"
+#include "resource.h"
 #include "owoot.h"
+#include "physics_internal.h"
 
 extern legacy_s8 opponent_name_text_id[];
 extern legacy_s8 opponent_path_resource_id[];
@@ -138,6 +140,110 @@ static void opponent_route_write(legacy_u16 index, legacy_u16 value)
 	LEGACY_WRITE_U16_LE((legacy_u8 far *)opponent_route_track_indices + offset, value);
 }
 
+legacy_u8 car_surface_adhesion[2];
+struct CAR_SURFACE_ADHESION_SETTINGS car_surface_adhesion_settings[2] = {
+	{CAR_ADHESION_DEFAULT_DISTANCE, CAR_ADHESION_DEFAULT_ALIGNMENT, CAR_ADHESION_SURFACE_MASK},
+	{CAR_ADHESION_DEFAULT_DISTANCE, CAR_ADHESION_DEFAULT_ALIGNMENT, CAR_ADHESION_SURFACE_MASK}};
+
+static void reset_car_surface_adhesion(legacy_s16 car_index)
+{
+	car_surface_adhesion[car_index] = 0;
+	car_surface_adhesion_settings[car_index].max_distance = CAR_ADHESION_DEFAULT_DISTANCE;
+	car_surface_adhesion_settings[car_index].min_alignment = CAR_ADHESION_DEFAULT_ALIGNMENT;
+	car_surface_adhesion_settings[car_index].surface_mask = CAR_ADHESION_SURFACE_MASK;
+}
+
+void reset_car_capabilities(void)
+{
+	reset_car_surface_adhesion(0);
+	reset_car_surface_adhesion(1);
+}
+
+static void setup_car_surface_adhesion(void far *car_resource, legacy_s16 is_opponent)
+{
+	legacy_s16 car_index = is_opponent != 0;
+	reset_car_surface_adhesion(car_index);
+	if (!car_resource) {
+		return;
+	}
+	/* Bound both optional payloads using their directory neighbours. Malformed
+	 * settings fail closed; a missing settings chunk keeps `fand` compatibility. */
+	const legacy_u8 huge *resource = car_resource;
+	legacy_u32 size = LEGACY_READ_U32_LE(resource + RESOURCE_FILE_SIZE_OFFSET);
+	legacy_u16 count = resource_file_count(car_resource);
+	legacy_u32 offsets_start =
+		RESOURCE_FILE_DIRECTORY_OFFSET + (legacy_u32)count * RESOURCE_FILE_IDENTIFIER_SIZE;
+	legacy_u32 data_start = offsets_start + (legacy_u32)count * RESOURCE_FILE_OFFSET_SIZE;
+	if (size <= data_start) {
+		return;
+	}
+	legacy_u32 data_size = size - data_start;
+	legacy_u32 starts[2];
+	legacy_u32 ends[2];
+	starts[0] = starts[1] = data_size;
+	ends[0] = ends[1] = data_size;
+	legacy_u16 aliases[2] = {0, 0};
+	legacy_u16 found = 0;
+	for (legacy_u16 index = 0; index < count; index++) {
+		legacy_u32 offset = LEGACY_READ_U32_LE(resource + offsets_start +
+											   (legacy_u32)index * RESOURCE_FILE_OFFSET_SIZE);
+		if (offset > data_size) {
+			return;
+		}
+		const legacy_u8 huge *name = resource + RESOURCE_FILE_DIRECTORY_OFFSET +
+									 (legacy_u32)index * RESOURCE_FILE_IDENTIFIER_SIZE;
+		legacy_u16 slot;
+		if (name[0] == 'f' && name[1] == 'a' && name[2] == 'n' && name[3] == 'd') {
+			slot = 0;
+		} else if (name[0] == 'a' && name[1] == 'd' && name[2] == 'h' && name[3] == 's') {
+			slot = 1;
+		} else {
+			continue;
+		}
+		if ((found & (1U << slot)) != 0 || offset >= data_size) {
+			return;
+		}
+		starts[slot] = offset;
+		found |= 1U << slot;
+	}
+	if ((found & 1U) == 0) {
+		return;
+	}
+	for (legacy_u16 index = 0; index < count; index++) {
+		legacy_u32 offset = LEGACY_READ_U32_LE(resource + offsets_start +
+											   (legacy_u32)index * RESOURCE_FILE_OFFSET_SIZE);
+		for (legacy_u16 slot = 0; slot < 2; slot++) {
+			if (offset == starts[slot]) {
+				aliases[slot]++;
+			} else if (offset > starts[slot] && offset < ends[slot]) {
+				ends[slot] = offset;
+			}
+		}
+	}
+	if (aliases[0] != 1 || ends[0] - starts[0] != 1 || resource[data_start + starts[0]] != 1) {
+		return;
+	}
+	if ((found & 2U) != 0) {
+		if (aliases[1] != 1 || ends[1] - starts[1] != CAR_ADHESION_SETTINGS_SIZE) {
+			return;
+		}
+		const legacy_u8 huge *settings = resource + data_start + starts[1];
+		legacy_u16 max_distance = LEGACY_READ_U16_LE(settings + 1);
+		legacy_u16 min_alignment = LEGACY_READ_U16_LE(settings + 3);
+		legacy_u8 surface_mask = settings[5];
+		if (settings[0] != CAR_ADHESION_SETTINGS_VERSION ||
+			max_distance > CAR_ADHESION_MAX_DISTANCE ||
+			min_alignment > CAR_ADHESION_MAX_ALIGNMENT ||
+			(surface_mask & ~CAR_ADHESION_SURFACE_MASK) != 0) {
+			return;
+		}
+		car_surface_adhesion_settings[car_index].max_distance = max_distance;
+		car_surface_adhesion_settings[car_index].min_alignment = min_alignment;
+		car_surface_adhesion_settings[car_index].surface_mask = surface_mask;
+	}
+	car_surface_adhesion[car_index] = 1;
+}
+
 static legacy_s16 aero_resistance_at(legacy_s16 resistance, legacy_s16 speed_index)
 {
 	legacy_s32 product = LEGACY_S32_WRAP_MUL(resistance, speed_index);
@@ -148,9 +254,11 @@ static legacy_s16 aero_resistance_at(legacy_s16 resistance, legacy_s16 speed_ind
 void setup_aero_trackdata(void far *carresptr, legacy_s16 is_opponent)
 {
 	const legacy_u8 far *simd_resource = (const legacy_u8 far *)locate_shape_alt(carresptr, "simd");
+	setup_car_surface_adhesion(carresptr, is_opponent);
 
 	if (is_opponent == 0) {
 		(void)simd_decode(&simd_player, simd_resource);
+		apply_amiga_grass(&simd_player, gameconfig.game_playercarid);
 		simd_player.aerorestable = player_aero_resistance_table;
 		for (legacy_s16 i = 0; i < AERO_RESISTANCE_TABLE_COUNT; i++) {
 			player_aero_resistance_table[i] = aero_resistance_at(simd_player.aero_resistance, i);
@@ -158,6 +266,7 @@ void setup_aero_trackdata(void far *carresptr, legacy_s16 is_opponent)
 		copy_string(gnam_string, locate_shape_alt(carresptr, "gnam"));
 	} else {
 		(void)simd_decode(&simd_opponent, simd_resource);
+		apply_amiga_grass(&simd_opponent, gameconfig.game_opponentcarid);
 		simd_opponent.aerorestable = opponent_aero_resistance_table;
 		for (legacy_s16 i = 0; i < AERO_RESISTANCE_TABLE_COUNT; i++) {
 			opponent_aero_resistance_table[i] =

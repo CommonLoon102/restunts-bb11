@@ -179,9 +179,33 @@ def prepare_sources(folder):
             text = text.replace("audiodriverstring[5] = {'a', 'd', '1', '5', 0}", "audiodriverstring[5] = {'p', 'c', '1', '5', 0}")
         if path.name == "command_line.c":
             help_text = ('Restunts for TempleOS\r\n'
-                         'Run Restunts("C:/DATA"); append TRUE to skip the intro.\r\n'
+                         'Usage: Restunts("C:/DATA", FALSE, FALSE, "options");\r\n'
+                         'The second and third arguments enable skip intro and Amiga grass.\r\n'
+                         'RestuntsArgs(directory, argc, argv) accepts a native argument vector.\r\n'
+                         'argv[0] is the program name; use directory for game data and saves.\r\n'
+                         '\r\n'
+                         '  --help, -h       Show this help and exit, without loading game data.\r\n'
+                         '  --version, -v    Show the build version and exit.\r\n'
+                         '  --nointro        Skip the startup intro.\r\n'
+                         '  --fps:on|off     Start with FPS display enabled/disabled; supply once.\r\n'
+                         '  --pg:on|off      Enable/disable the original power gear bug.\r\n'
+                         '  --lc:on|off      Enable/disable original collision behavior.\r\n'
+                         '  --lcb:on|off     Enable/disable the original left corner bias.\r\n'
+                         '  --dws:on|off     Dual-Way Switching: off fixes branch-switching penalties.\r\n'
+                         '  /amigagrass      Use original Amiga grass grip for stock cars.\r\n'
+                         '  --owoot          Enable One Wheel On/Over Track driving rules.\r\n'
+                         '  /ns              Start with music and sound effects disabled.\r\n'
+                         '\r\n'
+                         'Defaults: intro and sound on; --pg:on, --lc:on, --lcb:on, --dws:on.\r\n'
+                         'FPS, Amiga grass, and OWOOT start off.\r\n'
+                         'Physics and FPS switches are case-insensitive.\r\n'
+                         'For physics on/off switches, the last value wins.\r\n'
+                         'Supply --fps only once; other switch names are case-sensitive.\r\n'
                          'Video: 640 x 400 (8:5), 16 colors. Audio: PC speaker.\r\n'
-                         'F12 toggles SuperSight.\r\n')
+                         'F11 toggles FPS; F12 toggles SuperSight.\r\n'
+                         '/sXX and /h are legacy compatibility switches with no alternate\r\n'
+                         'TempleOS device; /nd is a recognized legacy switch with no effect.\r\n'
+                         'The first --help/-h or --version/-v request wins.\r\n')
             replacement = 'static const legacy_s8 command_line_help[] = ' + json.dumps(help_text) + ';'
             text, count = re.subn(r'static const legacy_s8 command_line_help\[\] =.*?COMMAND_LINE_NEWLINE;', lambda match: replacement, text, flags=re.S)
             if count != 1:
@@ -215,8 +239,13 @@ def prepare_sources(folder):
             if count != 1:
                 raise ValueError("Native XOR raster adaptation missing")
         if path.name == "shape2d_blit.c":
-            text = text.replace("#ifdef RESTUNTS_SDL3\nstatic struct SPRITE sdl3_background_contexts", "#ifdef RESTUNTS_TEMPLEOS\nstatic struct SPRITE sdl3_background_contexts")
-            text = text.replace("sdl3_background_contexts", "temple_background_contexts")
+            text, count = re.subn(
+                r"#if defined\(RESTUNTS_SDL3\) \|\| defined\(RESTUNTS_AMIGA\)"
+                r"(\nstatic struct SPRITE\s+native_background_contexts\b)",
+                r"#ifdef RESTUNTS_TEMPLEOS\1", text)
+            if count != 1:
+                raise ValueError("Native background storage adaptation missing")
+            text = text.replace("native_background_contexts", "temple_background_contexts")
             text = text.replace("return farwnd;", "TempleRasterRegisterSprite(farwnd);\n\treturn farwnd;")
             text = text.replace("fmemcpy(&drawing_sprite, target_sprite, sizeof(struct SPRITE));", "fmemcpy(&drawing_sprite, target_sprite, sizeof(struct SPRITE));\n\tTempleRasterSelect(&drawing_sprite);")
             text = text.replace("\tsprite_putimage(mcga_backbuffer_sprite->sprite_bitmapptr);", "\tsprite_putimage(mcga_backbuffer_sprite->sprite_bitmapptr);\n\tTempleVideoPresent();")
@@ -501,6 +530,8 @@ class Generator:
         return expr
 
     def convert(self, expr, source, target):
+        if target and self.type_text(target) == "legacy_f64":
+            return expr if source and self.type_text(source) == "legacy_f64" else f"ToF64({expr})"
         source_info, target_info = self.integer_info(source), self.integer_info(target)
         if not source_info or not target_info:
             return expr
@@ -523,6 +554,8 @@ class Generator:
             return left
         if isinstance(right, (A.PtrDecl, A.ArrayDecl)):
             return right
+        if any(self.type_text(typ) == "legacy_f64" for typ in (left, right) if typ):
+            return scalar_type("legacy_f64")
         left, right = self.promote(left), self.promote(right)
         a, b = self.integer_info(left), self.integer_info(right)
         if a and b:
@@ -669,12 +702,21 @@ class Generator:
                 # even when the right operand is an ordinary function call.
                 temp = self.temp(n)
                 test = temp if n.op == "&&" else "!" + temp
-                return a + [f"{temp} = !!({x});", f"if ({test}) {{"] + indent(b + [f"{temp} = !!({y});"]) + ["}"], temp
+                # Materialize an integer truth value in branches. HolyC's
+                # repeated logical negation of floating comparisons can keep
+                # a floating value whose narrow integer store becomes zero.
+                left = [f"{temp} = 0;", f"if ({x}) {{", f"  {temp} = 1;", "}"]
+                right = [f"{temp} = 0;", f"if ({y}) {{", f"  {temp} = 1;", "}"]
+                return a + left + [f"if ({test}) {{"] + indent(b + right) + ["}"], temp
             if self.in_function and n.op not in ("&&", "||", "<<", ">>"):
                 common = self.common_type(self.node_type(n.left), self.node_type(n.right))
                 x = self.convert(x, self.node_type(n.left), common)
                 y = self.convert(y, self.node_type(n.right), common)
             expr = self.division(x, y, n.op, self.node_type(n))
+            if (self.in_function and n.op in ("==", "!=", "<", ">", "<=", ">=") and common and
+                    self.type_text(common) == "legacy_f64"):
+                temp = self.temp(n)
+                return a + b + [f"{temp} = 0;", f"if ({expr}) {{", f"  {temp} = 1;", "}"], temp
             if n.op not in ("==", "!=", "<", ">", "<=", ">=", "&&", "||"):
                 expr = self.normalize(expr, self.node_type(n))
             return a + b, expr
@@ -684,8 +726,10 @@ class Generator:
             if typ == "legacy_void":
                 return a, x
             if typ == "legacy_f64":
-                return a, f"ToF64({x})"
+                return a, self.convert(x, self.node_type(n.expr), n.to_type.type)
             if self.integer_info(n.to_type.type):
+                if self.node_type(n.expr) and self.type_text(self.node_type(n.expr)) == "legacy_f64":
+                    x = f"ToI64({x})"
                 if self.integer_info(n.to_type.type)[0] == 64:
                     return a, f"TempleCast{'S' if self.integer_info(n.to_type.type)[1] else 'U'}64({x})"
                 return a, self.normalize(x, n.to_type.type)
@@ -729,6 +773,10 @@ class Generator:
             if n.op.startswith("p"):
                 return a, "(" + x + n.op[1:] + ")"
             expr = "(" + n.op + "(" + x + "))"
+            if (self.in_function and n.op == "!" and self.node_type(n.expr) and
+                    self.type_text(self.node_type(n.expr)) == "legacy_f64"):
+                temp = self.temp(n)
+                return a + [f"{temp} = 0;", f"if ({expr}) {{", f"  {temp} = 1;", "}"], temp
             if n.op in ("-", "+", "~"):
                 expr = self.normalize(expr, self.node_type(n))
             return a, expr
@@ -738,8 +786,17 @@ class Generator:
             while isinstance(base, A.ArrayRef):
                 indices.insert(0, base.subscript)
                 base = base.name
-            if isinstance(base, A.ID) and base.name in self.param_arrays:
-                typ = self.param_arrays[base.name]
+            parameter_array = self.param_arrays.get(base.name) if isinstance(base, A.ID) else None
+            dimension = parameter_array
+            array_depth = 0
+            while isinstance(dimension, A.ArrayDecl):
+                array_depth += 1
+                dimension = dimension.type
+            # Flatten contiguous array dimensions only. An array of pointers
+            # needs a pointer load before indexing the pointed-to object.
+            # Recurse below when a subscript crosses that pointer boundary.
+            if len(indices) <= array_depth:
+                typ = parameter_array
                 a, terms = [], []
                 for index in indices:
                     b, value = self.expr(index)
@@ -1097,8 +1154,10 @@ def output_text(lines, name, name_map=None, formatter=None):
 
 
 def write(name, lines, name_map=None):
-    data = output_text(lines, name, name_map, FORMATTER)
-    encoded = data.replace("\r\n", "\n").replace("\n", "\r\n").encode()
+    data = output_text(lines, name, name_map, FORMATTER).replace("\r\n", "\n")
+    if name.endswith((".HC", ".HH", ".TXT")):
+        data = data.replace("\n", "\r\n")
+    encoded = data.encode()
     destination = GEN / name
     if CHECK:
         if not destination.exists() or destination.read_bytes() != encoded:

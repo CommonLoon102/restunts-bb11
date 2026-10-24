@@ -29,12 +29,29 @@
         h1 { margin-bottom: 8px; }
         p { color: #b8c6d8; line-height: 1.5; }
         .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 16px 0; }
+        .settings { min-width: 0; margin: 16px 0; padding: 10px 12px 12px; border: 1px solid #63748a; border-radius: 6px; }
+        .settings legend { padding: 0 6px; }
+        .settings-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+        .settings-row label { max-width: 100%; white-space: normal; }
+        select { max-width: 100%; font: inherit; border: 1px solid #63748a; border-radius: 6px; padding: 6px; background: #243246; color: inherit; }
         button, .file-label { font: inherit; border: 1px solid #63748a; border-radius: 6px; padding: 8px 14px; background: #243246; color: inherit; cursor: pointer; }
         button:disabled { opacity: .5; cursor: default; }
         #start { background: #145b99; }
-        canvas { display: block; width: 100%; aspect-ratio: 4 / 3; background: #000; image-rendering: pixelated; outline-offset: 4px; }
-        canvas:fullscreen { width: 100vw; height: 100vh; object-fit: contain; }
+        canvas { display: block; width: 100%; aspect-ratio: 4 / 3; background: #000; image-rendering: pixelated; outline-offset: 4px; touch-action: none; user-select: none; }
+        /* SDL resizes the fullscreen canvas to the viewport and draws its own 4:3
+           game area, leaving the side gutters available to the native controls. */
+        canvas:fullscreen { width: 100vw; height: 100vh; aspect-ratio: auto; object-fit: fill; }
         #status { min-height: 1.5em; }
+        #load-progress { height: 18px; margin: -4px 0 16px; overflow: hidden; border: 1px solid #6b3e26; border-radius: 4px; background: #243246; }
+        #load-progress-fill { width: 0; height: 100%; background-color: #edbd73;
+            /* Each brown stripe is one tenth the width of the yellow band. */
+            background-image: linear-gradient(135deg, #6b3e26 0 4.545%, #edbd73 4.545% 50%, #6b3e26 50% 54.545%, #edbd73 54.545% 100%);
+            background-size: 32px 32px; }
+        #load-progress.loading #load-progress-fill { animation: load-stripes 1s linear infinite; }
+        @keyframes load-stripes { to { background-position: 32px 0; } }
+        @media (prefers-reduced-motion: reduce) {
+            #load-progress.loading #load-progress-fill { animation: none; }
+        }
         #log { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 200px; overflow: auto; }
         input[type="file"] { max-width: 100%; }
     </style>
@@ -65,14 +82,46 @@
         <div class="controls">
             <button id="start" disabled>Start game</button>
             <label><input id="skip-intro" type="checkbox" disabled> Skip intro</label>
-            <label><input id="hypervision" type="checkbox" checked disabled> HiperVision</label>
+            <label><input id="sound-enabled" type="checkbox" checked disabled> Sound enabled</label>
             <label><input id="new-midi" type="checkbox" checked disabled> New MIDI</label>
             <button id="fullscreen" disabled>Fullscreen (Alt+Enter)</button>
-
         </div>
+        <fieldset class="settings" id="graphics-settings">
+            <legend>Graphics settings</legend>
+            <div class="settings-row">
+                <label><input id="show-fps" type="checkbox" disabled> Show FPS</label>
+                <label><input id="show-control-layout" type="checkbox" disabled> Show Control Layout</label>
+                <label for="hypervision">HyperVision <select id="hypervision" disabled>
+                    <option value="off">Off</option>
+                    <option value="auto" selected>Auto</option>
+                    <option value="full">Full</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select></label>
+            </div>
+        </fieldset>
+        <fieldset class="settings driving-rules" id="driving-rules">
+            <legend>Driving rules</legend>
+            <div class="settings-row">
+                <label><input id="power-gear" type="checkbox" checked disabled> Power Gear</label>
+                <label><input id="legacy-collision" type="checkbox" checked disabled> Original Collision Bugs</label>
+                <label><input id="left-corner-bias" type="checkbox" checked disabled> Left Corner Bias</label>
+                <label><input id="dual-way-switching" type="checkbox" checked disabled> Dual-Way Switching</label>
+                <label><input id="owoot" type="checkbox" disabled> OWOOT</label>
+                <label><input id="amiga-grass" type="checkbox" disabled> Amiga Grass</label>
+            </div>
+        </fieldset>
         <p id="status" role="status" aria-live="polite">Preparing game…</p>
+        <div id="load-progress" role="progressbar" aria-label="Loading game files" aria-describedby="status"
+            aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden>
+            <div id="load-progress-fill"></div>
+        </div>
         <canvas id="canvas" width="960" height="720" tabindex="0" aria-label="Restunts game"></canvas>
         <p>Click the game to focus the keyboard. Use the arrow keys to drive and Esc to return to menus.
+            <strong>Show Control Layout</strong> enables the Android touch controls and starts enabled on mobile devices.
+            Fullscreen requests landscape orientation and locks it where your browser supports it,
+            placing phone controls in the black side areas.
             Your browser may reserve some function keys. Press <strong>Alt+Enter</strong> or click Fullscreen for a larger view.</p>
         <p id="save-mode"></p>
         <div id="save-controls" hidden>
@@ -169,7 +218,10 @@
         const SAVE_VERSION = 1;
         const MAX_IMPORT_BYTES = 16 * 1024 * 1024;
         const MAX_GAME_BYTES = 256 * 1024 * 1024;
+        const FILE_READ_CONCURRENCY = 8;
         const ANIMATION_DIRECTORY = 'opponents/animations';
+        const CAR_DIRECTORY = 'cars';
+        const CAR_EXTENSIONS = new Set(['res', 'pre', '3sh', 'p3s', 'vsh', 'pvs']);
         // Use character comparisons: HTML minifiers may unescape regex control ranges.
         const DOS_BASENAME_MAX_LENGTH = 8;
         const DOS_BACKSLASH_CODE = 92;
@@ -190,7 +242,8 @@
         const STORAGE_DATABASE_VERSION = 2;
         const FOLDER_STORE = 'folders';
         const LAUNCH_OPTIONS_STORE = 'launch-options';
-        const LAUNCH_OPTION_IDS = ['skip-intro', 'hypervision', 'new-midi'];
+        const LAUNCH_OPTION_IDS = ['skip-intro', 'sound-enabled', 'hypervision', 'new-midi', 'show-fps', 'show-control-layout',
+            'power-gear', 'legacy-collision', 'left-corner-bias', 'dual-way-switching', 'owoot', 'amiga-grass'];
         // Local HTML copies can share browser storage; remember each page's own settings.
         const STORAGE_KEY = window.location.href;
 
@@ -206,18 +259,23 @@
         function gameImportPath(path) {
             const name = path.toLowerCase();
             if (!name.includes('/') && validFilename(path, GAME_EXTENSIONS)) return name;
+            if (name.startsWith(CAR_DIRECTORY + '/') &&
+                validFilename(path.slice(CAR_DIRECTORY.length + 1), CAR_EXTENSIONS)) return name;
             if (/^opponents\/animations\/opp[1-6](win|lose)\.webm$/.test(name)) return name;
             return null;
         }
 
         const canvas = document.getElementById('canvas');
         const status = document.getElementById('status');
+        const loadProgress = document.getElementById('load-progress');
+        const loadProgressFill = document.getElementById('load-progress-fill');
         const start = document.getElementById('start');
         const importer = document.getElementById('import');
         const gameFiles = document.getElementById('game-files');
         const openFolder = document.getElementById('open-folder');
         const restoreFolder = document.getElementById('restore-folder');
         const launchOptions = LAUNCH_OPTION_IDS.map(id => document.getElementById(id));
+        const hyperVision = document.getElementById('hypervision');
         const saveControls = document.getElementById('save-controls');
         const saveMode = document.getElementById('save-mode');
         const directSavingAvailable = typeof window.showDirectoryPicker === 'function';
@@ -271,6 +329,7 @@
         var Module = {
             canvas,
             noInitialRun: true,
+            mobileDevice: isMobileDevice(),
             print: log,
             printErr(message) {
                 log(message);
@@ -392,6 +451,7 @@
         start.addEventListener('click', () => {
             if (started || !gameLoaded) return;
             started = true;
+            loadProgress.hidden = true;
             start.disabled = true;
             importer.disabled = true;
             gameFiles.disabled = true;
@@ -405,8 +465,17 @@
             canvas.focus();
             const args = ['--data-dir', DATA_DIRECTORY];
             if (document.getElementById('skip-intro').checked) args.push('--nointro');
-            if (document.getElementById('hypervision').checked) args.push('--hv:auto');
+            if (!document.getElementById('sound-enabled').checked) args.push('/ns');
             args.push(document.getElementById('new-midi').checked ? '--ogg:on' : '--ogg:off');
+            args.push(document.getElementById('show-fps').checked ? '--fps:on' : '--fps:off');
+            if (hyperVision.value !== 'off') args.push('--hv:' + hyperVision.value);
+            args.push(document.getElementById('show-control-layout').checked ? '--control-layout:on' : '--control-layout:off');
+            args.push(document.getElementById('power-gear').checked ? '--pg:on' : '--pg:off');
+            args.push(document.getElementById('legacy-collision').checked ? '--lc:on' : '--lc:off');
+            args.push(document.getElementById('left-corner-bias').checked ? '--lcb:on' : '--lcb:off');
+            args.push(document.getElementById('dual-way-switching').checked ? '--dws:on' : '--dws:off');
+            if (document.getElementById('owoot').checked) args.push('--owoot');
+            if (document.getElementById('amiga-grass').checked) args.push('/amigagrass');
             try {
                 Module.callMain(args);
             } catch (error) {
@@ -420,6 +489,55 @@
             event.preventDefault();
             fail('The graphics context was lost. Export saves and reload this page.');
         });
+
+        let fullscreenOrientation = null;
+        let fullscreenOrientationRequest = 0;
+
+        function unlockFullscreenOrientation(orientation) {
+            try {
+                if (typeof orientation.unlock === 'function') orientation.unlock();
+            } catch (error) {
+                log('Cannot release fullscreen orientation: ' + error.message);
+            }
+        }
+
+        // SDL's Fullscreen button and Alt+Enter both fullscreen this canvas.
+        // Mobile browsers require fullscreen to be active before locking orientation.
+        document.addEventListener('fullscreenchange', async () => {
+            // The SDK sizes the canvas from screen dimensions before fullscreen
+            // settles. Notify SDL of the actual viewport after its own fullscreen
+            // handler has run, keeping both rendering and touch coordinates aligned.
+            requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+            const request = ++fullscreenOrientationRequest;
+            if (document.fullscreenElement !== canvas) {
+                if (fullscreenOrientation) {
+                    const orientation = fullscreenOrientation;
+                    fullscreenOrientation = null;
+                    unlockFullscreenOrientation(orientation);
+                }
+                return;
+            }
+            const orientation = window.screen && window.screen.orientation;
+            if (!orientation || typeof orientation.lock !== 'function') {
+                log('Landscape orientation lock is unavailable in this browser.');
+                return;
+            }
+            fullscreenOrientation = orientation;
+            try {
+                await orientation.lock('landscape');
+                // A browser may finish locking after the player has already left.
+                if (document.fullscreenElement !== canvas) {
+                    if (fullscreenOrientation === orientation) fullscreenOrientation = null;
+                    unlockFullscreenOrientation(orientation);
+                }
+            } catch (error) {
+                if (request === fullscreenOrientationRequest) {
+                    fullscreenOrientation = null;
+                    log('Cannot lock fullscreen to landscape: ' + error.message);
+                }
+            }
+        });
+
         fullscreen.addEventListener('click', async () => {
             try {
                 Module.requestFullscreen(false, true);
@@ -447,6 +565,13 @@
         });
 
         function setLoading(loading) {
+            // A completed import clears the class itself; otherwise it failed.
+            if (loading || loadProgress.classList.contains('loading')) loadProgress.hidden = true;
+            loadProgress.classList.remove('loading');
+            if (loading) {
+                loadProgress.setAttribute('aria-valuenow', '0');
+                loadProgressFill.style.width = '0%';
+            }
             for (const option of launchOptions) option.disabled = loading || started;
             openFolder.disabled = loading || started;
             restoreFolder.disabled = loading || started;
@@ -456,31 +581,82 @@
             exporter.disabled = loading || !gameLoaded;
         }
 
+        function updateLoadProgress(pass, completed, total) {
+            // Checking metadata and reading contents each account for half the bar.
+            const percent = 50 * (pass + (total ? completed / total : 0));
+            loadProgress.hidden = false;
+            loadProgress.classList.add('loading');
+            loadProgress.setAttribute('aria-valuenow', String(percent));
+            loadProgressFill.style.width = percent + '%';
+            status.textContent = (pass === 0 ? 'Checking' : 'Reading') +
+                ' game files… ' + completed + ' of ' + total + '.';
+        }
+
+        async function forEachGameFile(files, processFile) {
+            let next = 0;
+            let failed = false;
+            let firstError;
+            await Promise.all(Array.from({ length: Math.min(FILE_READ_CONCURRENCY, files.length) }, async () => {
+                while (!failed && next < files.length) {
+                    const file = files[next++];
+                    try {
+                        await processFile(file);
+                    } catch (error) {
+                        if (!failed) firstError = error;
+                        failed = true;
+                    }
+                }
+            }));
+            // Finish in-flight reads before the form can start another folder load.
+            if (failed) throw firstError;
+        }
+
         async function loadGameFiles(files, selectedDirectory) {
+            const candidates = [];
+            for (const entry of files) {
+                const name = gameImportPath(entry.path);
+                if (name) candidates.push({ ...entry, name });
+            }
+            let checked = 0;
+            updateLoadProgress(0, 0, candidates.length);
+            await forEachGameFile(candidates, async entry => {
+                // Directory handles need an asynchronous metadata lookup; fallback File objects do not.
+                entry.file = entry.file || await entry.handle.getFile();
+                updateLoadProgress(0, ++checked, candidates.length);
+            });
             const pending = new Map();
             let totalBytes = 0;
-            for (const entry of files) {
-                const file = entry.file;
-                const name = gameImportPath(entry.path);
-                if (!name) continue;
+            for (const { name, file } of candidates) {
                 if (pending.has(name)) {
-                    const previous = pending.get(name);
-                    if (file.size !== previous.size || !sameBytes(new Uint8Array(await file.arrayBuffer()),
-                        new Uint8Array(await previous.arrayBuffer()))) {
+                    const previous = pending.get(name)[0];
+                    if (file.size !== previous.size) {
                         throw new Error('Conflicting game filenames: ' + previous.name + ' and ' + file.name);
                     }
+                    pending.get(name).push(file);
                     continue;
                 }
                 totalBytes += file.size;
                 if (totalBytes > MAX_GAME_BYTES) throw new Error('Game folder resources exceed 256 MiB.');
-                pending.set(name, file);
+                pending.set(name, [file]);
             }
             if ((!pending.has('main.res') && !pending.has('main.pre')) ||
                 !pending.has('fontdef.fnt') || !pending.has('fontn.fnt')) {
                 throw new Error('Select the folder containing MAIN.RES (or MAIN.PRE), FONTDEF.FNT, and FONTN.FNT.');
             }
             const contents = new Map();
-            for (const [name, file] of pending) contents.set(name, new Uint8Array(await file.arrayBuffer()));
+            let completed = 0;
+            updateLoadProgress(1, 0, pending.size);
+            await forEachGameFile(Array.from(pending), async ([name, matchingFiles]) => {
+                const first = matchingFiles[0];
+                const bytes = new Uint8Array(await first.arrayBuffer());
+                for (const file of matchingFiles.slice(1)) {
+                    if (!sameBytes(bytes, new Uint8Array(await file.arrayBuffer()))) {
+                        throw new Error('Conflicting game filenames: ' + first.name + ' and ' + file.name);
+                    }
+                }
+                contents.set(name, bytes);
+                updateLoadProgress(1, ++completed, pending.size);
+            });
             function clearDirectory(path) {
                 for (const name of Module.FS.readdir(path)) {
                     if (name === '.' || name === '..') continue;
@@ -494,19 +670,21 @@
                 }
             }
             clearDirectory(DATA_DIRECTORY);
-            for (const [name, bytes] of contents) {
+            for (const name of pending.keys()) {
+                const bytes = contents.get(name);
                 const path = DATA_DIRECTORY + '/' + name;
                 Module.FS.mkdirTree(path.slice(0, path.lastIndexOf('/')));
                 Module.FS.writeFile(path, bytes);
             }
             directoryHandle = selectedDirectory;
             diskNames.clear();
-            for (const [name, file] of pending) diskNames.set(name, file.name);
+            for (const [name, matchingFiles] of pending) diskNames.set(name, matchingFiles[0].name);
             baseline.clear();
             for (const name of saveFiles()) {
                 baseline.set(name.toLowerCase(), Module.FS.readFile(DATA_DIRECTORY + '/' + name));
             }
             gameLoaded = true;
+            loadProgress.classList.remove('loading');
             status.textContent = 'Loaded ' + pending.size + ' game files. Click Start game to play with sound.';
         }
 
@@ -547,11 +725,28 @@
             }
         }
 
+        function isMobileDevice() {
+            // Touch and pointer type alone also match desktop touchscreens.
+            // iPadOS can identify itself as a Mac while retaining multi-touch.
+            return navigator.userAgentData?.mobile === true ||
+                /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+
         async function restoreLaunchOptions() {
+            document.getElementById('show-control-layout').checked = isMobileDevice();
             try {
                 const stored = await browserStorage(LAUNCH_OPTIONS_STORE, 'readonly');
+                if (!stored || typeof stored !== 'object') return;
                 for (const option of launchOptions) {
-                    if (stored && typeof stored[option.id] === 'boolean') option.checked = stored[option.id];
+                    const value = stored[option.id];
+                    if (option === hyperVision) {
+                        // Older pages stored HyperVision as an on/off checkbox.
+                        const mode = typeof value === 'boolean' ? (value ? 'auto' : 'off') : value;
+                        if (Array.from(option.options).some(preset => preset.value === mode)) option.value = mode;
+                    } else if (typeof value === 'boolean') {
+                        option.checked = value;
+                    }
                 }
             } catch (error) {
                 log('Remembered launch options unavailable: ' + error.message);
@@ -560,7 +755,8 @@
 
         for (const option of launchOptions) {
             option.addEventListener('change', async () => {
-                const values = Object.fromEntries(launchOptions.map(option => [option.id, option.checked]));
+                const values = Object.fromEntries(launchOptions.map(option =>
+                    [option.id, option === hyperVision ? option.value : option.checked]));
                 try {
                     await browserStorage(LAUNCH_OPTIONS_STORE, 'readwrite', values);
                 } catch (error) {
@@ -580,15 +776,18 @@
         }
 
         async function loadDirectory(selected) {
-            status.textContent = 'Reading game files from ' + selected.name + '…';
+            status.textContent = 'Scanning game folder ' + selected.name + '…';
             const files = [];
             async function collectDirectory(directory, prefix) {
                 for await (const entry of directory.values()) {
                     const path = prefix + entry.name;
                     if (entry.kind === 'file' && gameImportPath(path)) {
-                        files.push({ file: await entry.getFile(), path });
+                        // Collect handles first so browser filesystem requests can run concurrently.
+                        files.push({ handle: entry, path });
+                        status.textContent = 'Scanning game folder ' + selected.name + '… ' + files.length + ' game files found.';
                     } else if (entry.kind === 'directory' &&
-                        (path.toLowerCase() === 'opponents' || path.toLowerCase() === ANIMATION_DIRECTORY)) {
+                        (path.toLowerCase() === CAR_DIRECTORY || path.toLowerCase() === 'opponents' ||
+                            path.toLowerCase() === ANIMATION_DIRECTORY)) {
                         await collectDirectory(entry, path + '/');
                     }
                 }
@@ -666,7 +865,7 @@
             setLoading(true);
             status.textContent = 'Reading game files from your folder…';
             try {
-                // Import only immediate game resources and supported opponent animations.
+                // Import immediate game resources, car resources, and supported opponent animations.
                 const files = Array.from(gameFiles.files).map(file => ({ file,
                     path: file.webkitRelativePath.split('/').slice(1).join('/') }));
                 await loadGameFiles(files, null);

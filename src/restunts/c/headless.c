@@ -4,7 +4,9 @@
 #include "platform.h"
 #include "fatal.h"
 #include "car_speed.h"
+#include "car_resources.h"
 #include "physics_internal.h"
+#include "race_route.h"
 #include "owoot.h"
 
 extern void headless_exit(legacy_s16 result);
@@ -49,8 +51,11 @@ void init_div0(void)
 void init_main(legacy_s16 argc, legacy_s8 *argv[])
 {
 	configure_powergear_bug(argc, argv);
+	reset_car_capabilities();
 	configure_legacy_collision(argc, argv);
 	configure_left_corner_bias(argc, argv);
+	configure_dual_way_switching(argc, argv);
+	configure_amiga_grass(argc, argv);
 	configure_owoot(argc, argv);
 	init_video_geometry_flags();
 	video_uses_page_flipping = 0;

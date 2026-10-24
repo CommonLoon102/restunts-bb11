@@ -2,8 +2,9 @@
 
 The SDL3 platform also builds with Emscripten. The output is one offline
 `restunts.html`: JavaScript, WebAssembly, enhanced artwork, and any supplied
-optional Ogg Vorbis music replacements are embedded. **No original game data is
-included**, including cars, tracks, replays, sounds, fonts, or menus. The build does not require a `stunts/`
+optional Ogg Vorbis music replacements are embedded. The Tesla Roadster and
+McMurtry custom cars are bundled under `/assets/cars/`. **No original game data is
+included**, including stock cars, tracks, replays, sounds, fonts, or menus. The build does not require a `stunts/`
 directory. The redistributable package and relink kit also exclude that data.
 
 ## Build
@@ -45,30 +46,75 @@ needed. The HTML's location does not determine where the game looks for data.
    Supported browsers remember it for this page and reopen it when permission
    is still granted. Otherwise, click **Allow folder access** to approve access
    again. Use **Change game folder** to select a different folder.
-3. Choose the startup options beside **Start game**. **Skip intro** is optional.
-   **HiperVision** and **New MIDI** are enabled by default. HiperVision starts
-   adaptive rendering (`--hv:auto`); uncheck it to start without a HyperVision
-   option. New MIDI selects Ogg replacement music (`--ogg:on`); uncheck it for
-   original AdLib music (`--ogg:off`). All three checkbox choices are remembered
-   for this page, including with read-only folder access.
+3. Choose the startup options above the game. **Skip intro** is optional.
+   **Sound enabled** starts on; uncheck it to disable music and sound effects
+   (`/ns`). The New MIDI choice is remembered independently of this setting.
+   **New MIDI** selects Ogg replacement music (`--ogg:on`); uncheck it for
+   original AdLib music (`--ogg:off`). It is enabled by default.
+   **Graphics settings** contains **Show FPS** (`--fps:on`),
+   **Show Control Layout** (`--control-layout:on`), and the **HyperVision**
+   selector, in that order. HyperVision offers **Off**, **Auto**, **Full**,
+   **High**, **Medium**, and **Low**, matching Android. Auto is the browser
+   default (`--hv:auto`); fixed presets pass the matching `--hv:` option, while
+   Off starts without HyperVision. Show FPS starts off. Show Control Layout
+   starts on for phones and tablets and off for desktops; a remembered choice
+   overrides this default. It enables the same touch controls as Android. On
+   phones, use fullscreen landscape mode to put them in the black side areas.
+   The separate **Driving rules** group below graphics contains **Power Gear**,
+   **Original Collision Bugs**, **Left Corner Bias**, **Dual-Way Switching**,
+   **OWOOT**, and **Amiga Grass**.
+   Each group lays out its controls horizontally and
+   wraps to more lines as needed, without horizontal scrolling. The first four rules
+   preserve the original driving behavior by default. Uncheck **Dual-Way Switching**
+   to pass `--dws:off` and fix penalty calculation for shortcuts between branches.
+   OWOOT and Amiga Grass
+   start off; Amiga Grass uses the original Amiga grass grip for stock cars
+   (`/amigagrass`). Custom-car surface adhesion is activated by the car resource
+   capability flag. All settings are remembered for this page, including
+   with read-only folder access. Earlier HyperVision checkbox choices are retained
+   as Auto when enabled and Off when disabled.
 4. Click **Start game**. This user gesture enables browser audio. Click the
    canvas to focus the game keyboard.
+
+On phones and tablets, an in-game keyboard appears automatically while editing
+high-score names or track/replay filenames. In track/replay **Load** dialogs,
+tap the top path field to edit it. If a path contains no matching files, the
+empty list stays open; tap the path again to edit it.
+
+The keyboard offers English letters, digits, space, dash, underscore, period,
+and slash. **Shift** switches between lowercase and uppercase. Use **Backspace**,
+**Left**, **Right**, **Home**, and **End** to edit, then **Done** to accept or
+**Cancel** to leave the field. The game stays visible beside the keyboard in
+wide landscape mode and above it in other layouts. This keyboard is available
+even when **Show Control Layout** is disabled. Desktop browsers keep their
+existing hardware-keyboard input.
 
 **Your game files and saves stay on your device and are never uploaded**, even
 when you play from a website. Selecting a folder gives the game local access to
 its files; it does not send them to the hosting server.
 
-Immediate game files and custom opponent animations in
+Immediate game files, car resources in `cars/`, and custom opponent animations in
 `opponents/animations/opp1win.webm` through `opp6win.webm`, or `opp1lose.webm`
 through `opp6lose.webm`, are loaded. Animation names describe the opponent's
 result. Use WebM with VP8 video; animations play silently while HyperVision is
 on, keeping the game's music. Missing or unusable clips retain the original
-animation. Other subfolders, executables, and the HTML are ignored.
+animation. The `cars/` folder accepts `.RES`, `.PRE`, `.3SH`, `.P3S`, `.VSH`, and
+`.PVS` resources directly; loose car resources in the game folder still work.
+Bundled cars load automatically, alongside cars in your selected folder. Other
+subfolders, executables, and the HTML are ignored.
 Filenames are resolved case-insensitively. Identical files differing
 only in case are accepted; conflicting contents report an error. The selected
 folder must contain the original game resources, including `MAIN.RES` (or
 `MAIN.PRE`), `FONTDEF.FNT`, and `FONTN.FNT`. Other missing resources are reported by
 the game. Files are read locally and are never uploaded.
+
+Folder loading checks and reads up to eight files concurrently, with separate
+scanning, checking, and reading progress. A horizontal yellow progress bar fills
+to 50% while checking files and to 100% while reading them. Thin brown diagonal
+stripes move across the fill during loading, unless reduced motion is requested.
+All files are validated and read before replacing the current selection, so read
+and filename errors keep the previous game data.
+Large track/replay collections and cloud or network folders can still take longer.
 
 On **Start game**, the game checks the version text in `MISC.RES` (preferred) or
 `MISC.PRE`. It requires Broderbund Stunts 1.1 (12 Feb. 1991), while allowing
@@ -86,16 +132,19 @@ game and on the page. Deletions are also propagated. Closing or reloading a tab
 while a save is in progress can interrupt it; wait until the page reports the
 save is complete.
 
-The selected directory handle and startup checkbox choices are stored in IndexedDB
+The selected directory handle and startup settings are stored in IndexedDB
 for this HTML's location; original game data is not stored in that database. On
 reopening, the game checks read/write permission and asks for approval through
 **Allow folder access** only when needed. Clearing browser storage, moving the
-HTML, or browser restrictions can require selecting the folder and checkbox
+HTML, or browser restrictions can require selecting the folder and startup
 choices again. If storage is unavailable, folder selection, startup options, and
 saving still work for the current session.
 
 Firefox, Safari, and other browsers without that API use a read-only directory
-picker and require selecting the folder each time. The page shows **Export saves** and **Import saves, tracks, or replays**
+picker and require selecting the folder each time. That picker may scan all
+subfolders before returning the selection, including folders whose files the game
+ignores; keeping unrelated large subfolders outside the game folder avoids that
+browser-controlled delay. The page shows **Export saves** and **Import saves, tracks, or replays**
 only on this fallback path (or after a direct-write failure). Export downloads a
 JSON bundle of changed/new tracks, replays, high scores, and configuration files;
 it does not copy unchanged original resources. Select the game folder and import
@@ -115,7 +164,12 @@ Browser support for directory writes is described in
 and [MDN's directory picker reference](https://developer.mozilla.org/en-US/docs/Web/API/Window/showDirectoryPicker).
 Both paths work offline. Browser settings and policies may restrict folder
 access. Audio needs a user gesture; browser shortcuts can take precedence over
-some function keys. Use the page's **Fullscreen** button for fullscreen mode.
+some function keys. Use the page's **Fullscreen** button or **Alt+Enter** for
+fullscreen mode. Entering fullscreen requests landscape orientation even when
+the phone is held upright, and keeps it in landscape as the device rotates.
+The orientation lock is released when fullscreen ends. This requires browser
+support for the Screen Orientation lock API; if it is unavailable or refused,
+fullscreen still works with the browser's normal orientation behavior.
 With the canvas focused, **F12** toggles HyperVision Auto and **Shift+F12** cycles
 fixed **Full → High → Medium → Low** presets. **F11** or **Shift+F11** toggles
 the FPS and render-time display on or off. Use Shift+F11 to avoid the browser
@@ -181,7 +235,20 @@ emcc -O2 -Wno-pointer-sign -DRESTUNTS_SDL3 -DRESTUNTS_HEADLESS \
 node out/test-wasm-fileio.js
 ```
 
-The browser smoke test uses Node.js and Playwright with Chromium installed:
+The launch-form browser test needs Node.js and Playwright, but no Emscripten
+build or game files. It checks startup flags, sound enable/disable, remembered
+settings, migration of removed preferences, mobile layout, fullscreen canvas sizing,
+and concurrent folder loading with filename validation and failed-import recovery
+with a stub for the native runtime:
+
+```sh
+NODE_PATH="$PWD/out/wasm-test-tools/node_modules" node tools/scripts/test-wasm-shell.js
+```
+
+Set `CHROMIUM_EXECUTABLE_PATH` to use an existing Chromium installation.
+This form test does not exercise the native touch controls or renderer.
+
+The full browser smoke test uses Node.js and Playwright with Chromium installed:
 
 ```sh
 npm install --prefix out/wasm-test-tools playwright

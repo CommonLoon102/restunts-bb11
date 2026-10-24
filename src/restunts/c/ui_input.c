@@ -2,11 +2,20 @@
 #include "platform.h"
 #include "shape2d.h"
 #include "ui_input.h"
+#ifdef RESTUNTS_SDL3
+#include "../platform/sdl3/controller_game.h"
+#endif
+#ifdef __EMSCRIPTEN__
+#include "../platform/sdl3/touch_game.h"
+#endif
 #include "ui_text.h"
 #include "game_input.h"
 #include "resource_bytes.h"
 #include "externs.h"
 #include "keyboard.h"
+#ifdef RESTUNTS_AMIGA
+#include "../platform/amiga/amiga.h"
+#endif
 
 #ifdef __ANDROID__
 #include "../platform/sdl3/sdl3.h"
@@ -59,6 +68,19 @@ legacy_s16 sprite_blit_to_video(struct SPRITE far *sprite, legacy_s16 mode)
 {
 	sprite_select_screen_compat();
 	mouse_draw_opaque_check();
+#ifdef RESTUNTS_AMIGA
+	/* A dissolve requires repeated full chunky-to-planar conversions. Keep
+	 * menu navigation responsive on the 68000 with one completed screen. */
+	legacy_s16 result = (legacy_u16)mode == SPRITE_BLIT_IMMEDIATE_MODE
+							? 0
+							: input_do_checking((legacy_s16)timer_get_delta_alt());
+	/* Input callbacks may open modal dialogs before this frame begins. */
+	amiga_video_begin_frame();
+	sprite_putimage(sprite->sprite_bitmapptr);
+	mouse_draw_transparent_check();
+	amiga_video_present();
+	return result;
+#else
 	if ((legacy_u16)mode == SPRITE_BLIT_IMMEDIATE_MODE) {
 		sprite_putimage(sprite->sprite_bitmapptr);
 		mouse_draw_transparent_check();
@@ -79,6 +101,7 @@ legacy_s16 sprite_blit_to_video(struct SPRITE far *sprite, legacy_s16 mode)
 	}
 	mouse_draw_transparent_check();
 	return result;
+#endif
 }
 
 static void read_line_delete_character(legacy_s8 *text, legacy_s16 max_characters)
@@ -279,11 +302,17 @@ legacy_s16 read_line(legacy_s16 flags, legacy_s8 *text, legacy_s16 initial_key,
 					 legacy_s16 max_characters, legacy_s16 max_pixels, legacy_s16 x, legacy_s16 y,
 					 void(far *callback)(void), legacy_u32 timeout)
 {
+#ifdef RESTUNTS_SDL3
+	sdl3_input_push_modal();
+#endif
 	struct READ_LINE_STATE state;
 	state.input_flags = (legacy_u8)flags;
 	state.text = text;
 	state.max_characters = max_characters;
 	read_line_initialize(&state, max_pixels, x, y);
+#ifdef __EMSCRIPTEN__
+	sdl3_soft_keyboard_begin(text, text_edit_cursor, max_characters == 18 ? "Path" : "Name");
+#endif
 #ifdef __ANDROID__
 	SDL_StartTextInput(sdl3_video_window());
 #endif
@@ -294,8 +323,14 @@ legacy_s16 read_line(legacy_s16 flags, legacy_s8 *text, legacy_s16 initial_key,
 		legacy_u16 key = read_line_wait_key(&initial_key, callback);
 		if (key == 0) {
 			if (read_line_blink_cursor(timeout)) {
+#ifdef __EMSCRIPTEN__
+				sdl3_soft_keyboard_end();
+#endif
 #ifdef __ANDROID__
 				SDL_StopTextInput(sdl3_video_window());
+#endif
+#ifdef RESTUNTS_SDL3
+				sdl3_input_pop_modal();
 #endif
 				return 0;
 			}
@@ -304,16 +339,28 @@ legacy_s16 read_line(legacy_s16 flags, legacy_s8 *text, legacy_s16 initial_key,
 		timer_set_deadline(timeout);
 		if (read_line_is_finished(key, state.input_flags)) {
 			text_edit_toggle_cursor();
+#ifdef __EMSCRIPTEN__
+			sdl3_soft_keyboard_end();
+#endif
 #ifdef __ANDROID__
 			SDL_StopTextInput(sdl3_video_window());
+#endif
+#ifdef RESTUNTS_SDL3
+			sdl3_input_pop_modal();
 #endif
 			return key;
 		}
 		if (read_line_apply_edit_key(&state, key)) {
+#ifdef __EMSCRIPTEN__
+			sdl3_soft_keyboard_update(text, text_edit_cursor);
+#endif
 			state.first_key = 0;
 			continue;
 		}
 		read_line_type_character(&state, key);
+#ifdef __EMSCRIPTEN__
+		sdl3_soft_keyboard_update(text, text_edit_cursor);
+#endif
 		state.first_key = 0;
 	}
 }

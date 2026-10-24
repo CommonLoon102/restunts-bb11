@@ -13,6 +13,15 @@
 #include "externs.h"
 #include "keyboard.h"
 #include "shape3d.h"
+#ifdef RESTUNTS_SDL3
+#include "../platform/sdl3/controller_game.h"
+#endif
+#ifdef RESTUNTS_AMIGA
+#include "../platform/amiga/amiga.h"
+#endif
+#ifdef __EMSCRIPTEN__
+#include "../platform/sdl3/touch_game.h"
+#endif
 
 #define RST_ASC_CHAR_UPPER 1
 #define RST_ASC_CHAR_LOWER 2
@@ -404,9 +413,10 @@ static legacy_s16 dialog_run_menu(struct DIALOG_CONTENT *dialog, legacy_s16 *dis
 	return LEGACY_S8_FROM_BITS(selected);
 }
 
-legacy_u16 show_dialog(legacy_s16 dialog_type, legacy_s16 save_background, void far *text_resource,
-					   legacy_u16 x_argument, legacy_u16 y_argument, legacy_s16 border_color,
-					   legacy_s16 *disabled_choices, legacy_s16 initial_choice)
+static legacy_u16 show_dialog_impl(legacy_s16 dialog_type, legacy_s16 save_background,
+								   void far *text_resource, legacy_u16 x_argument,
+								   legacy_u16 y_argument, legacy_s16 border_color,
+								   legacy_s16 *disabled_choices, legacy_s16 initial_choice)
 {
 	struct DIALOG_CONTENT dialog;
 	dialog_measure(&dialog, text_resource);
@@ -415,6 +425,13 @@ legacy_u16 show_dialog(legacy_s16 dialog_type, legacy_s16 save_background, void 
 	}
 	dialog_draw_message(&dialog, text_resource, dialog_type, disabled_choices);
 	dialog_measure_choices(&dialog);
+#ifdef RESTUNTS_AMIGA
+	/* These paths do not poll keyboard or mouse, so present before returning
+	 * to resource loading or waiting on a timer that only advances time. */
+	if (dialog_type == DIALOG_TYPE_MESSAGE || dialog_type == DIALOG_TYPE_DELAY) {
+		amiga_video_present();
+	}
+#endif
 	if (dialog_type == DIALOG_TYPE_MESSAGE) {
 		return 0;
 	}
@@ -443,6 +460,22 @@ legacy_u16 show_dialog(legacy_s16 dialog_type, legacy_s16 save_background, void 
 
 	result = dialog_run_menu(&dialog, disabled_choices, initial_choice);
 	return dialog_finish(result, save_background);
+}
+
+legacy_u16 show_dialog(legacy_s16 dialog_type, legacy_s16 save_background, void far *text_resource,
+					   legacy_u16 x_argument, legacy_u16 y_argument, legacy_s16 border_color,
+					   legacy_s16 *disabled_choices, legacy_s16 initial_choice)
+{
+#ifdef RESTUNTS_SDL3
+	sdl3_input_push_modal();
+#endif
+	legacy_u16 result =
+		show_dialog_impl(dialog_type, save_background, text_resource, x_argument, y_argument,
+						 border_color, disabled_choices, initial_choice);
+#ifdef RESTUNTS_SDL3
+	sdl3_input_pop_modal();
+#endif
+	return result;
 }
 
 struct FILE_DIALOG {
@@ -525,13 +558,17 @@ static void file_dialog_draw_rows(struct FILE_DIALOG *dialog)
 	mouse_draw_opaque_check();
 	for (legacy_u16 visible_row = 0; visible_row < 7U; visible_row++) {
 		legacy_s16 candidate = (legacy_s16)(dialog->scroll + (legacy_s16)visible_row);
-		if (candidate == dialog->selected) {
+		if (dialog->file_count != 0 && candidate == dialog->selected) {
 			font_set_colors(dialog_background_color, dialog_fnt_colour);
 		} else {
 			font_set_colors(dialog_fnt_colour, dialog_background_color);
 		}
 		if (candidate < (legacy_s16)dialog->file_count) {
 			strcpy(&resID_byte1, dialog->filenames[(legacy_u8)candidate]);
+			font_draw_text_opaque(&resID_byte1, dialog->positions[2],
+								  dialog->hit_areas[visible_row + 2U].y1);
+		} else if (dialog->file_count == 0) {
+			strcpy(&resID_byte1, visible_row == 0 ? "No files found" : "");
 			font_draw_text_opaque(&resID_byte1, dialog->positions[2],
 								  dialog->hit_areas[visible_row + 2U].y1);
 		} else {
@@ -551,6 +588,9 @@ static legacy_u16 file_dialog_apply_mouse(struct FILE_DIALOG *dialog, legacy_s16
 										  legacy_u16 key)
 {
 	if (hit == -1) {
+		return key;
+	}
+	if (dialog->file_count == 0 && hit != 0) {
 		return key;
 	}
 	if (hit != 0 && hit != 1 && hit != 9) {
@@ -583,6 +623,9 @@ static legacy_u16 file_dialog_apply_mouse(struct FILE_DIALOG *dialog, legacy_s16
 
 static legacy_s8 file_dialog_apply_key(struct FILE_DIALOG *dialog, legacy_u16 key)
 {
+	if (dialog->file_count == 0 && key != KEY_ESCAPE && key != KEY_UP) {
+		return 0;
+	}
 	if (key == KEY_ENTER || key == KEY_SPACE) {
 		return 1;
 	}
@@ -657,8 +700,8 @@ static legacy_s8 file_dialog_choose(struct FILE_DIALOG *dialog, legacy_s8 *direc
 	return result;
 }
 
-legacy_s8 do_fileselect_dialog(legacy_s8 *directory, legacy_s8 *filename, legacy_s8 *extension,
-							   legacy_s8 far *prompt)
+static legacy_s8 do_fileselect_dialog_impl(legacy_s8 *directory, legacy_s8 *filename,
+										   legacy_s8 *extension, legacy_s8 far *prompt)
 {
 	struct FILE_DIALOG dialog;
 	legacy_s16 dialog_result = LEGACY_S16_FROM_BITS(show_text_input_dialog(
@@ -676,13 +719,22 @@ legacy_s8 do_fileselect_dialog(legacy_s8 *directory, legacy_s8 *filename, legacy
 		dialog.file_count = 0;
 		const legacy_s8 *found_path = file_combine_and_find(directory, "*", extension);
 		if (found_path == 0) {
-			if (file_dialog_edit_directory(&dialog, directory) == KEY_ESCAPE) {
-				result = 0;
-				break;
+#ifdef __EMSCRIPTEN__
+			/* An invalid path must return to the list before the player chooses
+			 * to edit again, rather than reopening the touch keyboard forever. */
+			if (!sdl3_soft_keyboard_enabled()) {
+#endif
+				if (file_dialog_edit_directory(&dialog, directory) == KEY_ESCAPE) {
+					result = 0;
+					break;
+				}
+				continue;
+#ifdef __EMSCRIPTEN__
 			}
-			continue;
+#endif
+		} else {
+			file_dialog_collect_names(&dialog, found_path);
 		}
-		file_dialog_collect_names(&dialog, found_path);
 		file_dialog_draw_scroll_labels(&dialog);
 		result = file_dialog_choose(&dialog, directory, filename);
 		if (dialog.search_again == 0) {
@@ -691,6 +743,19 @@ legacy_s8 do_fileselect_dialog(legacy_s8 *directory, legacy_s8 *filename, legacy
 	}
 	sprite_pop_background();
 	g_is_busy = saved_busy;
+	return result;
+}
+
+legacy_s8 do_fileselect_dialog(legacy_s8 *directory, legacy_s8 *filename, legacy_s8 *extension,
+							   legacy_s8 far *prompt)
+{
+#ifdef RESTUNTS_SDL3
+	sdl3_input_push_modal();
+#endif
+	legacy_s8 result = do_fileselect_dialog_impl(directory, filename, extension, prompt);
+#ifdef RESTUNTS_SDL3
+	sdl3_input_pop_modal();
+#endif
 	return result;
 }
 
@@ -716,7 +781,8 @@ void show_waiting(void)
 	mouse_draw_opaque_check();
 }
 
-legacy_s16 do_savefile_dialog(legacy_s8 *primary, legacy_s8 *secondary, legacy_s8 far *prompt)
+static legacy_s16 do_savefile_dialog_impl(legacy_s8 *primary, legacy_s8 *secondary,
+										  legacy_s8 far *prompt)
 {
 	legacy_s16 positions[6];
 	legacy_s16 result = LEGACY_S16_FROM_BITS(show_text_input_dialog(
@@ -759,6 +825,18 @@ legacy_s16 do_savefile_dialog(legacy_s8 *primary, legacy_s8 *secondary, legacy_s
 	}
 
 	sprite_pop_background();
+	return result;
+}
+
+legacy_s16 do_savefile_dialog(legacy_s8 *primary, legacy_s8 *secondary, legacy_s8 far *prompt)
+{
+#ifdef RESTUNTS_SDL3
+	sdl3_input_push_modal();
+#endif
+	legacy_s16 result = do_savefile_dialog_impl(primary, secondary, prompt);
+#ifdef RESTUNTS_SDL3
+	sdl3_input_pop_modal();
+#endif
 	return result;
 }
 

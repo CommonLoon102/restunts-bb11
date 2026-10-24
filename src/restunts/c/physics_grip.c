@@ -1,42 +1,9 @@
 #include "state_internal.h"
 #include "physics_internal.h"
 #include "trackdata_layout.h"
-#include "track_objects.h"
 #include "externs.h"
 #include "residue.h"
 #include "crash_state.h"
-
-#define TRACK_GRID_LAST_COORDINATE 29
-#define TRACK_WORLD_TILE_SHIFT 16U
-#define TRACK_TILE_COORDINATE_STEP 1U
-#define PENALTY_ROUTE_VISITED_CAPACITY 904U
-#define PENALTY_ROUTE_PENDING_CAPACITY 128U
-#define PENALTY_ROUTE_SENTINEL (-1)
-#define PENALTY_ROUTE_START_TRACK_INDEX 900U
-#define PENALTY_ROUTE_START_TILE_INDEX 11999U
-#define PENALTY_ROUTE_START_COLUMN_INDEX 1963U
-#define PENALTY_ROUTE_DISTANCE_NONE 0
-#define PENALTY_ROUTE_DISTANCE_STEP 1
-#define PENALTY_ROUTE_PENDING_NONE 0U
-#define PENALTY_ROUTE_PENDING_STEP 1U
-
-enum PENALTY_ROUTE_SENTINEL_VISIT_STATE {
-	PENALTY_ROUTE_SENTINEL_UNVISITED = 0,
-	PENALTY_ROUTE_SENTINEL_VISITED = 1
-};
-
-enum PENALTY_ROUTE_TRACK_VISIT_STATE {
-	PENALTY_ROUTE_TRACK_UNVISITED = 0,
-	PENALTY_ROUTE_TRACK_VISITED = 1
-};
-
-#define PENALTY_ROUTE_INDEX_FIRST 0U
-#define MULTI_TILE_FLAGS_NONE 0U
-#define MULTI_TILE_ROW_FLAG 1U
-#define MULTI_TILE_COLUMN_FLAG 2U
-#define TRACK_START_FINISH_PIECE_INDEX 0
-
-enum PENALTY_DETECTION_RESULT { PENALTY_NOT_DETECTED = 0, PENALTY_DETECTED = 1 };
 
 #define CAR_WHEEL_COUNT 4U
 #define CAR_WHEEL_INDEX_FIRST 0
@@ -84,6 +51,48 @@ void configure_left_corner_bias(legacy_s16 argc, legacy_s8 *argv[])
 	}
 }
 
+/* Original grass coefficients: tests/fixtures/amiga-grass-reference.json.
+ * Only grass is overridden; grass drag and skid formulas are shared. */
+static const legacy_s8 amiga_grass_car_ids[][5] = {"ANSX", "AUDI", "COUN", "FGTO", "JAGU", "LANC",
+												   "LM02", "P962", "PC04", "PMIN", "VETT"};
+static const legacy_s16 amiga_grass_values[] = {128, 200, 128, 128, 40, 210, 230, 30, 180, 30, 128};
+static legacy_s16 amiga_grass_enabled;
+
+void configure_amiga_grass(legacy_s16 argc, legacy_s8 *argv[])
+{
+	amiga_grass_enabled = 0;
+	for (legacy_s16 index = 1; index < argc; index++) {
+		if (stricmp(argv[index], (const legacy_s8 *)"/amigagrass") == 0) {
+			amiga_grass_enabled = 1;
+		}
+	}
+}
+
+void apply_amiga_grass(struct SIMD *simd, const legacy_s8 car_id[4])
+{
+	if (amiga_grass_enabled == 0) {
+		return;
+	}
+	for (legacy_u16 index = 0; index < sizeof(amiga_grass_car_ids) / sizeof(amiga_grass_car_ids[0]);
+		 index++) {
+		legacy_u16 character;
+		for (character = 0; character < 4U; character++) {
+			legacy_s8 letter = car_id[character];
+			if (letter >= 'a' && letter <= 'z') {
+				letter = (legacy_s8)(letter - 'a' + 'A');
+			}
+			if (letter != amiga_grass_car_ids[index][character]) {
+				break;
+			}
+		}
+		if (character == 4U) {
+			simd->surface_grip[CAR_SURFACE_GRASS - CAR_SURFACE_PAVED] = amiga_grass_values[index];
+			return;
+		}
+	}
+	/* Custom car IDs have no original Amiga counterpart: retain their data. */
+}
+
 legacy_s16 scale_cornering_angle(legacy_s16 angle, legacy_u8 shift)
 {
 	if (left_corner_bias_enabled == LEFT_CORNER_BIAS_OFF && angle < 0) {
@@ -94,216 +103,6 @@ legacy_s16 scale_cornering_angle(legacy_s16 angle, legacy_u8 shift)
 	/* The original SAR rounds negative (left) angles down, increasing their
 	 * magnitude and turning farther for the same demanded grip. */
 	return LEGACY_S16_SAR(angle, shift);
-}
-
-static legacy_s16 penalty_route_next(legacy_s16 track_index)
-{
-	if (track_index == PENALTY_ROUTE_SENTINEL) {
-		return legacy_execution_residue.penalty_route_word;
-	}
-	if (track_index < 0 || track_index >= track_pieces_counter) {
-		return PENALTY_ROUTE_SENTINEL;
-	}
-	return track_primary_route_links[track_index];
-}
-
-static legacy_s16 penalty_route_alternate(legacy_s16 track_index)
-{
-	if (track_index == PENALTY_ROUTE_SENTINEL) {
-		return track_primary_route_links[PENALTY_ROUTE_START_TRACK_INDEX];
-	}
-	return track_alternate_route_links[track_index];
-}
-
-static legacy_s16 finish_penalty_route(legacy_s16 *current_track, legacy_s16 *penalty_count,
-									   legacy_s16 best_track, legacy_s16 best_distance,
-									   legacy_s16 column, legacy_s16 row)
-{
-	if (best_distance != PENALTY_ROUTE_DISTANCE_NONE) {
-		*current_track = best_track;
-		*penalty_count = best_distance;
-	} else {
-		state.game_startcol = column;
-		state.game_startcol2 = column;
-		state.game_startrow = row;
-		state.game_startrow2 = row;
-		*penalty_count = PENALTY_ROUTE_OUTSIDE_TRACK;
-	}
-	return PENALTY_DETECTED;
-}
-
-struct PENALTY_ROUTE_SEARCH {
-	legacy_u8 visited[PENALTY_ROUTE_VISITED_CAPACITY];
-	legacy_s16 pending_track[PENALTY_ROUTE_PENDING_CAPACITY];
-	legacy_s16 pending_distance[PENALTY_ROUTE_PENDING_CAPACITY];
-	legacy_u16 pending_count;
-	legacy_u8 sentinel_visited;
-	legacy_s16 track_index;
-	legacy_s16 distance;
-	legacy_s16 best_track;
-	legacy_s16 best_distance;
-	legacy_s16 column;
-	legacy_s16 row;
-};
-
-struct PENALTY_ROUTE_BOUNDS {
-	legacy_u8 minimum_column;
-	legacy_u8 maximum_column;
-	legacy_u8 minimum_row;
-	legacy_u8 maximum_row;
-};
-
-static legacy_s16 penalty_route_visit(struct PENALTY_ROUTE_SEARCH *search, legacy_s16 next_track)
-{
-	if (next_track == PENALTY_ROUTE_SENTINEL) {
-		if (search->sentinel_visited != PENALTY_ROUTE_SENTINEL_UNVISITED) {
-			return 0;
-		}
-		search->sentinel_visited = PENALTY_ROUTE_SENTINEL_VISITED;
-	} else {
-		if (next_track < 0 || next_track >= track_pieces_counter ||
-			search->visited[next_track] != PENALTY_ROUTE_TRACK_UNVISITED) {
-			return 0;
-		}
-		search->visited[next_track] = PENALTY_ROUTE_TRACK_VISITED;
-	}
-	return 1;
-}
-
-static void penalty_route_bounds(legacy_s16 next_track, struct PENALTY_ROUTE_BOUNDS *bounds)
-{
-	legacy_u8 tile_element;
-	if (next_track == PENALTY_ROUTE_SENTINEL) {
-		bounds->minimum_row = (legacy_u8)track_route_columns[PENALTY_ROUTE_START_TRACK_INDEX];
-		tile_element = (legacy_u8)replay_input_buffer[PENALTY_ROUTE_START_TILE_INDEX];
-	} else {
-		bounds->minimum_row = (legacy_u8)track_route_rows[next_track];
-		tile_element = (legacy_u8)track_route_element_ids[next_track];
-	}
-	legacy_u8 multi_tile_flags = trkObjectList[tile_element].ss_multiTileFlag;
-	bounds->maximum_row = bounds->minimum_row;
-	if ((multi_tile_flags & MULTI_TILE_ROW_FLAG) != MULTI_TILE_FLAGS_NONE) {
-		bounds->maximum_row = LEGACY_U8_WRAP_ADD(bounds->maximum_row, TRACK_TILE_COORDINATE_STEP);
-	}
-	if (next_track == PENALTY_ROUTE_SENTINEL) {
-		bounds->minimum_column =
-			(legacy_u8)track_and_directory_backup[PENALTY_ROUTE_START_COLUMN_INDEX];
-	} else {
-		bounds->minimum_column = (legacy_u8)track_route_columns[next_track];
-	}
-	bounds->maximum_column = bounds->minimum_column;
-	if ((multi_tile_flags & MULTI_TILE_COLUMN_FLAG) != MULTI_TILE_FLAGS_NONE) {
-		bounds->maximum_column =
-			LEGACY_U8_WRAP_ADD(bounds->maximum_column, TRACK_TILE_COORDINATE_STEP);
-	}
-}
-
-static legacy_s16 penalty_route_contains(const struct PENALTY_ROUTE_SEARCH *search,
-										 const struct PENALTY_ROUTE_BOUNDS *bounds)
-{
-	return ((legacy_u8)search->column == bounds->minimum_column ||
-			(legacy_u8)search->column == bounds->maximum_column) &&
-		   ((legacy_u8)search->row == bounds->minimum_row ||
-			(legacy_u8)search->row == bounds->maximum_row);
-}
-
-static legacy_s16 penalty_route_record_match(struct PENALTY_ROUTE_SEARCH *search,
-											 legacy_s16 *next_track, legacy_s16 *current_track,
-											 legacy_s16 *penalty_count)
-{
-	struct PENALTY_ROUTE_BOUNDS bounds;
-
-	penalty_route_bounds(*next_track, &bounds);
-	if (!penalty_route_contains(search, &bounds)) {
-		return 0;
-	}
-	if (penalty_route_alternate(search->track_index) != PENALTY_ROUTE_SENTINEL) {
-		*next_track = search->track_index;
-	}
-	state.game_startcol = LEGACY_S8_FROM_BITS(bounds.minimum_column);
-	state.game_startcol2 = LEGACY_S8_FROM_BITS(bounds.maximum_column);
-	state.game_startrow = LEGACY_S8_FROM_BITS(bounds.minimum_row);
-	state.game_startrow2 = LEGACY_S8_FROM_BITS(bounds.maximum_row);
-	if (search->distance <= PENALTY_ROUTE_DISTANCE_NONE) {
-		*current_track = *next_track;
-		*penalty_count = search->distance;
-		return 1;
-	}
-	if (search->best_distance == PENALTY_ROUTE_DISTANCE_NONE ||
-		search->best_distance > search->distance) {
-		search->best_track = *next_track;
-		search->best_distance = search->distance;
-	}
-	return 0;
-}
-
-static legacy_s16 search_penalty_route(struct PENALTY_ROUTE_SEARCH *search,
-									   legacy_s16 *current_track, legacy_s16 *penalty_count)
-{
-	search->best_distance = PENALTY_ROUTE_DISTANCE_NONE;
-	search->best_track = TRACK_START_FINISH_PIECE_INDEX;
-	search->pending_count = PENALTY_ROUTE_PENDING_NONE;
-	search->distance = PENALTY_ROUTE_DISTANCE_NONE;
-	search->sentinel_visited = PENALTY_ROUTE_SENTINEL_UNVISITED;
-	for (legacy_u16 index = PENALTY_ROUTE_INDEX_FIRST; index < (legacy_u16)track_pieces_counter;
-		 index++) {
-		search->visited[index] = PENALTY_ROUTE_TRACK_UNVISITED;
-	}
-	search->track_index = (legacy_s16)*current_track;
-	legacy_s16 next_track;
-	for (;;) {
-		next_track = penalty_route_next(search->track_index);
-		if (!penalty_route_visit(search, next_track)) {
-			if (search->pending_count == PENALTY_ROUTE_PENDING_NONE) {
-				return finish_penalty_route(current_track, penalty_count, search->best_track,
-											search->best_distance, search->column, search->row);
-			}
-			search->pending_count =
-				LEGACY_U16_WRAP_SUB(search->pending_count, PENALTY_ROUTE_PENDING_STEP);
-			search->track_index = search->pending_track[search->pending_count];
-			search->distance = search->pending_distance[search->pending_count];
-			continue;
-		}
-		if (penalty_route_record_match(search, &next_track, current_track, penalty_count)) {
-			return PENALTY_DETECTED;
-		}
-		legacy_s16 alternate_track = penalty_route_alternate(search->track_index);
-		if (alternate_track != PENALTY_ROUTE_SENTINEL) {
-			search->pending_distance[search->pending_count] = search->distance;
-			search->pending_track[search->pending_count] = alternate_track;
-			search->pending_count =
-				LEGACY_U16_WRAP_ADD(search->pending_count, PENALTY_ROUTE_PENDING_STEP);
-		}
-		if (next_track == TRACK_START_FINISH_PIECE_INDEX) {
-			search->distance = PENALTY_ROUTE_FINISH_REACHED;
-		} else if (search->distance != PENALTY_ROUTE_FINISH_REACHED) {
-			search->distance = LEGACY_S16_WRAP_ADD(search->distance, PENALTY_ROUTE_DISTANCE_STEP);
-		}
-		search->track_index = next_track;
-	}
-}
-
-legacy_s16 detect_penalty(legacy_s16 *current_track, legacy_s16 *penalty_count)
-{
-	struct PENALTY_ROUTE_SEARCH search;
-
-	search.column = LEGACY_S8_FROM_BITS(
-		(legacy_u8)((legacy_u32)state.playerstate.car_position.lx >> TRACK_WORLD_TILE_SHIFT));
-	search.row = LEGACY_S8_FROM_BITS(LEGACY_U8_WRAP_SUB(
-		TRACK_GRID_LAST_COORDINATE,
-		(legacy_u8)((legacy_u32)state.playerstate.car_position.lz >> TRACK_WORLD_TILE_SHIFT)));
-	if ((search.column == state.game_startcol || search.column == state.game_startcol2) &&
-		(search.row == state.game_startrow || search.row == state.game_startrow2)) {
-		*penalty_count = PENALTY_ROUTE_DISTANCE_NONE;
-		return PENALTY_NOT_DETECTED;
-	}
-	if (search.column < 0 || search.column > TRACK_GRID_LAST_COORDINATE || search.row < 0 ||
-		search.row > TRACK_GRID_LAST_COORDINATE) {
-		*penalty_count = PENALTY_ROUTE_OUTSIDE_TRACK;
-		return PENALTY_DETECTED;
-	}
-
-	return search_penalty_route(&search, current_track, penalty_count);
 }
 
 /*

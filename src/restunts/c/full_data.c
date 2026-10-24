@@ -483,13 +483,25 @@ legacy_u8 palmap[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 
 /* Current material maps; the copies are switched independently at runtime. */
 legacy_s16 material_color_list[SHAPE3D_MATERIAL_COUNT] = {
+#ifdef RESTUNTS_AMIGA
+	/* Original Amiga stunts DATA+0x3a32: 129 world-palette indexes.
+	 * Provenance: tests/fixtures/amiga-palette-reference.json. */
+	0,	1,	2,	3,	4,	5,	6,	7,	8,	9, 10, 11, 12, 13, 14, 15, 2,  11, 15, 8,  0,  14,
+	8,	0,	14, 6,	6,	6,	15, 15, 15, 7, 15, 3,  11, 4,  12, 1,  0,  8,  7,  3,  11, 8,
+	0,	4,	4,	12, 1,	1,	9,	9,	4,	4, 12, 12, 0,  8,  7,  7,  7,  14, 14, 15, 3,  3,
+	11, 11, 2,	2,	10, 10, 5,	5,	13, 5, 7,  7,  15, 15, 14, 14, 14, 14, 4,  4,  4,  4,
+	5,	5,	5,	5,	8,	8,	8,	10, 15, 7, 6,  4,  9,  10, 2,  2,  10, 10, 15, 15, 6,  6,
+	4,	6,	4,	8,	13, 5,	13, 0,	0,	8, 0,  15, 7,  14, 7,  4,  12, 12, 15,
+#else
 	0,	 1,	  2,   3,	4,	 5,	  6,   7,	8,	 9,	  10,  11,	12,	 13,  14,  15,	108, 116, 15,
 	28,	 29,  14,  28,	31,	 14,  200, 198, 196, 112, 114, 116, 194, 197, 200, 146, 37,	 35,  181,
 	29,	 31,  19,  3,	11,	 27,  0,   4,	4,	 12,  156, 154, 152, 150, 42,  40,	38,	 37,  27,
 	26,	 25,  24,  72,	70,	 68,  66,  123, 121, 120, 117, 92,	90,	 88,  87,  173, 171, 169, 167,
 	20,	 19,  18,  17,	77,	 76,  74,  73,	45,	 44,  42,  41,	159, 175, 174, 172, 29,	 28,  18,
 	90,	 15,  7,   200, 219, 136, 99,  101, 103, 104, 106, 17,	20,	 60,  77,  46,	61,	 45,  202,
-	190, 186, 183, 180, 0,	 28,  30,  16,	20,	 68,  54,  39,	43,	 12,  17};
+	190, 186, 183, 180, 0,	 28,  30,  16,	20,	 68,  54,  39,	43,	 12,  17
+#endif
+};
 legacy_s16 material_pattern_list[SHAPE3D_MATERIAL_COUNT] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -559,7 +571,7 @@ static void full_initialize_screen_sprite(struct SPRITE far *sprite)
 	sprite->sprite_reserved_word1 = 0;
 	sprite->sprite_reserved_word2 = 0;
 	sprite->sprite_reserved_word3 = 0;
-#ifdef RESTUNTS_SDL3
+#if defined(RESTUNTS_SDL3) || defined(RESTUNTS_AMIGA)
 	sprite->sprite_lineofs = (legacy_u8 *)full_screen_line_offsets;
 #else
 	sprite->sprite_lineofs = (legacy_u8 *)dos_memory_make_near_pointer(
@@ -579,12 +591,12 @@ static void full_initialize_screen_sprite(struct SPRITE far *sprite)
 void full_data_initialize(void)
 {
 	for (legacy_u16 index = 0; index < 200U; index++) {
-		full_screen_line_offsets[index] = (legacy_u16)(index * 320U);
+		LEGACY_WRITE_U16_LE((legacy_u8 far *)&full_screen_line_offsets[index], index * 320U);
 	}
 	for (legacy_u16 index = 0; index < WINDOW_DEFINITION_BUFFER_SIZE; index++) {
 		wnd_defs[index] = 0;
 	}
-#ifdef RESTUNTS_SDL3
+#if defined(RESTUNTS_SDL3) || defined(RESTUNTS_AMIGA)
 	next_wnd_def = (legacy_s8 *)wnd_defs;
 #else
 	next_wnd_def = (legacy_s8 *)dos_memory_make_near_pointer(dos_memory_pointer_offset(wnd_defs));

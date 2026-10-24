@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.25)
 project(restunts VERSION 1.0 LANGUAGES C)
 
+option(RESTUNTS_AMIGA "Build the native Amiga 500+ port" OFF)
+if(RESTUNTS_AMIGA)
+    include(cmake/amiga.cmake)
+    return()
+endif()
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
     # SDL's native Haiku backend needs C++ link information in the parent scope.
     enable_language(CXX)
@@ -33,6 +39,14 @@ if(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
 endif()
 
 option(RESTUNTS_SYSTEM_SDL "Use an installed SDL3 instead of the pinned source" OFF)
+option(RESTUNTS_GENGHOST_ONLY "Build only the headless ghost generator" OFF)
+if(RESTUNTS_GENGHOST_ONLY AND (EMSCRIPTEN OR CMAKE_SYSTEM_NAME STREQUAL "DOS"))
+    message(FATAL_ERROR "The standalone ghost generator requires a native SDL3 target")
+endif()
+if(ANDROID AND RESTUNTS_GENGHOST_ONLY)
+    # Static SDL contains C++ Android JNI stubs even with HID support disabled.
+    enable_language(CXX)
+endif()
 if(ANDROID)
     # Keep installable debug APKs fast enough for older ARM phones, with debug symbols.
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O2")
@@ -115,7 +129,16 @@ if(RESTUNTS_SYSTEM_SDL)
     find_package(SDL3 3.4 REQUIRED CONFIG)
 else()
     include(FetchContent)
-    if(ANDROID)
+    if(ANDROID AND RESTUNTS_GENGHOST_ONLY)
+        # The generator is a separate command-line process, with no Java/SDL activity.
+        set(SDL_SHARED OFF CACHE BOOL "Bundle SDL in the Android generator" FORCE)
+        set(SDL_STATIC ON CACHE BOOL "Bundle SDL in the Android generator" FORCE)
+        set(SDL_ANDROID_JAR OFF CACHE BOOL "The generator has no SDL Java glue" FORCE)
+        foreach(subsystem AUDIO VIDEO GPU RENDER CAMERA JOYSTICK HAPTIC HIDAPI POWER
+                SENSOR DIALOG TRAY NOTIFICATION)
+            set(SDL_${subsystem} OFF CACHE BOOL "Headless Android generator" FORCE)
+        endforeach()
+    elseif(ANDROID)
         set(SDL_SHARED ON CACHE BOOL "Android JNI loads shared SDL" FORCE)
         set(SDL_STATIC OFF CACHE BOOL "Android JNI loads shared SDL" FORCE)
     else()
@@ -159,7 +182,7 @@ set(platform src/restunts/platform/sdl3)
 set(common_sources
     fileio.c legacy.c resource.c math.c memmgr.c strlib.c numlib.c kevinrnd.c
     replinit.c gameinit.c gamestep.c simd.c carsetup.c trkutil.c trackres.c
-    headless_data.c headless_trackdata.c state.c physics_grip.c opponent.c
+    headless_data.c headless_trackdata.c state.c race_route.c physics_grip.c opponent.c
     track_setup.c stateply.c physics_collision.c statecrs.c statecar.c trackobj.c
     owoot.c owoot_wheels.c owoot_road.c owoot_route.c replay.c stateio.c)
 set(game_sources
@@ -176,7 +199,7 @@ list(TRANSFORM common_sources PREPEND "${core}/")
 list(TRANSFORM game_sources PREPEND "${core}/")
 set(platform_common ${platform}/memory.c ${platform}/file.c ${platform}/runtime.c)
 set(platform_game ${platform}/asset_path.c ${platform}/video.c ${platform}/input.c ${platform}/timer.c
-    ${platform}/audio.c ${platform}/music.c ${platform}/touch.c)
+    ${platform}/audio.c ${platform}/music.c ${platform}/touch.c ${platform}/soft_keyboard.c)
 
 execute_process(COMMAND git -c safe.directory=${CMAKE_SOURCE_DIR} rev-parse HEAD
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" OUTPUT_VARIABLE RESTUNTS_GIT_HASH
@@ -185,15 +208,54 @@ if(NOT RESTUNTS_GIT_HASH)
     set(RESTUNTS_GIT_HASH "source-archive")
 endif()
 
+if(EMSCRIPTEN)
+    set(restunts_asset_directory "/assets")
+else()
+    set(restunts_asset_directory "${CMAKE_SOURCE_DIR}/assets")
+endif()
+
 add_library(restunts_options INTERFACE)
 target_compile_definitions(restunts_options INTERFACE RESTUNTS_SDL3
-    RESTUNTS_GIT_HASH="${RESTUNTS_GIT_HASH}")
+    RESTUNTS_GIT_HASH="${RESTUNTS_GIT_HASH}"
+    RESTUNTS_CAR_DIRECTORY="${restunts_asset_directory}/cars")
 target_include_directories(restunts_options INTERFACE "${CMAKE_SOURCE_DIR}/${core}")
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(restunts_options INTERFACE -fsigned-char -fno-strict-aliasing
         -Wall -Wextra -Wno-pointer-sign -Wno-missing-field-initializers -Wno-missing-braces)
 endif()
 target_link_libraries(restunts_options INTERFACE SDL3::SDL3 m)
+
+function(restunts_add_genghost)
+    # The optimizer shares repldump's physics and owns its command-line entry point.
+    add_executable(genghost ${common_sources} ${core}/headless.c ${platform_common}
+        src/restunts/genghost/main.c src/restunts/genghost/simulation.c
+        src/restunts/genghost/routes.c src/restunts/genghost/search.c
+        src/restunts/genghost/guide.c src/restunts/genghost/parallel.c
+        src/restunts/genghost/maneuvers.c src/restunts/genghost/state_search.c)
+    target_compile_definitions(genghost PRIVATE RESTUNTS_HEADLESS)
+    target_link_libraries(genghost PRIVATE restunts_options)
+    if(ANDROID)
+        # Android permits execution from an APK's extracted native-library directory.
+        # This is still a PIE executable, named as a library solely for APK packaging.
+        # AGP uses the executable's parent directory to identify its ABI.
+        # Keep each ABI and variant in its own CMake build tree.
+        set_target_properties(genghost PROPERTIES PREFIX "lib" OUTPUT_NAME genghost_exec
+            SUFFIX ".so"
+            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/genghost-bin/${ANDROID_ABI}")
+    endif()
+    install(TARGETS genghost RUNTIME DESTINATION bin COMPONENT Runtime)
+    install(FILES docs/genghost.md docs/genghost-state-planner.md
+        DESTINATION share/docs/restunts COMPONENT Runtime)
+endfunction()
+
+if(RESTUNTS_GENGHOST_ONLY)
+    restunts_add_genghost()
+    if(NOT RESTUNTS_SYSTEM_SDL)
+        install(FILES "${SDL3_SOURCE_DIR}/LICENSE.txt"
+            DESTINATION share/licenses/restunts RENAME SDL-LICENSE.txt COMPONENT Runtime)
+    endif()
+    return()
+endif()
 
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "DOS")
     set(NUKED_OPL2_SSE2 ${RESTUNTS_SSE2} CACHE BOOL "Match the game's x86 instruction set" FORCE)
@@ -210,13 +272,10 @@ target_compile_definitions(restunts_vorbis PRIVATE STB_VORBIS_NO_PUSHDATA_API)
 add_library(restunts_game STATIC ${common_sources} ${game_sources} ${platform_common} ${platform_game}
     $<TARGET_OBJECTS:restunts_vorbis>)
 target_include_directories(restunts_game PRIVATE "${CMAKE_SOURCE_DIR}/third_party/stb")
-if(EMSCRIPTEN)
-    set(restunts_asset_directory "/assets")
-else()
-    set(restunts_asset_directory "${CMAKE_SOURCE_DIR}/assets")
-endif()
 set(menu_backgrounds main showroom opponent)
 set(music_tracks titl slct over vict)
+set(restunts_car_files CARMCMU.RES CARTERR.RES STMCMU.3SH STTERR.3SH
+    STDAMCMU.VSH STDATERR.VSH STDBMCMU.VSH STDBTERR.VSH)
 target_compile_definitions(restunts_game PRIVATE RESTUNTS_FULL
     RESTUNTS_MENU_DIRECTORY="${restunts_asset_directory}/menus"
     RESTUNTS_SKYBOX_DIRECTORY="${restunts_asset_directory}/skyboxes"
@@ -311,12 +370,19 @@ add_executable(repldump ${common_sources} ${core}/headless.c ${platform_common}
 target_compile_definitions(repldump PRIVATE RESTUNTS_HEADLESS)
 target_link_libraries(repldump PRIVATE restunts_options)
 
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "DOS")
+    restunts_add_genghost()
+endif()
+
 add_executable(pixldump ${platform}/main.c src/restunts/pixldump/pixldump.c
     src/restunts/pixldump/murmur3.c src/restunts/pixldump/legacy_context.c)
 target_compile_definitions(pixldump PRIVATE RESTUNTS_PIXLDUMP)
 target_link_libraries(pixldump PRIVATE restunts_game)
 
 install(TARGETS restunts repldump pixldump RUNTIME DESTINATION bin COMPONENT Runtime)
+foreach(car_file IN LISTS restunts_car_files)
+    install(FILES "assets/cars/${car_file}" DESTINATION bin/cars COMPONENT Runtime)
+endforeach()
 foreach(music IN LISTS music_tracks)
     install(FILES "assets/music/${music}.ogg" DESTINATION bin/music COMPONENT Runtime OPTIONAL)
 endforeach()
@@ -375,6 +441,14 @@ if(RESTUNTS_BUILD_TESTS)
         set(restunts_test_gc_sections "LINKER:--gc-sections")
     endif()
     enable_testing()
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        add_executable(test-penalty-routing src/restunts/tests/test-penalty-routing.c
+            ${core}/race_route.c ${core}/strlib.c)
+        target_link_libraries(test-penalty-routing PRIVATE restunts_options)
+        target_compile_options(test-penalty-routing PRIVATE -UNDEBUG ${restunts_test_section_options})
+        target_link_options(test-penalty-routing PRIVATE ${restunts_test_gc_sections})
+        add_test(NAME penalty-routing COMMAND test-penalty-routing)
+    endif()
     if(NOT CMAKE_CROSSCOMPILING)
         # Information switches must work without game files or a working data path.
         set(command_line_test_directory "${CMAKE_CURRENT_BINARY_DIR}/command-line-test")
@@ -392,6 +466,16 @@ if(RESTUNTS_BUILD_TESTS)
             WORKING_DIRECTORY "${command_line_test_directory}"
             ENVIRONMENT "SDL_VIDEODRIVER=restunts-invalid-driver;SDL_AUDIODRIVER=restunts-invalid-driver"
             TIMEOUT 10)
+        if(TARGET genghost)
+            add_test(NAME genghost-help COMMAND genghost
+                --data-dir "${command_line_test_directory}/missing" --help)
+            add_test(NAME genghost-version COMMAND genghost
+                --data-dir "${command_line_test_directory}/missing" --version)
+            set_tests_properties(genghost-help genghost-version PROPERTIES
+                WORKING_DIRECTORY "${command_line_test_directory}"
+                ENVIRONMENT "SDL_VIDEODRIVER=restunts-invalid-driver;SDL_AUDIODRIVER=restunts-invalid-driver"
+                TIMEOUT 10)
+        endif()
     endif()
     add_executable(test-sdl3-timer src/restunts/tests/test-sdl3-timer.c)
     target_link_libraries(test-sdl3-timer PRIVATE restunts_options)
@@ -467,6 +551,87 @@ if(RESTUNTS_BUILD_TESTS AND TARGET restunts_opl)
 endif()
 
 if(RESTUNTS_BUILD_TESTS AND NOT CMAKE_SYSTEM_NAME STREQUAL "DOS")
+    add_executable(test-genghost-simulation ${common_sources} ${core}/headless.c ${platform_common}
+        ${platform}/main.c src/restunts/genghost/simulation.c
+        src/restunts/genghost/guide.c src/restunts/genghost/routes.c
+        src/restunts/tests/test-genghost-simulation.c)
+    target_compile_definitions(test-genghost-simulation PRIVATE RESTUNTS_HEADLESS)
+    target_compile_options(test-genghost-simulation PRIVATE -UNDEBUG)
+    target_link_libraries(test-genghost-simulation PRIVATE restunts_options)
+    add_executable(test-genghost-state ${common_sources} ${core}/headless.c ${platform_common}
+        ${platform}/main.c src/restunts/genghost/simulation.c
+        src/restunts/genghost/guide.c src/restunts/genghost/routes.c
+        src/restunts/genghost/search.c src/restunts/genghost/parallel.c
+        src/restunts/genghost/maneuvers.c src/restunts/genghost/state_search.c
+        src/restunts/tests/test-genghost-state.c)
+    target_compile_definitions(test-genghost-state PRIVATE RESTUNTS_HEADLESS)
+    target_compile_options(test-genghost-state PRIVATE -UNDEBUG)
+    target_link_libraries(test-genghost-state PRIVATE restunts_options)
+    add_test(NAME genghost-regions COMMAND test-genghost-simulation --geometry-only)
+    if(NOT CMAKE_CROSSCOMPILING)
+        find_package(Python3 COMPONENTS Interpreter QUIET)
+        if(Python3_Interpreter_FOUND)
+            add_test(NAME repldump-time COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_SOURCE_DIR}/tools/scripts/test-repldump-time.py"
+                "$<TARGET_FILE:repldump>" "${CMAKE_SOURCE_DIR}/stunts"
+                "${CMAKE_SOURCE_DIR}/tools/scripts/rpls_golden/replays.zip")
+            set_tests_properties(repldump-time PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 120)
+            add_test(NAME genghost-analysis COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_SOURCE_DIR}/tools/scripts/tests/test_genghost_analysis.py")
+            add_test(NAME genghost-android-request COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_SOURCE_DIR}/tools/scripts/test-genghost-android-request.py")
+            set_tests_properties(genghost-android-request PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 60)
+            add_test(NAME genghost-stunt-analysis COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_SOURCE_DIR}/tools/scripts/test-genghost-stunts.py")
+            add_test(NAME regression-timeouts COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_SOURCE_DIR}/tools/scripts/tests/test_regression_timeouts.py")
+            add_test(NAME genghost-simulation COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_SOURCE_DIR}/tools/scripts/test-genghost-simulation.py"
+                "$<TARGET_FILE:test-genghost-simulation>" "$<TARGET_FILE:repldump>"
+                "${CMAKE_SOURCE_DIR}/stunts" "${CMAKE_SOURCE_DIR}/tools/scripts/rpls_golden/replays.zip")
+            set_tests_properties(genghost-simulation PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 300)
+            add_test(NAME genghost-search COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_SOURCE_DIR}/tools/scripts/test-genghost-search.py"
+                "$<TARGET_FILE:genghost>" "$<TARGET_FILE:repldump>"
+                "${CMAKE_SOURCE_DIR}/stunts" "${CMAKE_SOURCE_DIR}/tools/scripts/rpls_golden/replays.zip")
+            set_tests_properties(genghost-search PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 120)
+            add_test(NAME genghost-fine-tune COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_SOURCE_DIR}/tools/scripts/test-genghost-fine-tune.py"
+                "$<TARGET_FILE:genghost>" "$<TARGET_FILE:repldump>"
+                "${CMAKE_SOURCE_DIR}/stunts" "${CMAKE_SOURCE_DIR}/tools/scripts/rpls_golden/replays.zip"
+                "$<TARGET_FILE:test-genghost-state>")
+            set_tests_properties(genghost-fine-tune PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 240)
+            add_test(NAME genghost-parallel COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_SOURCE_DIR}/tools/scripts/test-genghost-parallel.py"
+                "$<TARGET_FILE:genghost>" "$<TARGET_FILE:repldump>"
+                "${CMAKE_SOURCE_DIR}/stunts" "${CMAKE_SOURCE_DIR}/tools/scripts/rpls_golden/replays.zip")
+            set_tests_properties(genghost-parallel PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 180)
+            add_test(NAME genghost-state COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_SOURCE_DIR}/tools/scripts/test-genghost-state.py"
+                "$<TARGET_FILE:genghost>" "$<TARGET_FILE:repldump>"
+                "$<TARGET_FILE:test-genghost-state>"
+                "${CMAKE_SOURCE_DIR}/stunts" "${CMAKE_SOURCE_DIR}/tools/scripts/rpls_golden/replays.zip")
+            set_tests_properties(genghost-state PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 240)
+            # CTest's --timeout does not override an explicit test TIMEOUT.
+            # Propagate the same multiplier to the Python subprocess deadlines.
+            set(RESTUNTS_GENGHOST_TEST_TIMEOUT_MULTIPLIER 1 CACHE STRING
+                "Timeout multiplier for native ghost regressions")
+            if(NOT RESTUNTS_GENGHOST_TEST_TIMEOUT_MULTIPLIER MATCHES "^[1-9][0-9]*$")
+                message(FATAL_ERROR
+                    "RESTUNTS_GENGHOST_TEST_TIMEOUT_MULTIPLIER must be a positive integer")
+            endif()
+            foreach(restunts_genghost_test genghost-simulation genghost-search
+                    genghost-fine-tune genghost-parallel genghost-state)
+                get_test_property(${restunts_genghost_test} TIMEOUT restunts_genghost_timeout)
+                math(EXPR restunts_genghost_timeout
+                    "${restunts_genghost_timeout} * ${RESTUNTS_GENGHOST_TEST_TIMEOUT_MULTIPLIER}")
+                set_tests_properties(${restunts_genghost_test} PROPERTIES
+                    TIMEOUT ${restunts_genghost_timeout})
+                set_property(TEST ${restunts_genghost_test} APPEND PROPERTY ENVIRONMENT
+                    "RESTUNTS_GENGHOST_TEST_TIMEOUT_MULTIPLIER=${RESTUNTS_GENGHOST_TEST_TIMEOUT_MULTIPLIER}")
+            endforeach()
+        endif()
+    endif()
     add_executable(test-render-workers src/restunts/tests/test-render-workers.c)
     target_link_libraries(test-render-workers PRIVATE restunts_options)
     target_compile_options(test-render-workers PRIVATE -UNDEBUG)
@@ -476,8 +641,14 @@ if(RESTUNTS_BUILD_TESTS AND NOT CMAKE_SYSTEM_NAME STREQUAL "DOS")
     target_link_libraries(test-sdl3-touch PRIVATE restunts_options)
     target_compile_options(test-sdl3-touch PRIVATE -UNDEBUG)
     add_test(NAME sdl3-touch COMMAND test-sdl3-touch)
+    add_executable(test-sdl3-soft-keyboard src/restunts/tests/test-sdl3-soft-keyboard.c
+        ${platform}/soft_keyboard.c)
+    target_link_libraries(test-sdl3-soft-keyboard PRIVATE restunts_options)
+    target_compile_options(test-sdl3-soft-keyboard PRIVATE -UNDEBUG)
+    add_test(NAME sdl3-soft-keyboard COMMAND test-sdl3-soft-keyboard)
     add_executable(test-sdl3-input src/restunts/tests/test-sdl3-input.c
-        ${platform}/input.c ${platform}/video.c ${platform}/timer.c ${platform}/touch.c ${core}/frame_adaptive.c)
+        ${platform}/input.c ${platform}/video.c ${platform}/timer.c ${platform}/touch.c
+        ${platform}/soft_keyboard.c ${core}/frame_adaptive.c)
     target_link_libraries(test-sdl3-input PRIVATE restunts_options)
     target_compile_options(test-sdl3-input PRIVATE -UNDEBUG)
     add_test(NAME sdl3-input COMMAND test-sdl3-input)
@@ -508,6 +679,15 @@ if(RESTUNTS_BUILD_TESTS)
         add_test(NAME render-replay COMMAND "${Python3_EXECUTABLE}"
             "${CMAKE_SOURCE_DIR}/tools/scripts/test-render-replay.py"
             "$<TARGET_FILE:test-render-replay>" "${CMAKE_SOURCE_DIR}/stunts")
+        add_executable(test-ghost-racing-line ${platform}/main.c
+            src/restunts/tests/test-ghost-racing-line.c)
+        target_compile_definitions(test-ghost-racing-line PRIVATE RESTUNTS_PIXLDUMP)
+        target_link_libraries(test-ghost-racing-line PRIVATE restunts_game)
+        target_compile_options(test-ghost-racing-line PRIVATE -UNDEBUG)
+        add_test(NAME ghost-racing-line COMMAND test-ghost-racing-line
+            --data-dir "${CMAKE_SOURCE_DIR}/stunts" DEFAULT)
+        set_tests_properties(ghost-racing-line PROPERTIES
+            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_AUDIODRIVER=dummy;RESTUNTS_AUDIO_TRACE=")
         add_executable(benchmark-hypervision EXCLUDE_FROM_ALL ${platform}/main.c
             src/restunts/benchmarks/benchmark-hypervision.c)
         target_compile_definitions(benchmark-hypervision PRIVATE RESTUNTS_PIXLDUMP)

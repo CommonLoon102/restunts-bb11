@@ -3,10 +3,13 @@ package org.restunts.android;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.UriPermission;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,8 +24,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -31,6 +34,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -41,6 +48,8 @@ public final class LauncherActivity extends Activity {
     private static final int REQUEST_ZIP_FOLDER = 3;
     private static final String ZIP_DIRECTORY = "zip-import";
     private static final String ZIP_READY_KEY = "zip_ready";
+    private static final String ZIP_TV_KEY = "zip_tv";
+    private static final String TV_PICKER_STUB_PACKAGE = "com.android.tv.frameworkpackagestubs";
     private static final String INITIAL_URI_EXTRA = "android.provider.extra.INITIAL_URI";
     private static final String DOCUMENTS_URI =
         "content://com.android.externalstorage.documents/document/primary:Documents";
@@ -64,11 +73,24 @@ public final class LauncherActivity extends Activity {
     private static String currentStatus = "Import your Brøderbund Stunts 1.1 game files.\n"
         + "Choose the game folder itself, or a ZIP to extract into Chocolate Stunts.";
     private TextView status;
+    private ProgressBar preparationProgress;
     private Button start;
     private Button folder;
     private Button zip;
+    private Button tvFolder;
     private CheckBox newMidi;
+    private CheckBox sound;
+    private CheckBox vibration;
+    private CheckBox skipIntro;
+    private CheckBox tiltSteering;
     private CheckBox showFps;
+    private CheckBox showControlLayout;
+    private CheckBox powerGear;
+    private CheckBox legacyCollision;
+    private CheckBox leftCornerBias;
+    private CheckBox dualWaySwitching;
+    private CheckBox owoot;
+    private CheckBox amigaGrass;
     private Spinner hyperVision;
     private SharedPreferences preferences;
     private boolean television;
@@ -98,7 +120,15 @@ public final class LauncherActivity extends Activity {
         }
         folder = button(layout, "Choose game folder", view -> chooseFolder());
         zip = button(layout, "Import Stunts ZIP", view -> chooseZip());
+        if (television) {
+            tvFolder = button(layout, "Use TV game folder", view -> showTvFolderDialog(false));
+        }
         addOptions(layout);
+        preparationProgress = new ProgressBar(this);
+        preparationProgress.setIndeterminate(true);
+        preparationProgress.setContentDescription("Preparing game files");
+        layout.addView(preparationProgress, new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         start = button(layout, "Start game", view -> startGame());
         ScrollView scroll = new ScrollView(this);
         scroll.setFillViewport(true);
@@ -119,17 +149,17 @@ public final class LauncherActivity extends Activity {
         }
         if (!preparingAssets && !assetsReady) {
             preparingAssets = true;
+            boolean tv = television;
             WORKER.execute(() -> {
                 try {
                     GameDataImport.recover(new File(context.getFilesDir(), "game"));
                     copyAssets(context, "", context.getFilesDir());
+                    String readyStatus = initialStatus(context, tv);
                     MAIN_THREAD.post(() -> {
                         preparingAssets = false;
                         assetsReady = true;
                         if (!importing && !synchronizing) {
-                            currentStatus = GameDataStorage.folder(context) == null
-                                ? "Choose your Brøderbund Stunts 1.1 game folder, or import a ZIP."
-                                : "Game folder remembered. Start game to load its current contents.";
+                            currentStatus = readyStatus;
                         }
                         refreshActive();
                     });
@@ -172,13 +202,20 @@ public final class LauncherActivity extends Activity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
+        boolean colored = event.getKeyCode() == KeyEvent.KEYCODE_PROG_GREEN
+            || event.getKeyCode() == KeyEvent.KEYCODE_PROG_RED;
+        if (colored && event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() != 0) {
+            return true;
+        }
         int keyCode;
         switch (event.getKeyCode()) {
             case KeyEvent.KEYCODE_BUTTON_A:
             case KeyEvent.KEYCODE_BUTTON_SELECT:
+            case KeyEvent.KEYCODE_PROG_GREEN:
                 keyCode = KeyEvent.KEYCODE_DPAD_CENTER;
                 break;
             case KeyEvent.KEYCODE_BUTTON_B:
+            case KeyEvent.KEYCODE_PROG_RED:
                 keyCode = KeyEvent.KEYCODE_BACK;
                 break;
             default:
@@ -204,36 +241,40 @@ public final class LauncherActivity extends Activity {
     }
 
     private void addOptions(LinearLayout layout) {
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(Gravity.CENTER);
         int textSize = television ? TEXT_SIZE_SP : OPTION_TEXT_SIZE_SP;
         int spacing = Math.round(OPTION_SPACING_DP * getResources().getDisplayMetrics().density);
-        newMidi = new CheckBox(this);
-        newMidi.setText("New MIDI");
-        newMidi.setTextSize(textSize);
-        newMidi.setSingleLine(true);
-        newMidi.setChecked(preferences.getBoolean(LaunchOptions.NEW_MIDI_KEY,
-            LaunchOptions.DEFAULT_NEW_MIDI));
-        row.addView(newMidi);
-        showFps = new CheckBox(this);
-        showFps.setText("Show FPS");
-        showFps.setTextSize(textSize);
-        showFps.setSingleLine(true);
-        showFps.setChecked(preferences.getBoolean(LaunchOptions.SHOW_FPS_KEY,
-            LaunchOptions.DEFAULT_SHOW_FPS));
-        LinearLayout.LayoutParams fpsLayout = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        fpsLayout.setMarginStart(spacing);
-        row.addView(showFps, fpsLayout);
+        WrappingLayout startup = new WrappingLayout(this, spacing, spacing);
+        sound = option(startup, "Sound", LaunchOptions.SOUND_KEY,
+            LaunchOptions.DEFAULT_SOUND, textSize);
+        vibration = option(startup, "Vibration", LaunchOptions.VIBRATION_KEY,
+            LaunchOptions.DEFAULT_VIBRATION, textSize);
+        newMidi = option(startup, "New MIDI", LaunchOptions.NEW_MIDI_KEY,
+            LaunchOptions.DEFAULT_NEW_MIDI, textSize);
+        skipIntro = option(startup, "Skip intro", LaunchOptions.SKIP_INTRO_KEY,
+            LaunchOptions.DEFAULT_SKIP_INTRO, textSize);
+        addOptionsGroup(layout, startup);
+
+        WrappingLayout controls = settingsGroup(layout, "Controls", textSize, spacing);
+        tiltSteering = option(controls, "Tilt steering", LaunchOptions.TILT_STEERING_KEY,
+            LaunchOptions.DEFAULT_TILT_STEERING, textSize);
+        boolean tiltAvailable = TiltSteering.isAvailable(this);
+        tiltSteering.setEnabled(tiltAvailable);
+        if (!tiltAvailable) {
+            tiltSteering.setChecked(false);
+        }
+
+        WrappingLayout graphics = settingsGroup(layout, "Graphics settings", textSize, spacing);
+        showFps = option(graphics, "Show FPS", LaunchOptions.SHOW_FPS_KEY,
+            LaunchOptions.DEFAULT_SHOW_FPS, textSize);
+        showControlLayout = option(graphics, "Show Control Layout", LaunchOptions.SHOW_CONTROL_LAYOUT_KEY,
+            LaunchOptions.DEFAULT_SHOW_CONTROL_LAYOUT, textSize);
+        // Keep the label and selector as one graphics item; at large font sizes
+        // the label can move above the selector without squeezing its value.
+        WrappingLayout hyperVisionOption = new WrappingLayout(this, 0, 0);
         TextView label = new TextView(this);
         label.setText("HyperVision");
         label.setTextSize(textSize);
-        label.setSingleLine(true);
-        LinearLayout.LayoutParams labelLayout = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        labelLayout.setMarginStart(spacing);
-        row.addView(label, labelLayout);
+        hyperVisionOption.addView(label);
         hyperVision = new Spinner(this);
         hyperVision.setId(View.generateViewId());
         label.setLabelFor(hyperVision.getId());
@@ -243,14 +284,28 @@ public final class LauncherActivity extends Activity {
         hyperVision.setAdapter(adapter);
         hyperVision.setSelection(LaunchOptions.HyperVision.fromStored(
             preferences.getString(LaunchOptions.HYPERVISION_KEY, null)).ordinal());
-        row.addView(hyperVision);
-        HorizontalScrollView optionsScroll = new HorizontalScrollView(this);
-        optionsScroll.setFillViewport(true);
-        optionsScroll.addView(row, new HorizontalScrollView.LayoutParams(
-            HorizontalScrollView.LayoutParams.WRAP_CONTENT, HorizontalScrollView.LayoutParams.WRAP_CONTENT));
-        layout.addView(optionsScroll);
-        newMidi.setOnCheckedChangeListener((button, checked) -> saveOptions());
-        showFps.setOnCheckedChangeListener((button, checked) -> saveOptions());
+        hyperVisionOption.addView(hyperVision);
+        graphics.addView(hyperVisionOption);
+
+        WrappingLayout drivingRules = settingsGroup(layout, "Driving rules", textSize, spacing);
+        powerGear = option(drivingRules, "Power Gear", LaunchOptions.POWER_GEAR_KEY,
+            LaunchOptions.DEFAULT_POWER_GEAR, textSize);
+        legacyCollision = option(drivingRules, "Original Collision Bugs", LaunchOptions.LEGACY_COLLISION_KEY,
+            LaunchOptions.DEFAULT_LEGACY_COLLISION, textSize);
+        leftCornerBias = option(drivingRules, "Left Corner Bias", LaunchOptions.LEFT_CORNER_BIAS_KEY,
+            LaunchOptions.DEFAULT_LEFT_CORNER_BIAS, textSize);
+        dualWaySwitching = option(drivingRules, "Dual-Way Switching", LaunchOptions.DUAL_WAY_SWITCHING_KEY,
+            LaunchOptions.DEFAULT_DUAL_WAY_SWITCHING, textSize);
+        owoot = option(drivingRules, "OWOOT", LaunchOptions.OWOOT_KEY,
+            LaunchOptions.DEFAULT_OWOOT, textSize);
+        owoot.setContentDescription("One Wheel On / Over Track (OWOOT)");
+        amigaGrass = option(drivingRules, "Amiga Grass", LaunchOptions.AMIGA_GRASS_KEY,
+            LaunchOptions.DEFAULT_AMIGA_GRASS, textSize);
+        for (CheckBox option : new CheckBox[] {
+                sound, vibration, newMidi, skipIntro, tiltSteering, showFps, showControlLayout,
+                powerGear, legacyCollision, leftCornerBias, dualWaySwitching, owoot, amigaGrass}) {
+            option.setOnCheckedChangeListener((button, checked) -> saveOptions());
+        }
         hyperVision.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -264,23 +319,77 @@ public final class LauncherActivity extends Activity {
         });
     }
 
+    private CheckBox option(WrappingLayout group, String label, String key, boolean defaultValue,
+            int textSize) {
+        CheckBox option = new CheckBox(this);
+        option.setText(label);
+        option.setTextSize(textSize);
+        try {
+            option.setChecked(preferences.getBoolean(key, defaultValue));
+        } catch (ClassCastException error) {
+            option.setChecked(defaultValue);
+        }
+        group.addView(option);
+        return option;
+    }
+
+    private WrappingLayout settingsGroup(LinearLayout layout, String label, int textSize, int spacing) {
+        TextView title = new TextView(this);
+        title.setText(label);
+        title.setTextSize(textSize);
+        title.setGravity(Gravity.START);
+        if (Build.VERSION.SDK_INT >= 28) {
+            title.setAccessibilityHeading(true);
+        }
+        LinearLayout.LayoutParams titleLayout = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        titleLayout.topMargin = spacing;
+        layout.addView(title, titleLayout);
+        WrappingLayout group = new WrappingLayout(this, spacing, spacing);
+        addOptionsGroup(layout, group);
+        return group;
+    }
+
+    private void addOptionsGroup(LinearLayout layout, WrappingLayout group) {
+        layout.addView(group, new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+    }
+
     private LaunchOptions selectedOptions() {
-        return new LaunchOptions(newMidi.isChecked(), showFps.isChecked(),
-            (LaunchOptions.HyperVision) hyperVision.getSelectedItem());
+        return new LaunchOptions(newMidi.isChecked(), showFps.isChecked(), showControlLayout.isChecked(),
+            (LaunchOptions.HyperVision) hyperVision.getSelectedItem(), powerGear.isChecked(),
+            legacyCollision.isChecked(), leftCornerBias.isChecked(), dualWaySwitching.isChecked(),
+            owoot.isChecked(), amigaGrass.isChecked(),
+            sound.isChecked(), skipIntro.isChecked());
     }
 
     private void saveOptions() {
         LaunchOptions options = selectedOptions();
         preferences.edit().putBoolean(LaunchOptions.NEW_MIDI_KEY, options.newMidi)
+            .putBoolean(LaunchOptions.SOUND_KEY, options.sound)
+            .putBoolean(LaunchOptions.VIBRATION_KEY, vibration.isChecked())
+            .putBoolean(LaunchOptions.SKIP_INTRO_KEY, options.skipIntro)
+            .putBoolean(LaunchOptions.TILT_STEERING_KEY, tiltSteering.isEnabled() && tiltSteering.isChecked())
             .putBoolean(LaunchOptions.SHOW_FPS_KEY, options.showFps)
-            .putString(LaunchOptions.HYPERVISION_KEY, options.hyperVision.name()).apply();
+            .putBoolean(LaunchOptions.SHOW_CONTROL_LAYOUT_KEY, options.showControlLayout)
+            .putString(LaunchOptions.HYPERVISION_KEY, options.hyperVision.name())
+            .putBoolean(LaunchOptions.POWER_GEAR_KEY, options.powerGear)
+            .putBoolean(LaunchOptions.LEGACY_COLLISION_KEY, options.legacyCollision)
+            .putBoolean(LaunchOptions.LEFT_CORNER_BIAS_KEY, options.leftCornerBias)
+            .putBoolean(LaunchOptions.DUAL_WAY_SWITCHING_KEY, options.dualWaySwitching)
+            .putBoolean(LaunchOptions.OWOOT_KEY, options.owoot)
+            .putBoolean(LaunchOptions.AMIGA_GRASS_KEY, options.amigaGrass).apply();
     }
 
     private void refresh() {
         status.setText(currentStatus);
         boolean busy = importing || synchronizing || preparingAssets;
+        preparationProgress.setVisibility(busy ? View.VISIBLE : View.GONE);
         folder.setEnabled(!busy);
         zip.setEnabled(!busy);
+        if (tvFolder != null) {
+            tvFolder.setEnabled(!busy);
+        }
         zip.setText(zipReady(this) ? "Continue ZIP import" : "Import Stunts ZIP");
         folder.setText(GameDataStorage.folder(this) == null ? "Choose game folder" : "Change game folder");
         start.setEnabled(!busy && assetsReady && GameDataStorage.folder(this) != null);
@@ -298,7 +407,12 @@ public final class LauncherActivity extends Activity {
     }
 
     private void startGame() {
+        if (importing || synchronizing || preparingAssets) {
+            return;
+        }
         LaunchOptions options = selectedOptions();
+        boolean selectedVibration = vibration.isChecked();
+        boolean selectedTiltSteering = tiltSteering.isEnabled() && tiltSteering.isChecked();
         Context context = getApplicationContext();
         synchronizing = true;
         currentStatus = "Loading and validating your game folder…";
@@ -314,8 +428,19 @@ public final class LauncherActivity extends Activity {
                     if (activity != null) {
                         Intent intent = new Intent(activity, GameActivity.class);
                         intent.putExtra(LaunchOptions.NEW_MIDI_KEY, options.newMidi);
+                        intent.putExtra(LaunchOptions.SOUND_KEY, options.sound);
+                        intent.putExtra(LaunchOptions.VIBRATION_KEY, selectedVibration);
+                        intent.putExtra(LaunchOptions.SKIP_INTRO_KEY, options.skipIntro);
+                        intent.putExtra(LaunchOptions.TILT_STEERING_KEY, selectedTiltSteering);
                         intent.putExtra(LaunchOptions.SHOW_FPS_KEY, options.showFps);
+                        intent.putExtra(LaunchOptions.SHOW_CONTROL_LAYOUT_KEY, options.showControlLayout);
                         intent.putExtra(LaunchOptions.HYPERVISION_KEY, options.hyperVision.name());
+                        intent.putExtra(LaunchOptions.POWER_GEAR_KEY, options.powerGear);
+                        intent.putExtra(LaunchOptions.LEGACY_COLLISION_KEY, options.legacyCollision);
+                        intent.putExtra(LaunchOptions.LEFT_CORNER_BIAS_KEY, options.leftCornerBias);
+                        intent.putExtra(LaunchOptions.DUAL_WAY_SWITCHING_KEY, options.dualWaySwitching);
+                        intent.putExtra(LaunchOptions.OWOOT_KEY, options.owoot);
+                        intent.putExtra(LaunchOptions.AMIGA_GRASS_KEY, options.amigaGrass);
                         activity.startActivity(intent);
                     }
                 });
@@ -333,7 +458,6 @@ public final class LauncherActivity extends Activity {
     private void selectGameFolder(Intent data, boolean zipImport) {
         Context context = getApplicationContext();
         Uri selected = data.getData();
-        Uri previous = GameDataStorage.folder(context);
         int permissions = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
         if ((data.getFlags() & permissions) != permissions) {
             currentStatus = "Choose a folder that allows reading and writing game files.";
@@ -355,6 +479,18 @@ public final class LauncherActivity extends Activity {
             return;
         }
         boolean acquired = !alreadyGranted;
+        useGameFolder(selected, zipImport, acquired);
+    }
+
+    private void useGameFolder(Uri selected, boolean zipImport, boolean acquired) {
+        if (importing || synchronizing) {
+            if (acquired) {
+                releaseFolderPermission(getApplicationContext(), selected);
+            }
+            return;
+        }
+        Context context = getApplicationContext();
+        Uri previous = GameDataStorage.folder(context);
         importing = true;
         currentStatus = zipImport ? "Extracting ZIP into your selected game folder…"
             : "Loading and validating the selected game folder…";
@@ -366,7 +502,7 @@ public final class LauncherActivity extends Activity {
                         new File(context.getFilesDir(), ZIP_DIRECTORY));
                     GameDataStorage.importZip(context, selected, importer.gameDirectory());
                     context.getSharedPreferences(OPTIONS_PREFERENCES, MODE_PRIVATE).edit()
-                        .putBoolean(ZIP_READY_KEY, false).apply();
+                        .putBoolean(ZIP_READY_KEY, false).remove(ZIP_TV_KEY).apply();
                     try {
                         GameDataImport.delete(new File(context.getFilesDir(), ZIP_DIRECTORY));
                     } catch (IOException cleanup) {
@@ -378,9 +514,13 @@ public final class LauncherActivity extends Activity {
                 if (previous != null && !previous.equals(selected)) {
                     releaseFolderPermission(context, previous);
                 }
+                String message = GameDataStorage.isTvFolder(selected)
+                    ? "TV game folder: " + GameDataStorage.tvGameDirectory(context).getPath()
+                        + "\nCustom content and all saves belong in this folder."
+                    : "Game folder selected. Custom cars and all saves belong in this folder.";
                 MAIN_THREAD.post(() -> {
                     importing = false;
-                    currentStatus = "Game folder selected. Custom cars and all saves belong in this folder.";
+                    currentStatus = message;
                     refreshActive();
                 });
             } catch (IOException | RuntimeException error) {
@@ -397,6 +537,9 @@ public final class LauncherActivity extends Activity {
     }
 
     private static void releaseFolderPermission(Context context, Uri uri) {
+        if (GameDataStorage.isTvFolder(uri)) {
+            return;
+        }
         try {
             context.getContentResolver().releasePersistableUriPermission(uri,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -415,7 +558,8 @@ public final class LauncherActivity extends Activity {
             | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Uri selected = GameDataStorage.folder(this);
-            intent.putExtra(INITIAL_URI_EXTRA, selected == null ? Uri.parse(DOCUMENTS_URI) : selected);
+            intent.putExtra(INITIAL_URI_EXTRA, selected == null || GameDataStorage.isTvFolder(selected)
+                ? Uri.parse(DOCUMENTS_URI) : selected);
         }
         openPicker(intent, request,
             "No folder picker is available. Install a document picker to choose your game folder.");
@@ -444,6 +588,10 @@ public final class LauncherActivity extends Activity {
     }
 
     private void showZipDestinationDialog() {
+        if (getSharedPreferences(OPTIONS_PREFERENCES, MODE_PRIVATE).getBoolean(ZIP_TV_KEY, false)) {
+            showTvFolderDialog(true);
+            return;
+        }
         new AlertDialog.Builder(this).setTitle("Choose ZIP extraction folder")
             .setMessage("Next, select the target folder where the ZIP will be extracted.\n\n"
                 + "Create or select Documents/Chocolate Stunts, or another folder. "
@@ -465,14 +613,159 @@ public final class LauncherActivity extends Activity {
 
     private void openPicker(Intent intent, int request, String unavailableMessage) {
         try {
+            if (television) {
+                List<ResolveInfo> candidates = getPackageManager().queryIntentActivities(intent,
+                    PackageManager.MATCH_DEFAULT_ONLY);
+                ResolveInfo usable = null;
+                for (ResolveInfo candidate : candidates) {
+                    if (candidate.activityInfo == null || !candidate.activityInfo.exported
+                            || TV_PICKER_STUB_PACKAGE.equals(candidate.activityInfo.packageName)) {
+                        continue;
+                    }
+                    String permission = candidate.activityInfo.permission;
+                    if (permission == null || getPackageManager().checkPermission(permission,
+                            getPackageName()) == PackageManager.PERMISSION_GRANTED) {
+                        usable = candidate;
+                        break;
+                    }
+                }
+                if (usable == null) {
+                    showTvFallback(request);
+                    return;
+                }
+                // A TV placeholder may resolve successfully and then show its own failure toast.
+                intent.setComponent(new ComponentName(usable.activityInfo.packageName,
+                    usable.activityInfo.name));
+            }
             startActivityForResult(intent, request);
         } catch (ActivityNotFoundException error) {
-            currentStatus = unavailableMessage;
-            refresh();
+            if (television) {
+                showTvFallback(request);
+            } else {
+                currentStatus = unavailableMessage;
+                refresh();
+            }
         } catch (SecurityException error) {
-            currentStatus = "Cannot open the document picker: " + error.getMessage();
+            if (television) {
+                showTvFallback(request);
+            } else {
+                currentStatus = "Cannot open the document picker: " + error.getMessage();
+                refresh();
+            }
+        }
+    }
+
+    private static String initialStatus(Context context, boolean television) {
+        Uri selected = GameDataStorage.folder(context);
+        if ((television && selected == null) || GameDataStorage.isTvFolder(selected)) {
+            try {
+                File game = GameDataStorage.tvGameDirectory(context);
+                return "Import your Brøderbund Stunts 1.1 game files.\n"
+                    + "Copy a ZIP to: " + GameDataStorage.tvMediaDirectory(context).getPath()
+                    + "\nTV game folder: " + game.getPath()
+                    + "\nThis app-owned folder is removed when the app is uninstalled.";
+            } catch (IOException | RuntimeException error) {
+                return "The TV game folder is unavailable: " + error.getMessage();
+            }
+        }
+        return selected == null ? "Choose your Brøderbund Stunts 1.1 game folder, or import a ZIP."
+            : "Game folder remembered. Start game to load its current contents.";
+    }
+
+    private void showTvFallback(int request) {
+        if (request == REQUEST_ZIP) {
+            chooseTvZipFile();
+        } else {
+            showTvFolderDialog(request == REQUEST_ZIP_FOLDER);
+        }
+    }
+
+    private void showTvFolderDialog(boolean zipImport) {
+        if (importing || synchronizing || preparingAssets) {
+            return;
+        }
+        try {
+            File game = GameDataStorage.tvGameDirectory(this);
+            String instruction = zipImport ? "Extract the validated ZIP into this folder?"
+                : "Copy your extracted Brøderbund Stunts 1.1 files into this folder, then select it. "
+                    + "To import a ZIP, copy it to " + GameDataStorage.tvMediaDirectory(this).getPath()
+                    + " and press Choose TV ZIP.";
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this).setTitle("TV game folder")
+                .setMessage(instruction + "\n\n" + game.getPath()
+                    + "\n\nCustom content and all saves use this folder. No storage permission is needed. "
+                    + "Uninstalling the app deletes this folder; back up your files first.")
+                .setPositiveButton(zipImport ? "Extract ZIP here" : "Use this folder",
+                    (choice, selected) -> useGameFolder(GameDataStorage.tvFolder(), zipImport, false))
+                .setNegativeButton(android.R.string.cancel, null);
+            if (!zipImport) {
+                dialog.setNeutralButton("Choose TV ZIP", (choice, selected) -> chooseTvZipFile());
+            }
+            dialog.show();
+        } catch (IOException | RuntimeException error) {
+            currentStatus = "Cannot use the TV game folder: " + error.getMessage();
             refresh();
         }
+    }
+
+    private void chooseTvZipFile() {
+        if (importing || synchronizing || preparingAssets) {
+            return;
+        }
+        Context context = getApplicationContext();
+        importing = true;
+        currentStatus = "Looking for ZIP files in the TV's app media folder…";
+        refreshActive();
+        WORKER.execute(() -> {
+            try {
+                File directory = GameDataStorage.tvMediaDirectory(context);
+                File[] children = directory.listFiles();
+                if (children == null || children.length > GameDataSync.MAX_FILES) {
+                    throw new IOException("Cannot list the TV import folder, or it contains too many files.");
+                }
+                ArrayList<File> choices = new ArrayList<>();
+                for (File child : children) {
+                    if (child.isFile() && child.getName().toLowerCase(Locale.ROOT).endsWith(".zip")
+                            && directory.equals(child.getCanonicalFile().getParentFile())) {
+                        choices.add(child);
+                    }
+                }
+                File[] files = choices.toArray(new File[0]);
+                Arrays.sort(files, (left, right) -> left.getName().compareToIgnoreCase(right.getName()));
+                MAIN_THREAD.post(() -> {
+                    importing = false;
+                    currentStatus = "Copy your Stunts 1.1 ZIP to: " + directory.getPath()
+                        + "\nChoose Import Stunts ZIP again after copying it.";
+                    refreshActive();
+                    LauncherActivity activity = active.get();
+                    if (activity != null) {
+                        activity.showTvZipFiles(directory, files);
+                    }
+                });
+            } catch (IOException | RuntimeException error) {
+                MAIN_THREAD.post(() -> {
+                    importing = false;
+                    currentStatus = "Cannot read the TV import folder: " + error.getMessage();
+                    refreshActive();
+                });
+            }
+        });
+    }
+
+    private void showTvZipFiles(File directory, File[] files) {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this).setTitle("Import TV game ZIP");
+        if (files.length == 0) {
+            dialog.setMessage("Copy your Brøderbund Stunts 1.1 ZIP into this folder, then choose "
+                + "Import Stunts ZIP again:\n\n" + directory.getPath())
+                .setPositiveButton(android.R.string.ok, null);
+        } else {
+            String[] names = new String[files.length];
+            for (int index = 0; index < files.length; index++) {
+                names[index] = files[index].getName();
+            }
+            dialog.setItems(names, (choice, selected) -> readGameZip(Uri.fromFile(files[selected]), false, true))
+                .setNegativeButton(android.R.string.cancel, null);
+        }
+        dialog.show();
     }
 
     /** Return true only for a grant acquired by this job, which it must release. */
@@ -520,6 +813,17 @@ public final class LauncherActivity extends Activity {
         Uri uri = data.getData();
         Context context = getApplicationContext();
         boolean retainedGrant = retainReadPermission(context, uri, data.getFlags());
+        readGameZip(uri, retainedGrant, false);
+    }
+
+    private void readGameZip(Uri uri, boolean retainedGrant, boolean tvImport) {
+        Context context = getApplicationContext();
+        if (importing || synchronizing) {
+            if (retainedGrant) {
+                releaseReadPermission(context, uri);
+            }
+            return;
+        }
         importing = true;
         currentStatus = "Reading and validating game ZIP…";
         refreshActive();
@@ -533,17 +837,20 @@ public final class LauncherActivity extends Activity {
                 File staging = new File(context.getFilesDir(), ZIP_DIRECTORY);
                 GameDataImport.prepare(staging);
                 GameDataImport importer = new GameDataImport(staging);
-                try (InputStream input = context.getContentResolver().openInputStream(uri)) {
+                try (InputStream input = tvImport
+                        ? GameDataStorage.openTvZip(context, new File(uri.getPath()))
+                        : context.getContentResolver().openInputStream(uri)) {
                     importer.readZip(input);
                 }
                 importer.gameDirectory();
-                if (!importPreferences.edit().putBoolean(ZIP_READY_KEY, true).commit()) {
+                if (!importPreferences.edit().putBoolean(ZIP_READY_KEY, true)
+                        .putBoolean(ZIP_TV_KEY, tvImport).commit()) {
                     throw new IOException("Cannot remember the ZIP import state.");
                 }
                 MAIN_THREAD.post(() -> {
                     importing = false;
-                    currentStatus = "ZIP validated. Create or select Documents/Chocolate Stunts "
-                        + "as its game folder.";
+                    currentStatus = tvImport ? "ZIP validated. Choose the TV game folder for extraction."
+                        : "ZIP validated. Create or select Documents/Chocolate Stunts as its game folder.";
                     refreshActive();
                     LauncherActivity activity = active.get();
                     if (activity != null) {

@@ -10,10 +10,15 @@ ARMv7 APK. Android 4.x is below the supported SDL3/native-toolchain minimum.
 
 ## Game files
 
-The APK does not contain original Stunts game data. Use **Choose game folder**
-to select the folder containing your Brøderbund Stunts 1.1 (12 Feb. 1991) game
-files. This is the single visible folder for original resources, custom cars,
-opponents, graphics, tracks, replays, high scores and any other game files.
+The APK does not contain original Stunts game data. On phones and TVs with a
+working system document picker, use **Choose game folder** to select your
+Brøderbund Stunts 1.1 (12 Feb. 1991) game files. TVs without a working picker can
+use the app's TV game folder, described below. The selected folder holds original
+resources, custom cars, opponents, graphics, tracks, replays, high scores and any
+other game files.
+Car resources may be placed directly in the game folder or in its `cars/`
+subfolder. The bundled Tesla Roadster and McMurtry cars load automatically from
+the app's private `cars/` folder alongside its music and skyboxes.
 The choice is remembered. Copy custom content into this folder with a file
 manager, then press **Start game** again to load it.
 
@@ -38,11 +43,12 @@ are not compared, so custom content remains supported. Validation also runs
 before every start; bad or missing data does not replace the last working cache.
 The game reports other missing resources during loading.
 
-No network or broad storage permission is declared. Access follows the
+No network or broad storage permission is declared. With a system document
+picker, access follows the
 [Android Storage Access Framework](https://developer.android.com/training/data-storage/shared/documents-files),
-using the system picker's grant for one folder. Prefer a normal shared folder
-such as Documents rather than `Android/data`, which newer Android versions
-restrict. The document provider must support creating, renaming and deleting
+using its grant for one folder. The TV fallback also needs no storage permission.
+For system picker selection, prefer a normal shared folder such as Documents
+rather than `Android/data`, which newer Android versions restrict. The document provider must support creating, renaming and deleting
 files so failed replacements can preserve previous data. Game content is limited
 to 4096 files/subfolders and 256 MiB in total, including custom videos.
 
@@ -59,25 +65,66 @@ immediately. Failed copies retain a durable pending copy outside the replaceable
 cache and show an explanation; **Start game** retries them before refreshing.
 If the shared file was also edited, the app preserves both versions and reports
 the conflict. Rename the shared version to keep it, then retry to publish the
-pending game write under its original name. Files in the chosen folder survive
-app uninstallation; after reinstalling, choose that same game folder. Private
-preferences, cached data and unexported pending writes are removed by clearing
-app storage or uninstalling.
+pending game write under its original name. Files in a folder chosen through
+the system picker survive app uninstallation; after reinstalling, choose that
+same game folder. The app-owned TV fallback folder is deleted on uninstall;
+back it up first. Private preferences, cached data and unexported pending writes
+are removed by clearing app storage or uninstalling.
 
-The options row above **Start game** contains **New MIDI** for replacement
-music, **Show FPS** for the FPS/render-time display, and **HyperVision** with
-**Off**, **Auto**, **Full**, **High**, **Medium**, and **Low** presets. Start game
-applies all three selections; they are remembered for later launches. The
-defaults use original AdLib music, hide FPS, and leave HyperVision off.
+Above **Start game**, **Sound** enables music and sound effects, **Vibration**
+enables phone and controller feedback for impact sounds, **New MIDI** selects
+replacement music, and **Skip intro** opens the game without the startup intro. Sound and Vibration
+start enabled and Skip intro starts disabled. These choices are
+remembered; disabling Sound passes `/ns`, and selecting Skip intro passes
+`--nointro`. **Controls** contains the saved **Tilt steering** checkbox. The separate
+**Graphics settings** group contains **Show FPS** for the FPS/render-time display,
+**Show Control Layout** for the touch circles, and finally the **HyperVision**
+selector with **Off**, **Auto**, **Full**, **High**, **Medium**, and **Low** presets.
+Directly below it, **Driving rules** groups **Power Gear**, **Original Collision
+Bugs**, **Left Corner Bias**, **Dual-Way Switching**, **OWOOT**, and **Amiga Grass**. Each settings group
+places its controls side by side and wraps onto additional rows on smaller
+screens, keeping every option visible without horizontal scrolling. The
+HyperVision label and selector stay grouped; the label moves above the selector
+when needed. Start game applies all selections and remembers them for later
+launches. Defaults use original AdLib music, hide FPS, keep **Show Control Layout**
+checked, and leave HyperVision off. The first four
+driving rules default to enabled; OWOOT and Amiga Grass default to disabled.
+**Dual-Way Switching** passes `--dws:on` when checked; uncheck it for
+`--dws:off` to fix penalty calculation for shortcuts between split-track branches.
+**Amiga Grass** uses the original Amiga grass grip for stock cars. Use the same
+driving rules that were selected when generating a ghost or recording a replay.
+
+Custom car capabilities are declared by each car's resources and activate
+automatically. For example, a car with the `fand=1` resource uses surface adhesion
+at zero speed on loops and vertical roads. Cars without this flag retain their
+original driving behavior.
 
 ## Touch controls
 
-With **Keyboard** input selected in Options, transparent circles appear at the
-screen edges. The circles are hidden throughout the intro; tap the screen to
-skip it. Left/right steer; upper/lower right accelerate/brake. They support
-simultaneous held touches. Moving outside a circle releases that control.
-The steering cluster has no inset from the usable left edge; display cutouts
-and system bars are respected.
+With **Show Control Layout** checked in the launcher and **Keyboard** input
+selected in Options, transparent circles appear near the screen edges. Unchecking
+**Show Control Layout** hides the circles; direct touch on menus, car/opponent
+choices and replay controls, including the timeline and swipe seeking, remains
+available.
+The circles are hidden throughout the intro; tap the screen to skip it.
+Left/right steer; upper/lower right accelerate/brake. They support simultaneous
+held touches. Moving outside a circle releases that control. Circles keep at
+least 10 pixels from the usable screen edges; display cutouts and system bars
+are respected.
+
+With **Vibration** enabled, the player's suspension bump, wall scrape, and crash
+sounds produce a short 40 ms phone vibration during racing and replay playback.
+This includes slow wall contacts that make a sound without crashing, and crashes
+into the opponent, walls, or solid scenery. Existing sounds are preserved: silent
+car-to-car contact stays silent and does not vibrate. Soft landings, impacts affecting only the opponent,
+disabled sound effects, paused replays, and timeline seeking do not vibrate. Devices
+without a vibrator skip the effect. Vibration stops when the app loses focus.
+
+A connected controller also gives a 40 ms rumble for these same sounds when it
+was the last input used. Keyboard, mouse, touch, or tilt input stops controller
+feedback until the controller is used again. Controllers without rumble support
+skip the effect. The **Vibration** option enables both phone and controller
+feedback; phone vibration remains available when using a controller.
 
 During a live race, bottom-left **Q** holds the existing rewind function. **Shift
 up/down** appear above/below steering only with manual gears selected. Each tap
@@ -96,13 +143,66 @@ Seeking pauses playback. Text fields open the Android software keyboard.
 Text-entry dialogs appear at the top so names and paths remain visible while
 editing highscore names, track/replay filenames, or file-picker directories.
 
+## Tilt steering
+
+Enable **Controls → Tilt steering** before starting to steer by tilting your
+phone, tablet or handheld console. The game runs in landscape: lower the left
+edge to steer left and the right edge to steer right. Both landscape rotations
+work.
+A 4-degree deadzone keeps small movements neutral; steering increases gradually
+until full steering at 30 degrees. Use touch controls or a gamepad for the
+accelerator and brake.
+
+Tilt steering starts **off on every device**. Devices with a gravity sensor or
+accelerometer can opt in with the checkbox. Devices without either sensor
+show a disabled, unchecked option. The choice is remembered, so an earlier
+saved selection takes precedence over the default. Sensor input stops and
+steering returns to neutral when the app is suspended, loses focus or closes.
+
 ## Android TV
 
 Both APKs declare touchscreen support optional and provide a TV launcher entry,
 icon and banner, following [Android TV setup](https://developer.android.com/training/tv/start/start).
-Use the APK matching the TV's Android ABI. Import still uses Android's document
-picker; install a compatible document picker if the TV does not provide one.
-An unavailable picker displays an explanation instead of crashing.
+Use the APK matching the TV's Android ABI. TVs with 32-bit ARM Android need the
+ARMv7 APK, including TVs whose processors also support 64-bit instructions.
+
+With a working document picker, folder selection and ZIP import use the normal
+flow described above. If the picker is missing or opens a broken TV screen,
+choose **Use TV game folder**. Its **Choose TV ZIP** action opens the local ZIP
+list directly, bypassing the system picker. The app also offers the fallback
+when it detects an unavailable picker. The dialog shows the actual folder paths
+for that TV; use those paths because storage locations can differ between devices.
+
+Open the app before transferring files so it can create its TV media folder.
+A typical location for a source ZIP is
+`/sdcard/Android/media/org.restunts.android/Stunts11.zip`. Transfer it with a
+file manager or ADB, then choose **Use TV game folder**, **Choose TV ZIP**, and
+select it from the list. After validation, confirm **Extract ZIP here**. The
+source ZIP is retained in the media folder. Extracted game files go in its
+`ChocolateStunts` subfolder, typically
+`/sdcard/Android/media/org.restunts.android/ChocolateStunts`.
+You can also copy an already extracted game into that subfolder and confirm
+**Use this folder** through **Use TV game folder**.
+
+Original resources, custom cars and other custom content all belong in
+`ChocolateStunts`. Tracks, replays, high scores and screenshots are copied back
+there during play. Add or update custom files with a file manager or ADB, then
+press **Start game** to refresh them. For example, using the typical paths:
+
+```sh
+adb push Stunts11.zip /sdcard/Android/media/org.restunts.android/Stunts11.zip
+adb push CUSTOM.TRK /sdcard/Android/media/org.restunts.android/ChocolateStunts/CUSTOM.TRK
+adb pull /sdcard/Android/media/org.restunts.android/ChocolateStunts ./ChocolateStunts-backup
+```
+
+This fallback reads and writes only the app's own media folder and requests no
+storage or network permissions. Android deletes this
+[app-owned media folder on uninstall](https://developer.android.com/reference/android/content/Context#getExternalMediaDirs()),
+including the source ZIP, original game files, custom content and saved games.
+Keep a backup outside it before uninstalling. Install updates with
+`adb install -r PATH_TO_APK` using the same signing key to retain app data and the
+TV game folder. If an update reports a different signing certificate, back up
+the game folder before removing the old app.
 
 Use an external keyboard or compatible controller for racing. The TV remote
 navigates the import screen with its D-pad and center/select; Back leaves it.
@@ -110,14 +210,48 @@ In the game, basic remotes send arrows, Enter and Escape, and stay separate
 from the racing joystick. This uses SDL's
 [remote keyboard input setting](https://wiki.libsdl.org/SDL3/SDL_HINT_TV_REMOTE_AS_JOYSTICK).
 
+TV remote color buttons use these gamepad face-button actions:
+
+| Remote button | Gamepad button | Game action |
+| --- | --- | --- |
+| Green | A | Enter: confirm |
+| Red | B | Escape |
+| Blue | X | D: show or hide the dashboard |
+| Yellow | Y | T: switch player/opponent view |
+
+Green also confirms and red goes back in the launcher. Each press sends one
+action; holding a color button does not repeat it. These mappings depend on
+TV firmware delivering Android's standard `KEYCODE_PROG_*` events to the app.
+
+TV remote number and channel buttons use these shortcuts in the game:
+
+| Remote button | Keyboard key | Game action |
+| --- | --- | --- |
+| 1 | T | Switch player/opponent view |
+| 2 | C | Cycle camera |
+| 3 | D | Show or hide the dashboard |
+| 4 | R | Show or hide the replay bar |
+| 5 | Q | Hold rewind until the button is released |
+| Channel Up | A | Shift up |
+| Channel Down | Z | Shift down |
+
+Buttons 1-4 send one command per tap. Channel Up/Down each queue one gear-change
+request per tap, equivalent to A/Z; holding these buttons does not repeat them.
+Button 5 keeps Q held until release. Number shortcuts apply only to
+physical devices classified as TV remotes; full keyboards retain normal
+digits. Number buttons also retain their digits while entering names or
+filenames. Channel mappings require the TV firmware to deliver its standard
+channel-button events to the app.
+
 An external keyboard works with **Keyboard** selected: arrows drive, A/Z shift,
-Q rewinds, Enter selects and Escape leaves racing/replay. For a controller,
-select **Joystick** and calibrate in Options. The existing joystick controls
-use the left stick X/Y axes for steering and acceleration/braking and the
-first two buttons for shifting. This port does not yet map an opened Android
-gamepad's D-pad buttons or shoulder/trigger controls. A separate TV remote or
-keyboard can continue to navigate menus. Remote-only racing is not a supported
-setup; controller guidance follows
+Q rewinds, Enter selects and Escape leaves racing/replay. Recognized gamepads
+use SDL's standard controller mappings automatically, alongside keyboard input.
+The right stick steers, accelerates and brakes; the left stick adjusts the F3
+camera. The D-pad navigates menus and replay controls. While racing, D-pad
+up/down shifts and D-pad left holds Q. A/Cross confirms; B/Circle or either
+bumper sends Escape. Menu/Options opens the race or replay menu. See the full
+[SDL3 controller bindings](sdl3.md) for the remaining buttons and steering rules.
+Remote-only racing is not a supported setup; controller guidance follows
 [Android TV controller requirements](https://developer.android.com/training/tv/get-started/controllers).
 
 ## Build
@@ -181,27 +315,29 @@ or package archives.
 
 PR validation and Release both call the shared package workflow. Its Android
 matrix builds `android-armv7` and `android-arm64` independently and uploads
-`packages-android-armv7` and `packages-android-arm64`. Each artifact contains
-`restunts-android-<cpu>.zip` and its SHA-256 sidecar. The ZIP includes the
-installable `bin/restunts.apk`, these instructions, dependency licenses, and
+`packages-android-armv7` and `packages-android-arm64`. Both jobs build and verify
+the game and the Android ghost generator for their selected ABI. Each artifact
+contains `restunts-android-<cpu>.zip` and its SHA-256 sidecar. The ZIP includes the
+installable `bin/restunts.apk` and `bin/genghost.apk`, these instructions,
+[generator instructions](genghost-android.md), dependency licenses, and
 the exact Nuked OPL2 library sources/build settings. Release verifies and
 attests both archives with the other platform packages before publishing.
 Original Stunts data is never downloaded by the Android build or bundled.
 
 Each job tests the folder/ZIP importer, version validation, launcher options and
-complete-folder synchronization, checks the APK signature and 16 KB alignment,
+complete-folder synchronization, checks both APKs' signatures and 16 KB alignment,
 verifies each target's minimum SDK (21 for both ARMv7 and ARM64) and common target
-SDK, and checks that all native libraries match the selected ABI. Package
+SDK, and checks that all native binaries match the selected ABI. Package
 verification also checks required enhancement assets/licenses and rejects embedded
 original game resources. CI builds do
 not replace installation, performance, audio, controller, or lifecycle testing
-on a real Galaxy S5, phone, or TV. Both APKs include a classic launcher
+on a real Galaxy S5, phone, or TV. Both game APKs include a classic launcher
 icon for Android 5-7 and a JAR/v1 signature for pre-Android 7 installation;
 newer systems can use their adaptive icons and newer signature schemes.
 
-The manually dispatched Release workflow builds both APKs as non-debuggable
-release variants using the project's persistent release signing key. Configure
-GitHub Actions secrets `ANDROID_KEYSTORE_BASE64` (the base64-encoded keystore),
+The manually dispatched Release workflow builds both apps for both ABIs as
+non-debuggable release variants using the project's persistent release signing key.
+Configure GitHub Actions secrets `ANDROID_KEYSTORE_BASE64` (the base64-encoded keystore),
 `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`.
 Release forwards only these signing secrets to the shared package workflow.
 PR validation and local builds use debug variants by default and need no release
@@ -213,9 +349,10 @@ not uploaded as artifacts.
 Android updates require the same signing key. Debug keys from separate CI runs,
 local builds, or an existing debug installation can differ from the release key,
 so Android may require uninstalling the old app before installing another build.
-Uninstalling removes private preferences, cache and unexported pending writes;
-the selected public game folder and its files survive. Choose that folder again
-after reinstalling.
+Uninstalling removes private preferences, cache and unexported pending writes.
+A public game folder selected through the system picker survives; choose it
+again after reinstalling. The app-owned TV fallback media folder is deleted,
+so copy its game files and saved games elsewhere before uninstalling.
 
 ## Replacing Nuked OPL2
 
@@ -231,22 +368,26 @@ app before installing the replacement. No game executable relinking is needed.
 
 ## Verification
 
-The importer, version validation, launcher options and folder synchronization
-can be tested without Android:
+The importer, version validation, launcher options, tilt steering math/default
+policy, folder synchronization and local TV folder can be tested without Android:
 
 ```sh
 javac -d out/android-import-tests \
     android/app/src/main/java/org/restunts/android/GameDataImport.java \
     android/app/src/main/java/org/restunts/android/GameDataVersion.java \
     android/app/src/main/java/org/restunts/android/LaunchOptions.java \
+    android/app/src/main/java/org/restunts/android/TiltSteeringMath.java \
     android/app/src/main/java/org/restunts/android/GameDataSync.java \
+    android/app/src/main/java/org/restunts/android/LocalGameFolder.java \
     android/tests/GameDataImportTest.java android/tests/GameDataVersionTest.java \
-    android/tests/LaunchOptionsTest.java \
-    android/tests/GameDataSyncTest.java
+    android/tests/LaunchOptionsTest.java android/tests/TiltSteeringTest.java \
+    android/tests/GameDataSyncTest.java android/tests/LocalGameFolderTest.java
 java -cp out/android-import-tests org.restunts.android.GameDataImportTest
 java -cp out/android-import-tests org.restunts.android.GameDataVersionTest
 java -cp out/android-import-tests org.restunts.android.LaunchOptionsTest
+java -cp out/android-import-tests org.restunts.android.TiltSteeringTest
 java -cp out/android-import-tests org.restunts.android.GameDataSyncTest
+java -cp out/android-import-tests org.restunts.android.LocalGameFolderTest
 ```
 
 Host CTest covers touch geometry, visibility, simultaneous holds, cancellation,

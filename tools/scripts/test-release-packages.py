@@ -44,6 +44,12 @@ class ReleasePackageTests(unittest.TestCase):
         self.root = Path(self.temporary.name)
         self.output = self.root / "archives"
 
+    def copy_car_sources(self, source):
+        for name in PACKAGES.CUSTOM_CAR_FILES:
+            path = source / "assets/cars" / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes((PACKAGES.ROOT / "assets/cars" / name).read_bytes())
+
     def elf_data(self, elf_class, machine, shared=False):
         header = bytearray(PACKAGES.ELF_HEADER_SIZES[elf_class])
         header[:len(PACKAGES.ELF_MAGIC)] = PACKAGES.ELF_MAGIC
@@ -57,7 +63,7 @@ class ReleasePackageTests(unittest.TestCase):
     def apk_data(self, target, replacements=None, missing=()):
         abi = PACKAGES.ANDROID_TARGETS[target]
         elf_class, machine = PACKAGES.ELF_ARCHITECTURES[target.split("-")[1]]
-        files = {name: FILE_DATA for name in
+        files = {name: self.runtime_data(target, name) for name in
                  PACKAGES.android_required_assets() | PACKAGES.android_required_resources(target)}
         files |= {"AndroidManifest.xml": FILE_DATA, "classes.dex": FILE_DATA,
                   "classes2.dex": FILE_DATA, "resources.arsc": FILE_DATA}
@@ -72,9 +78,59 @@ class ReleasePackageTests(unittest.TestCase):
                 apk.writestr(name, content)
         return output.getvalue()
 
+    def pie_data(self, target, interpreter=None):
+        elf_class, machine = PACKAGES.ELF_ARCHITECTURES[target.split("-")[1]]
+        header = bytearray(self.elf_data(elf_class, machine, shared=True)[
+                           :PACKAGES.ELF_HEADER_SIZES[elf_class]])
+        word = "<I" if elf_class == PACKAGES.ELF_CLASS_32 else "<Q"
+        phsize = 32 if elf_class == PACKAGES.ELF_CLASS_32 else 56
+        interpreter = interpreter or (b"/system/bin/linker\0" if elf_class == PACKAGES.ELF_CLASS_32
+                                      else b"/system/bin/linker64\0")
+        struct.pack_into(word, header, 24, 4096)
+        struct.pack_into(word, header, 28 if elf_class == PACKAGES.ELF_CLASS_32 else 32, len(header))
+        struct.pack_into("<HH", header, 42 if elf_class == PACKAGES.ELF_CLASS_32 else 54, phsize, 1)
+        program = bytearray(phsize)
+        struct.pack_into("<I", program, 0, 3)  # PT_INTERP
+        struct.pack_into(word, program, 4 if elf_class == PACKAGES.ELF_CLASS_32 else 8,
+                         len(header) + phsize)
+        struct.pack_into(word, program, 16 if elf_class == PACKAGES.ELF_CLASS_32 else 32,
+                         len(interpreter))
+        return bytes(header + program) + interpreter
+
+    def genghost_apk_data(self, target, replacements=None, missing=()):
+        abi = PACKAGES.ANDROID_TARGETS[target]
+        files = {name: self.runtime_data(target, name) for name in
+                 PACKAGES.ANDROID_GENGHOST_ASSETS | PACKAGES.ANDROID_GENGHOST_RESOURCES |
+                 PACKAGES.custom_car_files("assets/cars")}
+        files |= {"AndroidManifest.xml": FILE_DATA, "classes.dex": FILE_DATA,
+                  "classes2.dex": FILE_DATA, "classes3.dex": FILE_DATA, "resources.arsc": FILE_DATA,
+                  f"lib/{abi}/libgenghost_exec.so": self.pie_data(target)}
+        files.update(replacements or {})
+        for name in missing:
+            files.pop(name)
+        output = io.BytesIO()
+        with zipfile.ZipFile(output, "w") as apk:
+            for name, content in files.items():
+                apk.writestr(name, content)
+        return output.getvalue()
+
     def runtime_data(self, target, name):
+        car_source = PACKAGES.custom_car_source(name)
+        if car_source is not None:
+            return car_source.read_bytes()
         if target in PACKAGES.ANDROID_TARGETS and name == PACKAGES.ANDROID_APK:
             return self.apk_data(target)
+        if target in PACKAGES.ANDROID_TARGETS and name == PACKAGES.ANDROID_GENGHOST_APK:
+            return self.genghost_apk_data(target)
+        if target in PACKAGES.APPIMAGE_TARGETS:
+            elf_class, machine = PACKAGES.ELF_ARCHITECTURES[PACKAGES.APPIMAGE_TARGETS[target]]
+            if name == PACKAGES.APPIMAGE:
+                content = bytearray(self.elf_data(elf_class, machine))
+                offset = PACKAGES.APPIMAGE_MAGIC_OFFSET
+                content[offset:offset + len(PACKAGES.APPIMAGE_MAGIC)] = PACKAGES.APPIMAGE_MAGIC
+                return bytes(content)
+            if name in PACKAGES.ELF_FILES:
+                return self.elf_data(elf_class, machine)
         if target not in ELF_TARGETS or name not in PACKAGES.ELF_FILES:
             return FILE_DATA
         elf_class, machine = PACKAGES.ELF_ARCHITECTURES[target.split("-")[1]]
@@ -86,7 +142,8 @@ class ReleasePackageTests(unittest.TestCase):
             path = runtime / name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(self.runtime_data(target, name))
-            if name in {"bin/restunts", "bin/repldump", "bin/pixldump", "run-restunts.sh"}:
+            if name in {f"bin/{executable}" for executable in PACKAGES.NATIVE_EXECUTABLES} | {
+                    "run-restunts.sh", PACKAGES.APPIMAGE}:
                 path.chmod(PACKAGES.EXECUTABLE_MODE)
         for name, content in (asset_data or {}).items():
             path = runtime / name
@@ -115,6 +172,70 @@ class ReleasePackageTests(unittest.TestCase):
         self.assertTrue(modes["bin/restunts"] & stat.S_IXUSR)
         self.assertEqual(files["bin/restunts"], FILE_DATA)
 
+    def test_custom_cars_survive_every_archive_and_both_android_apks(self):
+        for target in PACKAGES.TARGETS:
+            with self.subTest(target=target):
+                archive = self.create(target)
+                files, _ = PACKAGES.archive_contents(archive)
+                if target in PACKAGES.ANDROID_TARGETS:
+                    collections = []
+                    for apk_name in (PACKAGES.ANDROID_APK, PACKAGES.ANDROID_GENGHOST_APK):
+                        with zipfile.ZipFile(io.BytesIO(files[apk_name])) as apk:
+                            collections.append({name: apk.read(name) for name in apk.namelist()})
+                    directory = "assets/cars"
+                else:
+                    collections = [files]
+                    directory = "cars" if target == "dos16" else "bin/cars"
+                    if target == "browser":
+                        directory = "share/restunts/wasm-relink/data/assets/cars"
+                for contents in collections:
+                    packaged = {name for name in contents if name.startswith(directory + "/")}
+                    self.assertEqual(packaged, PACKAGES.custom_car_files(directory))
+                    for name in packaged:
+                        expected = PACKAGES.custom_car_source(name).read_bytes()
+                        self.assertEqual(contents[name], expected)
+                        self.assertEqual(PACKAGES.sha256(contents[name]), PACKAGES.sha256(expected))
+
+    def test_custom_car_sources_are_required_and_cannot_be_substituted(self):
+        for target in PACKAGES.TARGETS:
+            if target in PACKAGES.ANDROID_TARGETS:
+                continue
+            files = {name: self.runtime_data(target, name) for name in PACKAGES.required_files(target)}
+            modes = {name: PACKAGES.EXECUTABLE_MODE for name in files}
+            for name in files:
+                if PACKAGES.custom_car_source(name) is None:
+                    continue
+                with self.subTest(target=target, missing=name), \
+                        self.assertRaisesRegex(ValueError, "missing packaged files"):
+                    PACKAGES.validate_contents(target, {key: data for key, data in files.items()
+                                                        if key != name}, modes)
+                with self.subTest(target=target, replaced=name), \
+                        self.assertRaisesRegex(ValueError, "Custom car resource differs from source"):
+                    PACKAGES.validate_contents(target, {**files, name: FILE_DATA}, modes)
+        for target in PACKAGES.ANDROID_TARGETS:
+            for make_apk, validate in ((self.apk_data, PACKAGES.validate_android_apk),
+                                       (self.genghost_apk_data, PACKAGES.validate_android_genghost_apk)):
+                for name in PACKAGES.custom_car_files("assets/cars"):
+                    with self.subTest(target=target, apk=make_apk.__name__, missing=name), \
+                            self.assertRaisesRegex(ValueError, "missing.*APK members"):
+                        validate(target, make_apk(target, missing=(name,)))
+                    with self.subTest(target=target, apk=make_apk.__name__, replaced=name), \
+                            self.assertRaisesRegex(ValueError, "Custom car resource differs from source"):
+                        validate(target, make_apk(target, {name: FILE_DATA}))
+
+    def test_custom_car_exception_allows_only_distributed_names_and_directories(self):
+        for directory in PACKAGES.CUSTOM_CAR_DIRECTORIES:
+            for name in PACKAGES.CUSTOM_CAR_FILES:
+                self.assertEqual(PACKAGES.checked_path(f"{directory}/{name}").name, name)
+            for name in ("MISC.RES", "STCOUN.3SH", "STDACOUN.VSH", "CARTERR.res", "CARMCMU.PVS"):
+                with self.subTest(directory=directory, name=name), \
+                        self.assertRaisesRegex(ValueError, "Original game content"):
+                    PACKAGES.checked_path(f"{directory}/{name}")
+        for directory in ("", "bin", "assets", "cars/nested", "other/cars"):
+            name = f"{directory}/CARTERR.RES" if directory else "CARTERR.RES"
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, "Original game content"):
+                PACKAGES.checked_path(name)
+
     def test_missing_target_and_unexpected_release_asset_are_rejected(self):
         self.create("dos16")
         arguments = argparse.Namespace(directory=self.output, commit=COMMIT, all=True,
@@ -124,6 +245,46 @@ class ReleasePackageTests(unittest.TestCase):
         (self.output / "injected.exe").write_bytes(FILE_DATA)
         with self.assertRaisesRegex(ValueError, "injected.exe"):
             PACKAGES.verify_directory(arguments)
+
+    def test_appimage_archive_retains_complete_runtime_and_rebuild_kit(self):
+        for target, architecture in PACKAGES.APPIMAGE_TARGETS.items():
+            with self.subTest(target=target):
+                archive = self.create(target)
+                files, modes = PACKAGES.archive_contents(archive)
+                self.assertEqual(set(files) - {PACKAGES.MANIFEST},
+                                 PACKAGES.required_files(f"linux-{architecture}") | {PACKAGES.APPIMAGE})
+                self.assertEqual(files[PACKAGES.APPIMAGE], self.runtime_data(target, PACKAGES.APPIMAGE))
+                self.assertTrue(modes[PACKAGES.APPIMAGE] & stat.S_IXUSR)
+                instructions = files[PACKAGES.README].decode("utf-8")
+                self.assertIn("bin/restunts.AppImage --data-dir", instructions)
+                self.assertIn("--appimage-extract", instructions)
+                self.assertIn("Ubuntu 10.04 (glibc 2.11)", instructions)
+                if target.endswith("-no-sse2"):
+                    self.assertIn("without SSE2", instructions)
+
+    def test_appimage_requires_native_architecture_type2_magic_and_execute_permission(self):
+        for target, architecture in PACKAGES.APPIMAGE_TARGETS.items():
+            with self.subTest(target=target):
+                elf_class, machine = PACKAGES.ELF_ARCHITECTURES[architecture]
+                files = {name: self.runtime_data(target, name) for name in PACKAGES.required_files(target)}
+                modes = {name: PACKAGES.EXECUTABLE_MODE for name in files}
+                PACKAGES.validate_contents(target, files, modes)
+                with self.assertRaisesRegex(ValueError, "missing packaged files.*restunts.AppImage"):
+                    PACKAGES.validate_contents(target, {name: data for name, data in files.items()
+                                                       if name != PACKAGES.APPIMAGE}, modes)
+                with self.assertRaisesRegex(ValueError, "Missing executable permission.*restunts.AppImage"):
+                    PACKAGES.validate_contents(target, files, {**modes, PACKAGES.APPIMAGE: PACKAGES.FILE_MODE})
+                wrong_magic = bytearray(files[PACKAGES.APPIMAGE])
+                wrong_magic[PACKAGES.APPIMAGE_MAGIC_OFFSET + 2] = 1
+                with self.assertRaisesRegex(ValueError, "Type-2 AppImage"):
+                    PACKAGES.validate_contents(target, {**files, PACKAGES.APPIMAGE: wrong_magic}, modes)
+                wrong_architecture = (PACKAGES.ELF_CLASS_32, PACKAGES.ELF_MACHINE_X86) if \
+                    elf_class == PACKAGES.ELF_CLASS_64 else (PACKAGES.ELF_CLASS_64, PACKAGES.ELF_MACHINE_X64)
+                for name in PACKAGES.ELF_FILES | {PACKAGES.APPIMAGE}:
+                    for content in (FILE_DATA, self.elf_data(*wrong_architecture),
+                                    self.elf_data(elf_class, PACKAGES.ELF_MACHINE_AARCH64)):
+                        with self.subTest(name=name, content=content), self.assertRaisesRegex(ValueError, "ELF"):
+                            PACKAGES.validate_contents(target, {**files, name: content}, modes)
 
     def test_elf_archives_include_native_runtime_and_platform_instructions(self):
         for target, platform in ELF_TARGETS.items():
@@ -158,6 +319,33 @@ class ReleasePackageTests(unittest.TestCase):
                 with self.subTest(target=target, executable=executable), \
                         self.assertRaisesRegex(ValueError, f"Missing executable permission: {name}"):
                     PACKAGES.validate_contents(target, files, {**modes, name: PACKAGES.FILE_MODE})
+
+    def test_genghost_uses_desktop_executables_and_android_apks(self):
+        for target in PACKAGES.TARGETS:
+            with self.subTest(target=target):
+                files = PACKAGES.required_files(target)
+                if target.startswith("dos") or target == "browser":
+                    self.assertFalse(any("genghost" in name for name in files))
+                elif target in PACKAGES.ANDROID_TARGETS:
+                    self.assertIn(PACKAGES.ANDROID_GENGHOST_APK, files)
+                    self.assertIn("share/docs/restunts/genghost.md", files)
+                    self.assertIn("share/docs/restunts/genghost-android.md", files)
+                    self.assertNotIn("bin/genghost", files)
+                    self.assertNotIn("bin/genghost.exe", files)
+                else:
+                    generator = "bin/genghost.exe" if target.startswith("windows") else "bin/genghost"
+                    self.assertIn(generator, files)
+                    self.assertIn("share/docs/restunts/genghost.md", files)
+                    self.assertIn(generator, PACKAGES.readme(target, COMMIT).decode("utf-8"))
+
+    def test_desktop_packages_require_genghost_and_its_guide(self):
+        files = {name: self.runtime_data("windows-x64", name) for name in PACKAGES.required_files("windows-x64")}
+        modes = {name: PACKAGES.FILE_MODE for name in files}
+        for missing in ("bin/genghost.exe", "share/docs/restunts/genghost.md"):
+            incomplete = files.copy()
+            incomplete.pop(missing)
+            with self.subTest(missing=missing), self.assertRaisesRegex(ValueError, "missing packaged"):
+                PACKAGES.validate_contents("windows-x64", incomplete, modes)
 
     def test_elf_archives_reject_wrong_or_missing_elf_architecture(self):
         for target in ELF_TARGETS:
@@ -199,7 +387,9 @@ class ReleasePackageTests(unittest.TestCase):
                 self.assertEqual(archive.name, f"restunts-{target}.zip")
                 files, _ = PACKAGES.archive_contents(archive)
                 self.assertEqual(files[PACKAGES.ANDROID_APK], self.apk_data(target))
-                for name in ("share/docs/restunts/android.md", "share/licenses/restunts/SDL-LICENSE.txt",
+                self.assertEqual(files[PACKAGES.ANDROID_GENGHOST_APK], self.genghost_apk_data(target))
+                for name in ("share/docs/restunts/android.md", "share/docs/restunts/genghost.md",
+                             "share/docs/restunts/genghost-android.md", "share/licenses/restunts/SDL-LICENSE.txt",
                              "share/licenses/restunts/Nuked-OPL2-LICENSE",
                              "share/restunts/nuked-opl2-lite/opl2.c",
                              "share/restunts/nuked-opl2-lite/nuked-build-info.txt",
@@ -209,12 +399,16 @@ class ReleasePackageTests(unittest.TestCase):
                                      for name in files))
                 instructions = files[PACKAGES.README].decode("utf-8")
                 minimum = "Android 5.0 (API 21)"
-                for detail in (abi, minimum, "landscape", "Choose game folder",
+                for detail in (abi, minimum, "landscape", "bin/restunts.apk", "bin/genghost.apk",
+                               "share/docs/restunts/genghost.md", "share/docs/restunts/genghost-android.md",
+                               "Choose game folder",
                                "Import Stunts ZIP", "exact destination folder",
                                "selected public folder", "private working cache",
                                "tracks, replays and screenshots", "persistent release signing key",
                                "PR/local debug APKs use debug keys", "same signing key",
-                               "selected public game folder is preserved",
+                               "Folders selected through the system picker survive",
+                               "TV fallback media folder", "is deleted on uninstall",
+                               "Back up those files outside it beforehand",
                                "unexported pending writes", "share/docs/restunts/android.md"):
                     self.assertIn(detail, instructions)
                 for obsolete in ("This development APK", "Import Stunts folder",
@@ -286,6 +480,93 @@ class ReleasePackageTests(unittest.TestCase):
                 with self.subTest(target=target, extra=extra), self.assertRaises(ValueError):
                     PACKAGES.validate_android_apk(target, self.apk_data(target, {extra: FILE_DATA}))
 
+    def test_android_generator_apks_require_both_abis_and_exact_assets(self):
+        assets = {"assets/genghost.md", "assets/genghost-android.md", "assets/licenses/SDL-LICENSE.txt",
+                  "assets/licenses/Android-NDK-NOTICE.txt",
+                  "assets/licenses/Android-NDK-NOTICE.toolchain.txt"}
+        assets |= PACKAGES.custom_car_files("assets/cars")
+        for target, abi in PACKAGES.ANDROID_TARGETS.items():
+            content = self.genghost_apk_data(target)
+            with self.subTest(target=target):
+                PACKAGES.validate_android_genghost_apk(target, content)
+                with zipfile.ZipFile(io.BytesIO(content)) as apk:
+                    self.assertEqual({name for name in apk.namelist() if name.startswith("assets/")}, assets)
+                    self.assertEqual({name for name in apk.namelist() if name.startswith("lib/")},
+                                     {f"lib/{abi}/libgenghost_exec.so"})
+            for missing in assets | {"AndroidManifest.xml", "classes.dex", "resources.arsc",
+                                     "res/drawable/ic_genghost.xml", f"lib/{abi}/libgenghost_exec.so"}:
+                with self.subTest(target=target, missing=missing), \
+                        self.assertRaisesRegex(ValueError, "missing generator APK members"):
+                    PACKAGES.validate_android_genghost_apk(target, self.genghost_apk_data(
+                        target, missing=(missing,)))
+            other = next(other for other in PACKAGES.ANDROID_TARGETS if other != target)
+            with self.subTest(target=target, wrong_abi=True), \
+                    self.assertRaisesRegex(ValueError, "Unexpected Android ABI"):
+                PACKAGES.validate_android_genghost_apk(target, self.genghost_apk_data(other))
+            for extra in (f"lib/{abi}/libmain.so", f"lib/{abi}/genghost",
+                          f"lib/{PACKAGES.ANDROID_TARGETS[other]}/libgenghost_exec.so",
+                          "bin/genghost", "assets/MISC.RES", "assets/game/FONTDEF.FNT",
+                          "assets/data.zip", "assets/private.dat", "assets/music/titl.ogg",
+                          "assets/licenses/Nuked-OPL2-LICENSE.txt", "stunts/notice.txt"):
+                with self.subTest(target=target, extra=extra), self.assertRaises(ValueError):
+                    PACKAGES.validate_android_genghost_apk(target, self.genghost_apk_data(
+                        target, {extra: FILE_DATA}))
+
+    def test_android_generator_apks_require_complete_pie_executables(self):
+        for target, abi in PACKAGES.ANDROID_TARGETS.items():
+            elf_class, machine = PACKAGES.ELF_ARCHITECTURES[target.split("-")[1]]
+            other_class = PACKAGES.ELF_CLASS_64 if elf_class == PACKAGES.ELF_CLASS_32 else PACKAGES.ELF_CLASS_32
+            word = "<I" if elf_class == PACKAGES.ELF_CLASS_32 else "<Q"
+            valid = self.pie_data(target)
+            nonpie = bytearray(valid)
+            struct.pack_into("<H", nonpie, PACKAGES.ELF_TYPE_OFFSET, 2)  # ET_EXEC
+            zero_entry = bytearray(valid)
+            struct.pack_into(word, zero_entry, 24, 0)
+            no_interpreter = bytearray(valid)
+            struct.pack_into("<I", no_interpreter, PACKAGES.ELF_HEADER_SIZES[elf_class], 1)  # PT_LOAD
+            wrong_table = bytearray(valid)
+            struct.pack_into(word, wrong_table, 28 if elf_class == PACKAGES.ELF_CLASS_32 else 32,
+                             len(valid))
+            wrong_phsize = bytearray(valid)
+            struct.pack_into("<H", wrong_phsize, 42 if elf_class == PACKAGES.ELF_CLASS_32 else 54, 1)
+            cases = (FILE_DATA, valid[:PACKAGES.ELF_HEADER_SIZES[elf_class] - 1],
+                     valid[:PACKAGES.ELF_HEADER_SIZES[elf_class] + 2], valid[:-1],
+                     self.elf_data(other_class, machine, shared=True),
+                     self.elf_data(elf_class, PACKAGES.ELF_MACHINE_X86, shared=True),
+                     self.elf_data(elf_class, machine, shared=True), nonpie, zero_entry,
+                     no_interpreter, wrong_table, wrong_phsize,
+                     self.pie_data(target, b"/system/bin/wrong-linker\0"),
+                     self.pie_data(target, b"/system/bin/linker64\0" if elf_class == PACKAGES.ELF_CLASS_32
+                                   else b"/system/bin/linker\0"))
+            for index, content in enumerate(cases):
+                with self.subTest(target=target, case=index), self.assertRaisesRegex(ValueError, "ELF"):
+                    PACKAGES.validate_android_genghost_apk(target, self.genghost_apk_data(
+                        target, {f"lib/{abi}/libgenghost_exec.so": content}))
+
+    def test_android_generator_apks_enforce_member_integrity_and_metadata(self):
+        for target in PACKAGES.ANDROID_TARGETS:
+            signatures = {"META-INF/MANIFEST.MF": FILE_DATA, "META-INF/CERT.SF": FILE_DATA,
+                          "META-INF/CERT.RSA": FILE_DATA,
+                          "META-INF/version-control-info.textproto": FILE_DATA,
+                          "META-INF/com/android/build/gradle/app-metadata.properties": FILE_DATA}
+            PACKAGES.validate_android_genghost_apk(target, self.genghost_apk_data(target, signatures))
+            for name in ("assets/release.jks", "META-INF/signing.properties", "META-INF/other.textproto",
+                         "res/drawable/ic_launcher_foreground.xml"):
+                with self.subTest(target=target, unexpected=name), self.assertRaisesRegex(ValueError, "Unexpected APK"):
+                    PACKAGES.validate_android_genghost_apk(target, self.genghost_apk_data(target, {name: FILE_DATA}))
+            for name, mode, message in (("../outside.txt", stat.S_IFREG, "Unsafe"),
+                                       ("assets/genghost.md", stat.S_IFREG, "Duplicate APK"),
+                                       ("assets/genghost.md", stat.S_IFLNK, "Unsupported APK")):
+                missing = (name,) if mode == stat.S_IFLNK else ()
+                output = io.BytesIO(self.genghost_apk_data(target, missing=missing))
+                with zipfile.ZipFile(output, "a") as apk:
+                    entry = zipfile.ZipInfo(name)
+                    entry.external_attr = (mode | PACKAGES.FILE_MODE) << 16
+                    with contextlib.redirect_stderr(io.StringIO()):
+                        apk.writestr(entry, FILE_DATA)
+                with self.subTest(target=target, name=name, mode=mode), self.assertRaisesRegex(ValueError, message):
+                    PACKAGES.validate_android_genghost_apk(target, output.getvalue())
+
     def test_android_apks_allow_only_named_gradle_version_control_metadata(self):
         metadata = {"META-INF/version-control-info.textproto":
                     b"generate_error_reason: NO_SUPPORTED_VCS_FOUND\n"}
@@ -342,6 +623,7 @@ class ReleasePackageTests(unittest.TestCase):
 
     def test_android_optional_source_music_is_required_inside_apk_only(self):
         source = self.root / "android-source"
+        self.copy_car_sources(source)
         with mock.patch.object(PACKAGES, "ROOT", source):
             baseline = {target: self.apk_data(target) for target in PACKAGES.ANDROID_TARGETS}
             for track in PACKAGES.MUSIC_TRACKS:
@@ -368,7 +650,9 @@ class ReleasePackageTests(unittest.TestCase):
         target = "android-armv7"
         files = {name: self.runtime_data(target, name) for name in PACKAGES.required_files(target)}
         modes = {name: PACKAGES.FILE_MODE for name in files}
-        for missing in (PACKAGES.ANDROID_APK, "share/docs/restunts/android.md",
+        for missing in (PACKAGES.ANDROID_APK, PACKAGES.ANDROID_GENGHOST_APK,
+                        "share/docs/restunts/android.md", "share/docs/restunts/genghost.md",
+                        "share/docs/restunts/genghost-android.md",
                         "share/restunts/nuked-opl2-lite/opl2.c",
                         "share/restunts/nuked-opl2-lite/build-context/CMakeLists.txt",
                         "share/licenses/restunts/SDL-LICENSE.txt",
@@ -436,17 +720,18 @@ class ReleasePackageTests(unittest.TestCase):
             PACKAGES.verify_package(archive, "dos16", COMMIT, RUN_ID, "1")
 
     def test_original_data_unknown_suffixes_and_other_extra_files_are_rejected(self):
-        files = {name: FILE_DATA for name in PACKAGES.required_files("dos32")}
+        files = {name: self.runtime_data("dos32", name) for name in PACKAGES.required_files("dos32")}
         modes = {name: PACKAGES.FILE_MODE for name in files}
         for extra in ("bin/MISC.RES", "bin/DEFAULT.P3S", "assets.zip", "unrelated.exe"):
             with self.subTest(extra=extra), self.assertRaises(ValueError):
                 PACKAGES.validate_contents("dos32", dict(files, **{extra: FILE_DATA}), modes)
 
     def test_missing_artwork_library_source_and_license_are_rejected(self):
-        files = {name: FILE_DATA for name in PACKAGES.required_files("windows-arm64")}
+        files = {name: self.runtime_data("windows-arm64", name) for name in PACKAGES.required_files("windows-arm64")}
         modes = {name: PACKAGES.FILE_MODE for name in files}
         for missing in ("bin/opponents/game/opp6.png", "bin/skyboxes/sky4-3.png",
                         "bin/menus/main.png", "bin/menus/showroom.png", "bin/menus/opponent.png",
+                        "share/docs/restunts/genghost-state-planner.md",
                         "bin/nuked-opl2.dll", "share/restunts/nuked-opl2-lite/opl2.c",
                         "share/licenses/restunts/Nuked-OPL2-LICENSE"):
             incomplete = files.copy()
@@ -455,7 +740,7 @@ class ReleasePackageTests(unittest.TestCase):
                 PACKAGES.validate_contents("windows-arm64", incomplete, modes)
 
     def test_dos_runtime_filenames_do_not_require_long_filename_support(self):
-        files = {name: FILE_DATA for name in PACKAGES.required_files("dos32")}
+        files = {name: self.runtime_data("dos32", name) for name in PACKAGES.required_files("dos32")}
         modes = {name: PACKAGES.FILE_MODE for name in files}
         PACKAGES.validate_contents("dos32", files, modes)
         for extra in ("bin/opponents/game/opp1.png", "bin/skyboxes/image.long", "bin/with space/a.png"):
@@ -476,7 +761,7 @@ class ReleasePackageTests(unittest.TestCase):
             PACKAGES.archive_contents(archive)
 
     def test_browser_requires_relink_objects_and_dos_omits_nuked(self):
-        files = {name: FILE_DATA for name in PACKAGES.required_files("browser")}
+        files = {name: self.runtime_data("browser", name) for name in PACKAGES.required_files("browser")}
         for missing in ("share/restunts/wasm-relink/objects/main.c.o",
                         "share/restunts/wasm-relink/data/assets/menus/main.png",
                         "share/restunts/wasm-relink/data/assets/menus/showroom.png",
@@ -493,6 +778,7 @@ class ReleasePackageTests(unittest.TestCase):
         tracks = ("titl", "slct", "over", "vict")
         targets = {"linux-x64": "bin/music", "dos32": "bin/music",
                    "browser": "share/restunts/wasm-relink/data/assets/music"}
+        self.copy_car_sources(source)
         with mock.patch.object(PACKAGES, "ROOT", source):
             baseline = {target: PACKAGES.required_files(target) for target in targets}
             for track in tracks:
@@ -502,7 +788,7 @@ class ReleasePackageTests(unittest.TestCase):
             for target, directory in targets.items():
                 audio = {f"{directory}/{track}.ogg":
                          (source / "assets/music" / f"{track}.ogg").read_bytes() for track in tracks}
-                files = {name: FILE_DATA for name in baseline[target]} | audio
+                files = {name: self.runtime_data(target, name) for name in baseline[target]} | audio
                 modes = {name: PACKAGES.EXECUTABLE_MODE for name in files}
                 with self.subTest(target=target):
                     PACKAGES.validate_contents(target, files, modes)
@@ -522,11 +808,13 @@ class ReleasePackageTests(unittest.TestCase):
             self.assertFalse(any("/music/" in name for name in PACKAGES.required_files("dos16")))
 
     def test_absent_music_is_optional(self):
-        with mock.patch.object(PACKAGES, "ROOT", self.root / "empty-source"):
+        source = self.root / "empty-source"
+        self.copy_car_sources(source)
+        with mock.patch.object(PACKAGES, "ROOT", source):
             for target in ("linux-x64", "dos32", "browser"):
                 with self.subTest(target=target):
                     self.assertEqual(PACKAGES.optional_music_files(target), set())
-                    files = {name: FILE_DATA for name in PACKAGES.required_files(target)}
+                    files = {name: self.runtime_data(target, name) for name in PACKAGES.required_files(target)}
                     modes = {name: PACKAGES.EXECUTABLE_MODE for name in files}
                     PACKAGES.validate_contents(target, files, modes)
 
@@ -539,7 +827,7 @@ class ReleasePackageTests(unittest.TestCase):
             expected = decoder_files.copy()
             if target == "browser":
                 expected.add("share/restunts/wasm-relink/lib/librestunts_webm.a")
-            files = {name: FILE_DATA for name in PACKAGES.required_files(target)}
+            files = {name: self.runtime_data(target, name) for name in PACKAGES.required_files(target)}
             modes = {name: PACKAGES.EXECUTABLE_MODE for name in files}
             with self.subTest(target=target):
                 self.assertTrue(expected <= files.keys())

@@ -74,6 +74,16 @@
 #define DIALOG_TYPE_DELAY 4
 #define COMPRESSION_RLE_TYPE 1
 #define COMPRESSION_VLE_TYPE 2
+#define FILE_CAR_DATA_LOOSE (-1+1)
+#define FILE_CAR_BASE_LOOSE ((-1+1)+1)
+#define FILE_CAR_DATA_DIRECTORY (((-1+1)+1)+1)
+#define FILE_CAR_BASE_DIRECTORY ((((-1+1)+1)+1)+1)
+#define FILE_CAR_BUNDLED_DIRECTORY (((((-1+1)+1)+1)+1)+1)
+#define FILE_CAR_ROOT_COUNT ((((((-1+1)+1)+1)+1)+1)+1)
+#define FILE_CAR_NONE (-1+1)
+#define FILE_CAR_PHYSICS ((-1+1)+1)
+#define FILE_CAR_MODEL (((-1+1)+1)+1)
+#define FILE_CAR_DASHBOARD ((((-1+1)+1)+1)+1)
 #define RESOURCE_NOT_FOUND_IGNORE 0
 #define RESOURCE_NOT_FOUND_SHAPE_FATAL 1
 #define RESOURCE_NOT_FOUND_SOUND_FATAL 2
@@ -141,29 +151,6 @@
 #define LEGACY_RESIDUE_SECOND_WORD 1
 #define LEGACY_RESIDUE_THIRD_WORD 2
 #define LEGACY_RESIDUE_FOURTH_WORD 3
-#define CAMERA_MODE_COCKPIT 0
-#define CAMERA_MODE_FOLLOW 1
-#define CAMERA_MODE_CUSTOM 2
-#define CAMERA_MODE_TRACKSIDE 3
-#define SHAPE3D_PRIMITIVE_POLYGON_FIRST 3
-#define SHAPE3D_PRIMITIVE_SPHERE 11
-#define BACKLIGHT_PAINT_DEFAULT 45
-#define BACKLIGHT_PAINT_NORMAL 46
-#define BACKLIGHT_PAINT_BRAKING 47
-#define PLAYER_CAR_LOW_SHAPE 124
-#define OPPONENT_CAR_LOW_SHAPE 125
-#define PLAYER_CAR_WHEEL_SHAPE 126
-#define OPPONENT_CAR_WHEEL_SHAPE 127
-#define PLAYER_CAR_HIGH_SHAPE 128
-#define OPPONENT_CAR_HIGH_SHAPE 129
-#define AUDIO_STATE_DISABLED 0
-#define AUDIO_STATE_ENABLED 1
-#define AUDIO_UPDATE_UNLOCKED 0
-#define AUDIO_UPDATE_LOCKED 1
-#define DASHBOARD_OPERATION_LOAD 0
-#define DASHBOARD_OPERATION_REDRAW_STATIC 1
-#define DASHBOARD_OPERATION_UPDATE 2
-#define DASHBOARD_OPERATION_UNLOAD 3
 #define KEY_TAB 9
 #define KEY_ENTER 13
 #define KEY_ESCAPE 27
@@ -187,6 +174,33 @@
 #define KEY_DOWN 20480
 #define KEY_INSERT 20992
 #define KEY_SHIFT_F1 21504
+#define CAMERA_MODE_COCKPIT 0
+#define CAMERA_MODE_FOLLOW 1
+#define CAMERA_MODE_CUSTOM 2
+#define CAMERA_MODE_TRACKSIDE 3
+#define SHAPE3D_PRIMITIVE_EMPTY 0
+#define SHAPE3D_PRIMITIVE_POLYGON_FIRST 3
+#define SHAPE3D_PRIMITIVE_SPHERE 11
+#define BACKLIGHT_PAINT_DEFAULT 45
+#define BACKLIGHT_PAINT_NORMAL 46
+#define BACKLIGHT_PAINT_BRAKING 47
+#define PLAYER_CAR_LOW_SHAPE 124
+#define OPPONENT_CAR_LOW_SHAPE 125
+#define PLAYER_CAR_WHEEL_SHAPE 126
+#define OPPONENT_CAR_WHEEL_SHAPE 127
+#define PLAYER_CAR_HIGH_SHAPE 128
+#define OPPONENT_CAR_HIGH_SHAPE 129
+#define AUDIO_STATE_DISABLED 0
+#define AUDIO_STATE_ENABLED 1
+#define AUDIO_UPDATE_UNLOCKED 0
+#define AUDIO_UPDATE_LOCKED 1
+#define DASHBOARD_OPERATION_LOAD 0
+#define DASHBOARD_OPERATION_REDRAW_STATIC 1
+#define DASHBOARD_OPERATION_UPDATE 2
+#define DASHBOARD_OPERATION_UNLOAD 3
+#define GHOST_RACING_LINE_RED 0
+#define GHOST_RACING_LINE_YELLOW 1
+#define GHOST_RACING_LINE_GREEN 2
 #define REPLAY_CONTROL_FAST_FORWARD 0
 #define REPLAY_CONTROL_REWIND 1
 #define REPLAY_CONTROL_FAST_PLAY 2
@@ -255,6 +269,9 @@
 #define MAIN_MENU_OPPONENT 2
 #define MAIN_MENU_TRACK 3
 #define MAIN_MENU_OPTIONS 4
+#define OPTION_INPUT_KEYBOARD (-1+1)
+#define OPTION_INPUT_JOYSTICK ((-1+1)+1)
+#define OPTION_INPUT_MOUSE (((-1+1)+1)+1)
 #define OPTION_MENU_LOW_FRAME_RATE_INDEX 7
 #define OPTION_MENU_NORMAL_FRAME_RATE_INDEX 8
 #define TRACK_MENU_LOAD_BUTTON 0
@@ -350,14 +367,14 @@
 #define TRACK_PREVIEW_HILL_BASE_VERTICAL_SHAPE 91
 #define TRACK_PREVIEW_HILL_BASE_HORIZONTAL_SHAPE 92
 #define TRACK_PREVIEW_HILL_BASE_QUAD_SHAPE 93
-#define ROUTE_HEIGHT_REFERENCE_TRACK_LEVEL 0
-#define ROUTE_HEIGHT_REFERENCE_CAR_LEVEL 1
 #define PENALTY_ROUTE_SENTINEL_UNVISITED 0
 #define PENALTY_ROUTE_SENTINEL_VISITED 1
 #define PENALTY_ROUTE_TRACK_UNVISITED 0
 #define PENALTY_ROUTE_TRACK_VISITED 1
 #define PENALTY_NOT_DETECTED 0
 #define PENALTY_DETECTED 1
+#define ROUTE_HEIGHT_REFERENCE_TRACK_LEVEL 0
+#define ROUTE_HEIGHT_REFERENCE_CAR_LEVEL 1
 #define LEFT_CORNER_BIAS_OFF 0
 #define LEFT_CORNER_BIAS_ON 1
 #define TRACK_ROUTE_RESULT_CENTER_INDEX 0
@@ -759,7 +776,7 @@ class CSprite
 
 class CFileFindDos
 {
-  legacy_s8 path[128];
+  legacy_s8 path[1024];
   legacy_s8 *dirdelim;
 };
 
@@ -882,6 +899,13 @@ class CShape3DLegacyOpponentRenderContext
   legacy_u16 material_color_offset;
 };
 
+class CCarSurfaceAdhesionSettings
+{
+  legacy_u16 max_distance;
+  legacy_u16 min_alignment;
+  legacy_u8 surface_mask;
+};
+
 class CTrackResourceReader
 {
   legacy_u8 *source;
@@ -991,12 +1015,24 @@ class CGhostCameraState
   legacy_s16 crash_frame;
 };
 
+class CGhostRacingLineSegment
+{
+  CVectorLong start_left;
+  CVectorLong start_right;
+  CVectorLong end_left;
+  CVectorLong end_right;
+  legacy_u16 speed;
+  legacy_u32 next;
+};
+
 class CStartupOptions
 {
   legacy_u8 mode4_requested;
   legacy_u8 sound_disabled;
   legacy_u8 unused_nd_option;
   legacy_u8 skip_intro;
+  legacy_u8 fps_display_enabled;
+  legacy_u8 fps_display_specified;
 };
 
 class CFatalOutputState
@@ -1128,6 +1164,32 @@ class CGhostPose
 {
   CCarState car;
   CGhostCameraState camera;
+};
+
+class CGhostLineVector
+{
+  legacy_f64 x;
+  legacy_f64 y;
+  legacy_f64 z;
+};
+
+class CGhostLinePose
+{
+  CGhostLineVector center;
+  CGhostLineVector right;
+  CGhostLineVector up;
+  legacy_f64 speed;
+  legacy_u8 has_orientation;
+};
+
+class CRsAnonF66041140cbb
+{
+  CGhostLinePose previous;
+  CGhostLinePose sample;
+  legacy_f64 distance;
+  legacy_f64 midpoint_speed;
+  legacy_u8 initialized;
+  legacy_u8 failed;
 };
 
 class CSkybox
@@ -1584,6 +1646,8 @@ class CPlayerWheelMotion
   legacy_s16 contact_distances[4];
   legacy_s16 travel;
   legacy_s16 inverted_adjustment;
+  legacy_u8 surface_adhesion;
+  legacy_s16 car_index;
   CVector inverted_offset;
 };
 

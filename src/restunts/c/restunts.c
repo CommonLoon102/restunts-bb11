@@ -5,20 +5,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "frame_adaptive.h"
-#include "frame_internal.h"
 #include "hires.h"
 #include "../platform/sdl3/music.h"
+#ifndef __ANDROID__
+#include "../platform/sdl3/controller_game.h"
+#endif
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+#include "../platform/sdl3/touch_game.h"
+#endif
 #endif
 #include "audio.h"
 #include "dashboard.h"
 #include "car_speed.h"
+#include "car_resources.h"
 #include "physics_internal.h"
+#include "race_route.h"
 #include "owoot.h"
 #include "restunts.h"
 #include "video_pages.h"
 #include "fileio.h"
 #include "fatal.h"
 #include "game_input.h"
+#include "frame_internal.h"
 #include "keyboard.h"
 #include "legacy.h"
 #include "math.h"
@@ -68,8 +76,17 @@
 
 #define STARTUP_HYPERVISION_PREFIX "--hv:"
 #define STARTUP_OGG_MUSIC_PREFIX "--ogg:"
+#if defined(RESTUNTS_SDL3) && !defined(__ANDROID__)
+#define STARTUP_CONTROLLER_VIBRATION_PREFIX "--controller-vibration:"
+#endif
 #define STARTUP_FPS_DISPLAY_PREFIX "--fps:"
 #define STARTUP_SKIP_INTRO_OPTION "--nointro"
+#define STARTUP_WAITING_MESSAGE_Y 180
+#if defined(RESTUNTS_SDL3) && (defined(__ANDROID__) || defined(__EMSCRIPTEN__))
+#define STARTUP_CONTROL_LAYOUT_PREFIX "--control-layout:"
+#define STARTUP_CONTROL_LAYOUT_OFF 0U
+#define STARTUP_CONTROL_LAYOUT_ON 1U
+#endif
 
 #define STARTUP_PROJECTION_X 36
 #define STARTUP_PROJECTION_Y 17
@@ -182,13 +199,21 @@ struct STARTUP_OPTIONS {
 	legacy_u8 sound_disabled;
 	legacy_u8 unused_nd_option;
 	legacy_u8 skip_intro;
+	legacy_u8 fps_display_enabled;
+	legacy_u8 fps_display_specified;
 #ifdef RESTUNTS_SDL3
 	legacy_u16 hypervision_preset;
 	legacy_u8 hypervision_specified;
 	legacy_u8 ogg_music_enabled;
 	legacy_u8 ogg_music_specified;
-	legacy_u8 fps_display_enabled;
-	legacy_u8 fps_display_specified;
+#ifndef __ANDROID__
+	legacy_u8 controller_vibration_enabled;
+	legacy_u8 controller_vibration_specified;
+#endif
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+	legacy_u8 control_layout_enabled;
+	legacy_u8 control_layout_specified;
+#endif
 #endif
 };
 
@@ -265,12 +290,26 @@ static void startup_parse_hypervision(const legacy_s8 *argument, struct STARTUP_
 			argument);
 	dos_process_exit(EXIT_FAILURE);
 }
+#endif
+
+static void startup_option_error_text(const legacy_s8 *text)
+{
+	dos_write_stderr(text, strlen(text));
+}
+
 static void startup_parse_boolean(const legacy_s8 *argument, const legacy_s8 *prefix,
 								  const legacy_s8 *name, legacy_u8 *enabled, legacy_u8 *specified)
 {
 	const legacy_s8 *option = prefix;
 	const legacy_s8 *value = argument;
-	while (*option != 0 && tolower((legacy_u8)*value) == *option) {
+	while (*option != 0) {
+		legacy_u8 character = (legacy_u8)*value;
+		if (character >= 'A' && character <= 'Z') {
+			character += 'a' - 'A';
+		}
+		if (character != (legacy_u8)*option) {
+			break;
+		}
 		option++;
 		value++;
 	}
@@ -278,8 +317,12 @@ static void startup_parse_boolean(const legacy_s8 *argument, const legacy_s8 *pr
 		return;
 	}
 	if (*specified != 0) {
-		fprintf(stderr, "Only one %s option may be specified (%s).\n", name, prefix);
-		dos_process_exit(EXIT_FAILURE);
+		startup_option_error_text("Only one ");
+		startup_option_error_text(name);
+		startup_option_error_text(" option may be specified (");
+		startup_option_error_text(prefix);
+		startup_option_error_text(").\n");
+		dos_process_exit(1);
 		return;
 	}
 	*specified = 1;
@@ -291,10 +334,17 @@ static void startup_parse_boolean(const legacy_s8 *argument, const legacy_s8 *pr
 		*enabled = 0;
 		return;
 	}
-	fprintf(stderr, "Invalid %s option '%s'; use %son or %soff.\n", name, argument, prefix, prefix);
-	dos_process_exit(EXIT_FAILURE);
+	startup_option_error_text("Invalid ");
+	startup_option_error_text(name);
+	startup_option_error_text(" option '");
+	startup_option_error_text(argument);
+	startup_option_error_text("'; use ");
+	startup_option_error_text(prefix);
+	startup_option_error_text("on or ");
+	startup_option_error_text(prefix);
+	startup_option_error_text("off.\n");
+	dos_process_exit(1);
 }
-#endif
 
 static void startup_parse_options(legacy_s16 argc, legacy_s8 *argv[],
 								  struct STARTUP_OPTIONS *options)
@@ -303,22 +353,39 @@ static void startup_parse_options(legacy_s16 argc, legacy_s8 *argv[],
 	options->sound_disabled = 0;
 	options->unused_nd_option = 0;
 	options->skip_intro = 0;
+	options->fps_display_enabled = FRAME_FPS_DISPLAY_OFF;
+	options->fps_display_specified = 0;
 #ifdef RESTUNTS_SDL3
 	options->hypervision_preset = FRAME_ADAPTIVE_PRESET_AUTO;
 	options->hypervision_specified = 0;
 	options->ogg_music_enabled = 0;
 	options->ogg_music_specified = 0;
-	options->fps_display_enabled = FRAME_FPS_DISPLAY_OFF;
-	options->fps_display_specified = 0;
+#ifndef __ANDROID__
+	options->controller_vibration_enabled = 1;
+	options->controller_vibration_specified = 0;
+#endif
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+	options->control_layout_enabled = STARTUP_CONTROL_LAYOUT_ON;
+	options->control_layout_specified = 0;
+#endif
 #endif
 	for (legacy_u16 i = 1; argc > i; ++i) {
 #ifdef RESTUNTS_SDL3
 		startup_parse_hypervision(argv[i], options);
 		startup_parse_boolean(argv[i], STARTUP_OGG_MUSIC_PREFIX, "Ogg music",
 							  &options->ogg_music_enabled, &options->ogg_music_specified);
+#ifndef __ANDROID__
+		startup_parse_boolean(argv[i], STARTUP_CONTROLLER_VIBRATION_PREFIX, "Controller vibration",
+							  &options->controller_vibration_enabled,
+							  &options->controller_vibration_specified);
+#endif
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+		startup_parse_boolean(argv[i], STARTUP_CONTROL_LAYOUT_PREFIX, "Control layout",
+							  &options->control_layout_enabled, &options->control_layout_specified);
+#endif
+#endif
 		startup_parse_boolean(argv[i], STARTUP_FPS_DISPLAY_PREFIX, "FPS display",
 							  &options->fps_display_enabled, &options->fps_display_specified);
-#endif
 		if (strcmp(argv[i], STARTUP_SKIP_INTRO_OPTION) == 0) {
 			options->skip_intro = 1;
 		}
@@ -404,13 +471,27 @@ static void startup_measure_video(void)
 	slow_video_mgmt_copy = slow_video_mgmt;
 }
 
+#ifdef RESTUNTS_AMIGA_TRACE
+#include <stdio.h>
+#define STARTUP_TRACE(message)                                                                     \
+	do {                                                                                           \
+		puts("Amiga startup: " message);                                                           \
+		fflush(stdout);                                                                            \
+	} while (0)
+#else
+#define STARTUP_TRACE(message) ((void)0)
+#endif
+
 void init_main(legacy_s16 argc, legacy_s8 *argv[])
 {
+	STARTUP_TRACE("keyboard and geometry");
 	startup_install_keyboard_callbacks();
 	// Video
 	init_video_geometry_flags();
 
+	STARTUP_TRACE("resource arena");
 	mmgr_init_conventional_arena();
+	STARTUP_TRACE("game data version");
 	if (file_game_version_matches() == 0) {
 		static const legacy_s8 message[] =
 			"Incompatible game data. Use Broderbund Stunts 1.1 (Feb 12 1991). "
@@ -428,13 +509,22 @@ void init_main(legacy_s16 argc, legacy_s8 *argv[])
 	textresprefix = 'e';
 
 	configure_powergear_bug(argc, argv);
+	reset_car_capabilities();
 	configure_legacy_collision(argc, argv);
 	configure_left_corner_bias(argc, argv);
+	configure_dual_way_switching(argc, argv);
+	configure_amiga_grass(argc, argv);
 	configure_owoot(argc, argv);
 	startup_parse_options(argc, argv, &startup_options);
-#ifdef RESTUNTS_SDL3
 	fps_display_enabled = startup_options.fps_display_enabled;
 	frame_fps_reset();
+#ifdef RESTUNTS_SDL3
+#ifndef __ANDROID__
+	sdl3_controller_set_vibration_enabled(startup_options.controller_vibration_enabled);
+#endif
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
+	sdl3_touch_set_layout_visible(startup_options.control_layout_enabled);
+#endif
 	if (startup_options.hypervision_specified != 0) {
 		frame_adaptive_set_preset(&frame_adaptive,
 								  (enum FRAME_ADAPTIVE_PRESET)startup_options.hypervision_preset);
@@ -447,18 +537,21 @@ void init_main(legacy_s16 argc, legacy_s8 *argv[])
 	// Unused "/nd" switch. Maybe used when loading other video drivers?
 	(void)startup_options.unused_nd_option;
 
+	STARTUP_TRACE("display");
 	// Video mode.
 	dos_video_set_mode_13h();
 	if (startup_options.mode4_requested) {
 		dos_video_set_mode4();
 	}
 
+	STARTUP_TRACE("timer");
 	dos_timer_setup_interrupt();
 
 	sprite_select_screen_and_clear();
 
 	dos_mouse_init(GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT);
 
+	STARTUP_TRACE("audio");
 	// Audio driver.
 	if (audio_load_dos_driver(audiodriverstring, 0, 0)) {
 		dos_timer_shutdown();
@@ -478,12 +571,15 @@ void init_main(legacy_s16 argc, legacy_s8 *argv[])
 
 	dos_set_critical_error_handler(&show_disk_error_dialog);
 
+	STARTUP_TRACE("palette and cursor");
 	load_palandcursor();
 
+	STARTUP_TRACE("benchmark");
 	startup_measure_video();
 
 	random_wait();
 
+	STARTUP_TRACE("materials");
 	copy_material_list_pointers(material_clrlist_ptr, material_clrlist2_ptr, material_patlist_ptr,
 								material_patlist2_ptr, 0);
 }
@@ -684,8 +780,10 @@ static void main_menu_restore_track(void)
 
 static legacy_s16 main_menu_prepare_track(void)
 {
+	STARTUP_TRACE("menu track begin");
 	if (idle_expired == 0) {
 		legacy_s16 result = track_setup();
+		STARTUP_TRACE("menu track complete");
 		//result = setup_track();
 		if (result != 0) {
 			run_tracks_menu(1);
@@ -706,6 +804,7 @@ static legacy_s16 main_menu_prepare_track(void)
 
 static void main_menu_run_race(legacy_s8 start_in_replay)
 {
+	STARTUP_TRACE("menu race begin");
 	cvxptr = mmgr_alloc_resbytes("cvx", sizeof(struct GAMESTATE) * GAMESTATE_CHECKPOINT_COUNT);
 	init_game_state(GAMESTATE_INIT_RESET_CHECKPOINTS);
 
@@ -760,6 +859,8 @@ legacy_s16 run_main_menu_loop(legacy_s16 argc, legacy_s8 *argv[])
 		legacy_s16 result = 0;
 		if (startup_options.skip_intro != 0) {
 			startup_options.skip_intro = 0;
+			/* The intro normally places the waiting dialog below the title. */
+			waitflag = STARTUP_WAITING_MESSAGE_Y;
 		} else {
 			result = run_intro_looped();
 		}

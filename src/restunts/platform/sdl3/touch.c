@@ -1,4 +1,5 @@
 #include "touch.h"
+#include "controller_game.h"
 #include "../../c/game_input.h"
 #include "../../c/keyboard.h"
 #include "../../c/platform.h"
@@ -10,7 +11,8 @@
 #endif
 
 #define TOUCH_FINGER_COUNT 16U
-#define TOUCH_SHIFT_QUEUE_CAPACITY 64U
+#define INPUT_SHIFT_QUEUE_CAPACITY 64U
+#define TOUCH_EDGE_MARGIN 10.0f
 #define TOUCH_RADIUS_HEIGHT 0.075f
 #define TOUCH_STEERING_HEIGHT 0.62f
 #define TOUCH_RIGHT_RADIUS_OFFSET 3.5f
@@ -54,11 +56,12 @@ struct TOUCH_FINGER {
 };
 
 static struct TOUCH_FINGER fingers[TOUCH_FINGER_COUNT];
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
 static legacy_u8 enabled = 1;
 #else
 static legacy_u8 enabled;
 #endif
+static legacy_u8 layout_visible = true;
 static legacy_u8 keyboard_selected = 1;
 static legacy_u8 intro_active;
 static legacy_u8 racing;
@@ -67,7 +70,8 @@ static legacy_u8 replay_active;
 static legacy_u8 game_active;
 static legacy_u8 replay_interaction;
 static legacy_u8 rewind_active;
-static legacy_u16 shift_queue[TOUCH_SHIFT_QUEUE_CAPACITY];
+static legacy_u8 shift_event_source;
+static legacy_u16 shift_queue[INPUT_SHIFT_QUEUE_CAPACITY];
 static legacy_u32 shift_read;
 static legacy_u32 shift_count;
 static legacy_s16 seek_direction;
@@ -78,6 +82,54 @@ static const SDL_Scancode control_scancodes[TOUCH_CONTROL_COUNT] = {
 static const legacy_u16 control_keys[TOUCH_CONTROL_COUNT] = {
 	TOUCH_ESCAPE_CODE, KEY_LEFT, KEY_RIGHT, 'a', 'z', 'q', KEY_UP, KEY_DOWN, 'c', 't'};
 
+static bool SDLCALL input_keep_unrelated_event(void *unused, SDL_Event *event)
+{
+	(void)unused;
+	return event->type != SDL_EVENT_USER || event->user.data1 != &shift_event_source;
+}
+
+void sdl3_input_reset_shifts(void)
+{
+	shift_read = 0;
+	shift_count = 0;
+	/* Cancel requests that have not reached the game thread yet, without
+	 * discarding other SDL user events. */
+	SDL_FilterEvents(input_keep_unrelated_event, NULL);
+}
+
+legacy_u8 sdl3_input_request_shift(legacy_u8 up)
+{
+	SDL_Event event;
+	SDL_zero(event);
+	event.type = SDL_EVENT_USER;
+	event.user.data1 = &shift_event_source;
+	event.user.code = up ? INPUT_SHIFT_UP_FLAG : INPUT_SHIFT_DOWN_FLAG;
+	return SDL_PushEvent(&event);
+}
+
+void sdl3_input_queue_shift(legacy_u16 flag)
+{
+	if ((flag != INPUT_SHIFT_UP_FLAG && flag != INPUT_SHIFT_DOWN_FLAG) || intro_active ||
+		rewind_active) {
+		return;
+	}
+	if (shift_count == INPUT_SHIFT_QUEUE_CAPACITY) {
+		shift_read = (shift_read + 1U) % INPUT_SHIFT_QUEUE_CAPACITY;
+		shift_count--;
+	}
+	shift_queue[(shift_read + shift_count++) % INPUT_SHIFT_QUEUE_CAPACITY] = flag;
+}
+
+legacy_u8 sdl3_input_shift_event(const SDL_UserEvent *event)
+{
+	if (event->data1 != &shift_event_source ||
+		(event->code != INPUT_SHIFT_UP_FLAG && event->code != INPUT_SHIFT_DOWN_FLAG)) {
+		return false;
+	}
+	sdl3_input_queue_shift((legacy_u16)event->code);
+	return true;
+}
+
 void sdl3_touch_reset(void)
 {
 	for (legacy_u32 i = 0; i < TOUCH_FINGER_COUNT; i++) {
@@ -87,8 +139,7 @@ void sdl3_touch_reset(void)
 	}
 	memset(fingers, 0, sizeof(fingers));
 	memset(repeat_at, 0, sizeof(repeat_at));
-	shift_read = 0;
-	shift_count = 0;
+	sdl3_input_reset_shifts();
 	seek_direction = 0;
 }
 
@@ -110,6 +161,15 @@ void sdl3_touch_configure(legacy_u8 keyboard, legacy_u8 live, legacy_u8 manual, 
 	racing = live;
 	manual_gears = manual;
 	replay_active = replay;
+}
+
+void sdl3_touch_set_layout_visible(legacy_u8 visible)
+{
+	visible = visible != 0;
+	if (layout_visible != visible) {
+		sdl3_touch_reset();
+	}
+	layout_visible = visible;
 }
 
 void sdl3_touch_set_intro_active(legacy_u8 active)
@@ -138,9 +198,8 @@ void sdl3_touch_set_replay_active(legacy_u8 active)
 
 void sdl3_touch_set_rewind_active(legacy_u8 active)
 {
-	if (active && !rewind_active) {
-		shift_read = 0;
-		shift_count = 0;
+	if (rewind_active != active) {
+		sdl3_input_reset_shifts();
 	}
 	rewind_active = active;
 	sdl3_touch_sync_game();
@@ -149,8 +208,9 @@ void sdl3_touch_set_rewind_active(legacy_u8 active)
 void sdl3_touch_sync_game(void)
 {
 #ifdef RESTUNTS_FULL
+	enum SDL3_DRIVING_INPUT mode = sdl3_input_driving_mode();
 	sdl3_touch_configure(
-		mouse_driving_enabled == 0 && dos_joystick_is_enabled() == 0,
+		mode == SDL3_DRIVING_KEYBOARD || mode == SDL3_DRIVING_TILT,
 		game_active && replay_interaction &&
 			(rewind_active || (game_replay_mode == REPLAY_MODE_LIVE && is_in_replay == 0)),
 		gameconfig.game_playertransmission == TRANSMISSION_MANUAL,
@@ -161,7 +221,8 @@ void sdl3_touch_sync_game(void)
 
 legacy_u8 sdl3_touch_visible(enum TOUCH_CONTROL control)
 {
-	if (!enabled || intro_active || !keyboard_selected || control >= TOUCH_CONTROL_COUNT) {
+	if (!enabled || !layout_visible || intro_active || !keyboard_selected ||
+		control >= TOUCH_CONTROL_COUNT) {
 		return false;
 	}
 	if (control == TOUCH_SHIFT_UP || control == TOUCH_SHIFT_DOWN) {
@@ -174,35 +235,35 @@ struct TOUCH_CIRCLE sdl3_touch_circle(enum TOUCH_CONTROL control, const SDL_Rect
 {
 	struct TOUCH_CIRCLE circle;
 	circle.radius = area->h * TOUCH_RADIUS_HEIGHT;
-	circle.x = area->x + circle.radius;
+	circle.x = area->x + TOUCH_EDGE_MARGIN + circle.radius;
 	circle.y = area->y + area->h * TOUCH_STEERING_HEIGHT;
 	switch (control) {
 		case TOUCH_ESCAPE:
-			circle.y = area->y + circle.radius;
+			circle.y = area->y + TOUCH_EDGE_MARGIN + circle.radius;
 			break;
 		case TOUCH_RIGHT:
-			circle.x = area->x + circle.radius * TOUCH_RIGHT_RADIUS_OFFSET;
+			circle.x = area->x + TOUCH_EDGE_MARGIN + circle.radius * TOUCH_RIGHT_RADIUS_OFFSET;
 			break;
 		case TOUCH_SHIFT_UP:
 		case TOUCH_SHIFT_DOWN:
-			circle.x = area->x + circle.radius * TOUCH_SHIFT_RADIUS_OFFSET;
+			circle.x = area->x + TOUCH_EDGE_MARGIN + circle.radius * TOUCH_SHIFT_RADIUS_OFFSET;
 			circle.y += circle.radius * TOUCH_VERTICAL_RADIUS_OFFSET *
 						(control == TOUCH_SHIFT_UP ? -1.0f : 1.0f);
 			break;
 		case TOUCH_CAMERA:
 		case TOUCH_FOLLOW:
-			circle.x = area->x + area->w - circle.radius;
-			circle.y = area->y + circle.radius;
+			circle.x = area->x + area->w - TOUCH_EDGE_MARGIN - circle.radius;
+			circle.y = area->y + TOUCH_EDGE_MARGIN + circle.radius;
 			if (control == TOUCH_FOLLOW) {
 				circle.y += circle.radius * TOUCH_VERTICAL_RADIUS_OFFSET;
 			}
 			break;
 		case TOUCH_REWIND:
-			circle.y = area->y + area->h - circle.radius;
+			circle.y = area->y + area->h - TOUCH_EDGE_MARGIN - circle.radius;
 			break;
 		case TOUCH_ACCELERATE:
 		case TOUCH_BRAKE:
-			circle.x = area->x + area->w - circle.radius;
+			circle.x = area->x + area->w - TOUCH_EDGE_MARGIN - circle.radius;
 			circle.y = area->y + area->h * (control == TOUCH_ACCELERATE ? TOUCH_ACCELERATE_HEIGHT
 																		: TOUCH_BRAKE_HEIGHT);
 			break;
@@ -251,7 +312,7 @@ legacy_u16 sdl3_touch_take_shift_flags(void)
 		return 0;
 	}
 	legacy_u16 result = shift_queue[shift_read];
-	shift_read = (shift_read + 1U) % TOUCH_SHIFT_QUEUE_CAPACITY;
+	shift_read = (shift_read + 1U) % INPUT_SHIFT_QUEUE_CAPACITY;
 	shift_count--;
 	return result;
 }
@@ -266,12 +327,8 @@ legacy_s16 sdl3_touch_take_seek(void)
 static void control_press(enum TOUCH_CONTROL control)
 {
 	if (control == TOUCH_SHIFT_UP || control == TOUCH_SHIFT_DOWN) {
-		if (shift_count == TOUCH_SHIFT_QUEUE_CAPACITY) {
-			shift_read = (shift_read + 1U) % TOUCH_SHIFT_QUEUE_CAPACITY;
-			shift_count--;
-		}
-		shift_queue[(shift_read + shift_count++) % TOUCH_SHIFT_QUEUE_CAPACITY] =
-			control == TOUCH_SHIFT_UP ? INPUT_SHIFT_UP_FLAG : INPUT_SHIFT_DOWN_FLAG;
+		sdl3_input_queue_shift(control == TOUCH_SHIFT_UP ? INPUT_SHIFT_UP_FLAG
+														 : INPUT_SHIFT_DOWN_FLAG);
 	} else {
 		sdl3_input_queue_key(control_keys[control]);
 		repeat_at[control] = SDL_GetTicks() + TOUCH_REPEAT_DELAY_MS;
@@ -399,12 +456,17 @@ void sdl3_touch_event(const SDL_TouchFingerEvent *event, const SDL_Rect *area)
 
 void sdl3_touch_draw(SDL_Renderer *renderer, SDL_Window *window)
 {
-	if (!enabled || intro_active || !keyboard_selected) {
+	if (!enabled || !layout_visible || intro_active || !keyboard_selected) {
 		return;
 	}
 	SDL_Rect area;
 	if (!SDL_GetWindowSafeArea(window, &area)) {
 		return;
+	}
+	/* Capture window coordinates before disabling the game's logical viewport. */
+	struct TOUCH_CIRCLE circles[TOUCH_CONTROL_COUNT];
+	for (enum TOUCH_CONTROL control = TOUCH_ESCAPE; control < TOUCH_CONTROL_COUNT; control++) {
+		circles[control] = sdl3_touch_circle(control, &area);
 	}
 	legacy_int logical_w, logical_h;
 	SDL_RendererLogicalPresentation presentation;
@@ -423,7 +485,7 @@ void sdl3_touch_draw(SDL_Renderer *renderer, SDL_Window *window)
 		if (!sdl3_touch_visible(control)) {
 			continue;
 		}
-		struct TOUCH_CIRCLE circle = sdl3_touch_circle(control, &area);
+		struct TOUCH_CIRCLE circle = circles[control];
 		SDL_Vertex vertices[TOUCH_CIRCLE_SEGMENTS + 1U];
 		legacy_int indices[TOUCH_CIRCLE_SEGMENTS * 3U];
 		SDL_FPoint outline[TOUCH_CIRCLE_SEGMENTS + 1U];

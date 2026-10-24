@@ -9,15 +9,87 @@
 #undef memcpy
 #undef printf
 
+#ifdef RESTUNTS_AMIGA
+void locate_many_resources(legacy_s8 far *data, const legacy_s8 *names, legacy_s8 far **result)
+{
+	(void)data;
+	(void)names;
+	(void)result;
+	assert(0 && "Input polling must not reload replay resources");
+}
+static legacy_u8 auto_refresh, checking_refresh_scope;
+legacy_u8 amiga_video_set_auto_refresh(legacy_u8 enabled)
+{
+	legacy_u8 previous = auto_refresh;
+	auto_refresh = enabled != 0;
+	return previous;
+}
+#endif
+
 static struct CARSTATE ghost_fixture;
 static legacy_s16 ghost_fixture_active;
+static legacy_u32 ghost_end_calls;
 static legacy_s16 opponent_view_disabled;
 static legacy_u8 supersight_reset_pending;
 static legacy_u32 input_polls, input_exit_poll, fps_expire_poll, fps_expiry_checks;
+legacy_s16 input_combined_flags;
 #ifdef RESTUNTS_SDL3
 #define TEST_SEEK_CHECKPOINT_INTERVAL 60U
 #define TEST_SEEK_RECORDING_FRAMES 1000U
 #define TEST_SEEK_START_FRAME 501U
+static legacy_u8 controller_menu_request, controller_scrub_testing;
+static legacy_u16 controller_scrub_polls;
+static struct RECTANGLE controller_scrub_text_bounds;
+
+void copy_string(legacy_s8 *destination, legacy_s8 far *source)
+{
+	while ((*destination++ = *source++) != 0) {
+	}
+}
+
+legacy_s16 font_centered_text_x(const legacy_s8 *text)
+{
+	(void)text;
+	return 0;
+}
+
+struct RECTANGLE *intro_draw_text(legacy_s8 *text, legacy_s16 x, legacy_s16 y, legacy_s16 color,
+								  legacy_s16 shadow_color)
+{
+	(void)text;
+	(void)x;
+	(void)y;
+	(void)color;
+	(void)shadow_color;
+	assert(controller_scrub_testing != 0);
+	return &controller_scrub_text_bounds;
+}
+
+void rect_union(struct RECTANGLE *first, struct RECTANGLE *second, struct RECTANGLE *result)
+{
+	(void)first;
+	(void)second;
+	(void)result;
+	assert(controller_scrub_testing != 0);
+}
+
+legacy_u8 sdl3_controller_take_menu_request(void)
+{
+	legacy_u8 request = controller_menu_request;
+	controller_menu_request = 0;
+	return request;
+}
+
+legacy_s16 input_update_controller_camera(void)
+{
+	return 0;
+}
+
+void sdl3_input_set_replay_active(legacy_u8 active)
+{
+	(void)active;
+}
+
 static legacy_u8 touch_seek_testing;
 static legacy_s16 touch_seek_direction;
 static legacy_u16 touch_seek_target;
@@ -49,6 +121,11 @@ legacy_s16 frame_fps_expire_idle(void)
 legacy_s16 input_checking(legacy_s16 delta)
 {
 	assert(delta == 1);
+#ifdef RESTUNTS_AMIGA
+	if (checking_refresh_scope) {
+		assert(auto_refresh == 1);
+	}
+#endif
 	assert(++input_polls <= input_exit_poll);
 	return input_polls == input_exit_poll ? KEY_F2 : 0;
 }
@@ -88,6 +165,17 @@ void sprite_select_screen(void)
 
 legacy_s16 input_do_checking(legacy_s16 delta)
 {
+#ifdef RESTUNTS_SDL3
+	if (controller_scrub_testing != 0) {
+		assert((input_combined_flags & INPUT_ACTION_BUTTON_MASK) != 0);
+		controller_scrub_polls++;
+		if (controller_scrub_polls == 1) {
+			assert(delta != REPLAY_INPUT_SETTLE_DELTA);
+			controller_menu_request = 1;
+		}
+		return 0;
+	}
+#endif
 	(void)delta;
 	assert(0 && "Unexpected replay seek");
 	return 0;
@@ -140,6 +228,7 @@ struct CARSTATE *ghost_car_state(void)
 
 void ghost_end_race(void)
 {
+	ghost_end_calls++;
 }
 void ghost_check_track(void)
 {
@@ -148,6 +237,13 @@ void ghost_check_track(void)
 static legacy_u32 trace_hash;
 static legacy_u32 scenario, dialog_count, save_count, write_count, check_count;
 static legacy_s16 menu_action;
+static legacy_s16 restart_confirmation_answer;
+static legacy_u32 restart_questions, restart_initializations;
+static legacy_s8 exit_confirmation_text[] = "Exit to Dos]}[ No [ Yes ]";
+static legacy_s8 *restart_exit_text;
+static const legacy_s8 *restart_expected_text;
+#define TEST_RESTART_INPUT_BUFFER_SIZE 128U
+#define TEST_RESTART_INPUT_PATTERN 165U
 static struct SHAPE2D shapes[23];
 static legacy_u8 track_bytes[901];
 
@@ -245,6 +341,8 @@ void mouse_minmax_position(legacy_s16 enabled)
 void init_game_state_with_frame_rate_byte(legacy_u16 rate)
 {
 	assert(supersight_reset_pending != 0);
+	assert(restart_questions == 1 && restart_confirmation_answer == REPLAY_DIALOG_CONFIRMED_CHOICE);
+	restart_initializations++;
 	supersight_reset_pending = 0;
 	event(14);
 	hash_word(rate);
@@ -264,6 +362,10 @@ legacy_s8 far *locate_text_res(legacy_s8 far *resource, const legacy_s8 *name)
 	hash_word(name[0]);
 	hash_word(name[1]);
 	hash_word(name[2]);
+	if (name == exit_to_dos_dialog_id) {
+		assert(resource == mainresptr);
+		return restart_exit_text;
+	}
 	return (legacy_s8 *)name;
 }
 legacy_u16 show_dialog(legacy_s16 type, legacy_s16 save, void far *text, legacy_u16 x, legacy_u16 y,
@@ -289,6 +391,17 @@ legacy_u16 show_dialog(legacy_s16 type, legacy_s16 save, void far *text, legacy_
 	dialog_count++;
 	if (text == replay_pause_menu_id) {
 		return menu_action;
+	}
+	if (menu_action == REPLAY_PAUSE_ACTION_RESTART) {
+		assert(type == DIALOG_TYPE_MENU && save == DIALOG_SAVE_BACKGROUND);
+		assert(x == DIALOG_AUTO_POSITION && y == DIALOG_AUTO_POSITION);
+		assert(color == dialog_border_color && disabled == 0 &&
+			   initial == REPLAY_DIALOG_INITIAL_CHOICE);
+		assert(strncmp((const legacy_char *)text, (const legacy_char *)restart_expected_text,
+					   REPLAY_RESTART_DIALOG_CAPACITY) == 0);
+		assert(restart_initializations == 0 && supersight_reset_pending == 0);
+		restart_questions++;
+		return (legacy_u16)restart_confirmation_answer;
 	}
 	if (menu_action == REPLAY_PAUSE_ACTION_DISPLAY_OPTIONS) {
 		return scenario % 7 - 1;
@@ -398,6 +511,10 @@ void show_graphic_levels_menu(void)
 static void reset_viewer(void)
 {
 	supersight_reset_pending = 0;
+	restart_questions = restart_initializations = ghost_end_calls = 0;
+	restart_confirmation_answer = REPLAY_DIALOG_CONFIRMED_CHOICE;
+	restart_exit_text = exit_confirmation_text;
+	restart_expected_text = (const legacy_s8 *)"Re-start driving?]}[ No [ Yes ]";
 	memset(&state, 0, sizeof(state));
 	memset(&gameconfig, 0, sizeof(gameconfig));
 	memset(replay_controls_drawn, 0, 2 * sizeof(replay_controls_drawn[0]));
@@ -548,8 +665,64 @@ static void test_pause_cleanup(void)
 	scenario = 0;
 	replay_pause_menu();
 	assert(game_replay_mode == REPLAY_MODE_LIVE && check_count == 3);
+	assert(restart_questions == 1 && restart_initializations == 1 && dialog_count == 2);
 	assert(elapsed_time2 == 0 && gameconfig.game_recordedframes == 0);
 	assert(replay_overflow_acknowledged_word == 0x5a00);
+}
+
+static void test_restart_confirmation_cancel(void)
+{
+	static const legacy_s16 answers[] = {0, -1, 2};
+	static legacy_s8 input_bytes[TEST_RESTART_INPUT_BUFFER_SIZE];
+	legacy_s8 far *saved_input_buffer = replay_input_buffer;
+	for (legacy_u16 index = 0; index < sizeof(answers) / sizeof(answers[0]); index++) {
+		reset_viewer();
+		menu_action = REPLAY_PAUSE_ACTION_RESTART;
+		restart_confirmation_answer = answers[index];
+		replay_recording_flags = REPLAY_RECORDING_ACTIVE_FLAG | REPLAY_RECORDING_MODIFIED_FLAG |
+								 REPLAY_RECORDING_RESTARTABLE_FLAG;
+		replay_input_buffer = input_bytes;
+		memset(input_bytes, TEST_RESTART_INPUT_PATTERN, sizeof(input_bytes));
+		memcpy(replay_filename, "KEEP.RPL", sizeof("KEEP.RPL"));
+		ghost_fixture_active = 1;
+		memset(&ghost_fixture, TEST_RESTART_INPUT_PATTERN, sizeof(ghost_fixture));
+		struct GAMESTATE saved_state = state;
+		struct GAMEINFO saved_config = gameconfig;
+		struct CARSTATE saved_ghost = ghost_fixture;
+		replay_pause_menu();
+		assert(restart_questions == 1 && restart_initializations == 0 && dialog_count == 2);
+		assert(game_replay_mode == REPLAY_MODE_PAUSED && is_in_replay != 0 && check_count == 1);
+		assert(memcmp(&state, &saved_state, sizeof(state)) == 0);
+		assert(memcmp(&gameconfig, &saved_config, sizeof(gameconfig)) == 0);
+		assert(ghost_fixture_active == 1 && ghost_end_calls == 0);
+		assert(memcmp(&ghost_fixture, &saved_ghost, sizeof(ghost_fixture)) == 0);
+		assert(replay_recording_flags ==
+			   (REPLAY_RECORDING_ACTIVE_FLAG | REPLAY_RECORDING_MODIFIED_FLAG |
+				REPLAY_RECORDING_RESTARTABLE_FLAG));
+		assert(elapsed_time1 == 0 && elapsed_time2 == 100);
+		assert(replay_overflow_acknowledged_word == 0x5a01 && race_exit_request == 0);
+		assert(cameramode == CAMERA_MODE_CUSTOM && replay_playback_speed == REPLAY_PLAYBACK_FAST);
+		assert(memcmp(replay_filename, "KEEP.RPL", sizeof("KEEP.RPL")) == 0);
+		assert(replay_input_buffer == input_bytes);
+		for (legacy_u16 byte = 0; byte < sizeof(input_bytes); byte++) {
+			assert((legacy_u8)input_bytes[byte] == TEST_RESTART_INPUT_PATTERN);
+		}
+	}
+	replay_input_buffer = saved_input_buffer;
+	ghost_fixture_active = 0;
+}
+
+static void test_restart_confirmation_localized(void)
+{
+	static legacy_s8 localized_text[] = "Zum DOS zurueck]}[ Nein [ Ja ]";
+	reset_viewer();
+	menu_action = REPLAY_PAUSE_ACTION_RESTART;
+	restart_exit_text = localized_text;
+	restart_expected_text = (const legacy_s8 *)"Re-start driving?]}[ Nein [ Ja ]";
+	replay_pause_menu();
+	assert(restart_questions == 1 && restart_initializations == 1 &&
+		   game_replay_mode == REPLAY_MODE_LIVE);
+	assert(memcmp(localized_text, "Zum DOS zurueck]}[ Nein [ Ja ]", sizeof(localized_text)) == 0);
 }
 
 static void test_save_cleanup(void)
@@ -615,7 +788,65 @@ static void test_paused_replay_fps_refresh(void)
 	assert(input_polls == 1 && fps_expiry_checks == 0);
 }
 
+#ifdef RESTUNTS_AMIGA
+static void test_replay_refresh_restore(void)
+{
+	for (legacy_u8 initial = 0; initial <= 1; ++initial) {
+		for (legacy_u8 paused = 0; paused <= 1; ++paused) {
+			reset_viewer();
+			game_replay_mode = REPLAY_MODE_PLAYBACK;
+			is_in_replay = paused;
+			input_polls = fps_expiry_checks = 0;
+			input_exit_poll = 3;
+			fps_expire_poll = 0;
+			auto_refresh = initial;
+			checking_refresh_scope = 1;
+			loop_game(REPLAY_LOOP_HANDLE_INPUT, 0, 0);
+			checking_refresh_scope = 0;
+			assert(auto_refresh == initial);
+			assert(input_polls == (paused ? 3U : 1U));
+		}
+	}
+}
+#endif
+
 #ifdef RESTUNTS_SDL3
+static void test_controller_pause_menu(void)
+{
+	reset_viewer();
+	game_replay_mode = REPLAY_MODE_PLAYBACK;
+	is_in_replay = 1;
+	menu_action = 0;
+	input_polls = 0;
+	controller_menu_request = 1;
+	replay_handle_input();
+	assert(dialog_count == 1 && input_polls == 0);
+	assert(controller_menu_request == 0 && check_count == 1);
+}
+
+static void test_controller_menu_during_scrub(void)
+{
+	static void (*const actions[])(void) = {replay_fast_forward, replay_rewind};
+	for (legacy_u32 index = 0; index < sizeof(actions) / sizeof(actions[0]); index++) {
+		reset_viewer();
+		game_replay_mode = REPLAY_MODE_PLAYBACK;
+		gameconfig.game_recordedframes = TEST_SEEK_RECORDING_FRAMES;
+		elapsed_time2 = TEST_SEEK_START_FRAME;
+		state.game_frame = TEST_SEEK_START_FRAME;
+		input_combined_flags = INPUT_SECONDARY_ACTION_FLAG;
+		menu_action = 0;
+		controller_menu_request = 0;
+		controller_scrub_testing = touch_seek_testing = 1;
+		controller_scrub_polls = 0;
+		actions[index]();
+		assert(dialog_count == 1 && controller_menu_request == 0);
+		assert(controller_scrub_polls > 1 && touch_seek_restores != 0);
+		assert((input_combined_flags & INPUT_ACTION_BUTTON_MASK) != 0);
+		assert((legacy_u16)state.game_frame == elapsed_time2);
+		controller_scrub_testing = touch_seek_testing = 0;
+	}
+}
+
 static void assert_touch_seek(legacy_u16 expected)
 {
 	assert(replay_touch_seek() != 0);
@@ -669,16 +900,23 @@ legacy_int main(void)
 	legacy_u32 menu = menu_fingerprint();
 	legacy_u32 draw = draw_fingerprint();
 	test_pause_cleanup();
+	test_restart_confirmation_cancel();
+	test_restart_confirmation_localized();
 	test_save_cleanup();
 	test_ghost_view_display_option();
 	test_paused_replay_fps_refresh();
+#ifdef RESTUNTS_AMIGA
+	test_replay_refresh_restore();
+#endif
 #ifdef RESTUNTS_SDL3
 	test_touch_seek_reconstruction();
+	test_controller_pause_menu();
+	test_controller_menu_during_scrub();
 #endif
 #ifdef REPLAY_MENU_BASELINE
 	printf("%08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 "\n", menu, draw);
 #else
-	assert(menu == 0xd57320a8UL);
+	assert(menu == 0x5b094968UL);
 	assert(draw == 0x9b2a836aUL);
 #endif
 	return 0;
