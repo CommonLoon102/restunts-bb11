@@ -199,6 +199,111 @@ static void test_native_mesh_rotations(void)
 	}
 }
 
+/* A generated native mesh need not provide footer bytes after its declared
+ * primitive records. The result owns its storage and supplies a fresh footer. */
+static void test_native_mesh_copy_boundaries(void)
+{
+	enum {
+		COPY_VERTEX_COUNT = 4,
+		COPY_PRIMITIVE_COUNT = 4,
+		COPY_VISIBILITY_SOURCE = 0x36,
+		COPY_FACING_SOURCE = 0xA7,
+		COPY_POINT_FLAGS = 0x81,
+		COPY_LINE_FLAGS = 0x02,
+		COPY_TRIANGLE_FLAGS = 0x03,
+		COPY_QUAD_FLAGS = 0x84,
+		COPY_MINIMUM_COORDINATE = -(legacy_s32)LEGACY_S16_MAX - 1
+	};
+	const struct VECTOR coordinates[COPY_VERTEX_COUNT] = {
+		{COPY_MINIMUM_COORDINATE, 0, LEGACY_S16_MAX},
+		{-1, 1, COPY_MINIMUM_COORDINATE},
+		{LEGACY_S16_MAX, COPY_MINIMUM_COORDINATE, 0},
+		{0, -1, 1}};
+	const legacy_u8 records[] = {SHAPE3D_PRIMITIVE_POINT,
+								 COPY_POINT_FLAGS,
+								 19,
+								 3,
+								 SHAPE3D_PRIMITIVE_LINE,
+								 COPY_LINE_FLAGS,
+								 21,
+								 2,
+								 0,
+								 SHAPE3D_PRIMITIVE_POLYGON_FIRST,
+								 COPY_TRIANGLE_FLAGS,
+								 22,
+								 1,
+								 3,
+								 2,
+								 SHAPE3D_PRIMITIVE_POLYGON_FIRST + 1U,
+								 COPY_QUAD_FLAGS,
+								 24,
+								 3,
+								 0,
+								 2,
+								 1};
+	const legacy_s16 orientations[] = {0, ANGLE_FULL_TURN, ANGLE_EIGHTH_TURN, -ANGLE_EIGHTH_TURN};
+	legacy_u8 vertices[COPY_VERTEX_COUNT * SHAPE3D_VERTEX_SIZE];
+	for (legacy_u16 vertex = 0; vertex < COPY_VERTEX_COUNT; vertex++) {
+		legacy_u8 *bytes = vertices + vertex * SHAPE3D_VERTEX_SIZE;
+		LEGACY_WRITE_U16_LE(bytes + SHAPE3D_VERTEX_X_OFFSET, (legacy_u16)coordinates[vertex].x);
+		LEGACY_WRITE_U16_LE(bytes + SHAPE3D_VERTEX_Y_OFFSET, (legacy_u16)coordinates[vertex].y);
+		LEGACY_WRITE_U16_LE(bytes + SHAPE3D_VERTEX_Z_OFFSET, (legacy_u16)coordinates[vertex].z);
+	}
+	legacy_u8 original_vertices[sizeof(vertices)];
+	memcpy(original_vertices, vertices, sizeof(vertices));
+	legacy_u8 visibility[COPY_PRIMITIVE_COUNT * SHAPE3D_VISIBILITY_MASK_SIZE];
+	legacy_u8 facing[sizeof(visibility)];
+	memset(visibility, COPY_VISIBILITY_SOURCE, sizeof(visibility));
+	memset(facing, COPY_FACING_SOURCE, sizeof(facing));
+	legacy_u8 *primitive_bytes = malloc(sizeof(records));
+	assert(primitive_bytes != NULL);
+	memcpy(primitive_bytes, records, sizeof(records));
+	struct SHAPE3D source = {COPY_VERTEX_COUNT, vertices, COPY_PRIMITIVE_COUNT, 1, primitive_bytes,
+							 visibility,		facing};
+	struct SHAPE3D original_source = source;
+	for (legacy_u16 direction = 0; direction < sizeof(orientations) / sizeof(orientations[0]);
+		 direction++) {
+		struct SHAPE3D transformed;
+		assert(extended_geometry_transform_shape_paint(&source, &transformed,
+													   orientations[direction], CSTRK_ROAD_PAVED,
+													   PHYSICAL_MODEL_ROAD, LEGACY_U16_MAX));
+		assert(transformed.shape3d_numverts == COPY_VERTEX_COUNT);
+		assert(transformed.shape3d_numprimitives == COPY_PRIMITIVE_COUNT);
+		assert(transformed.shape3d_numpaints == 1);
+		assert(transformed.shape3d_vertex_bytes != vertices);
+		assert(transformed.shape3d_primitives != primitive_bytes);
+		assert(memcmp(transformed.shape3d_vertex_bytes, original_vertices, sizeof(vertices)) == 0);
+		assert(memcmp(transformed.shape3d_primitives, records, sizeof(records)) == 0);
+		assert(transformed.shape3d_primitives[sizeof(records)] == 0);
+		assert(transformed.shape3d_primitives[sizeof(records) + 1U] == 0);
+		for (legacy_u16 byte = 0; byte < sizeof(visibility); byte++) {
+			assert(transformed.shape3d_visibility_masks[byte] == LEGACY_U8_MAX);
+			assert(transformed.shape3d_front_facing_masks[byte] == 0);
+			assert(visibility[byte] == COPY_VISIBILITY_SOURCE);
+			assert(facing[byte] == COPY_FACING_SOURCE);
+		}
+		assert(memcmp(&source, &original_source, sizeof(source)) == 0);
+		assert(memcmp(vertices, original_vertices, sizeof(vertices)) == 0);
+		assert(memcmp(primitive_bytes, records, sizeof(records)) == 0);
+		extended_geometry_free_shape(&transformed);
+	}
+	free(primitive_bytes);
+	source.shape3d_numprimitives = 0;
+	source.shape3d_primitives = NULL;
+	source.shape3d_visibility_masks = source.shape3d_front_facing_masks = NULL;
+	original_source = source;
+	struct SHAPE3D transformed;
+	assert(extended_geometry_transform_shape_paint(&source, &transformed, ANGLE_EIGHTH_TURN,
+												   CSTRK_ROAD_PAVED, PHYSICAL_MODEL_ROAD,
+												   LEGACY_U16_MAX));
+	assert(transformed.shape3d_numprimitives == 0 && transformed.shape3d_numpaints == 1);
+	assert(memcmp(transformed.shape3d_vertex_bytes, original_vertices, sizeof(vertices)) == 0);
+	assert(transformed.shape3d_primitives[0] == 0 && transformed.shape3d_primitives[1] == 0);
+	assert(memcmp(&source, &original_source, sizeof(source)) == 0);
+	assert(memcmp(vertices, original_vertices, sizeof(vertices)) == 0);
+	extended_geometry_free_shape(&transformed);
+}
+
 static void test_raised_stunt_and_snapshot(void)
 {
 	struct CSTRK_TRACK track;
@@ -3226,6 +3331,152 @@ static void test_crop_field_scenery(void)
 	}
 }
 
+/* Reproduce the former four-origin scan independently of the loaded lookup.
+ * Origin chains retain load-time membership and newest-first authored order;
+ * the upper footprint bounds still come from the current mutable objects. */
+static legacy_u16 cell_query_reference(const struct CSTRK_OBJECT *origins, legacy_s16 column,
+									   legacy_s16 row, const struct CSTRK_OBJECT **objects,
+									   legacy_u16 capacity)
+{
+	const struct CSTRK_TRACK *track = extended_track_model();
+	if (!track || !objects || column < 0 || row < 0 || column >= track->width ||
+		row >= track->height) {
+		return 0;
+	}
+	legacy_u16 count = 0;
+	for (legacy_s16 y = row > 0 ? row - 1 : row; y <= row; y++) {
+		for (legacy_s16 x = column > 0 ? column - 1 : column; x <= column; x++) {
+			for (legacy_u32 index = track->object_count; index-- > 0;) {
+				const struct CSTRK_OBJECT *object = &track->objects[index];
+				if (origins[index].x == x && origins[index].y == y &&
+					column < object->x + object->width && row < object->y + object->height &&
+					count < capacity) {
+					objects[count++] = object;
+				}
+			}
+		}
+	}
+	return count;
+}
+
+static void assert_cell_query(const struct CSTRK_OBJECT *origins, legacy_s16 column, legacy_s16 row)
+{
+	enum { QUERY_GUARDS = 2 };
+	const legacy_u16 capacities[] = {0, 1, 2, EXTENDED_TRACK_CELL_OBJECT_MAX};
+	const struct CSTRK_OBJECT guard = {0};
+	for (size_t pass = 0; pass < sizeof(capacities) / sizeof(capacities[0]); pass++) {
+		const struct CSTRK_OBJECT *actual[EXTENDED_TRACK_CELL_OBJECT_MAX + QUERY_GUARDS];
+		const struct CSTRK_OBJECT *expected[EXTENDED_TRACK_CELL_OBJECT_MAX + QUERY_GUARDS];
+		for (size_t index = 0; index < sizeof(actual) / sizeof(actual[0]); index++) {
+			actual[index] = expected[index] = &guard;
+		}
+		legacy_u16 count =
+			extended_track_objects_in_cell(column, row, actual + 1, capacities[pass]);
+		assert(count == cell_query_reference(origins, column, row, expected + 1, capacities[pass]));
+		assert(memcmp(actual, expected, sizeof(actual)) == 0);
+	}
+	assert(extended_track_objects_in_cell(column, row, NULL, EXTENDED_TRACK_CELL_OBJECT_MAX) == 0);
+}
+
+static void assert_all_cell_queries(const struct CSTRK_OBJECT *origins)
+{
+	const struct CSTRK_TRACK *track = extended_track_model();
+	assert(track != NULL);
+	for (legacy_s16 row = -1; row <= track->height; row++) {
+		for (legacy_s16 column = -1; column <= track->width; column++) {
+			assert_cell_query(origins, column, row);
+		}
+	}
+}
+
+static void test_cell_object_queries(void)
+{
+	enum {
+		QUERY_COLUMN = 3,
+		QUERY_ROW = 3,
+		QUERY_CURVE_ID = 13,
+		QUERY_STRAIGHT_ID = 4,
+		QUERY_WIDE = 2,
+		QUERY_CURVE_MASK = 14,
+		QUERY_WIDE_MASK = 3,
+		QUERY_EDGE_OBJECT = 3
+	};
+	const legacy_u8 positions[][2] = {{QUERY_COLUMN - 1, QUERY_ROW - 1},
+									  {QUERY_COLUMN, QUERY_ROW - 1},
+									  {QUERY_COLUMN - 1, QUERY_ROW},
+									  {0, 0},
+									  {CSTRK_MAX_DIMENSION - 1, CSTRK_MAX_DIMENSION - 1}};
+	struct CSTRK_TRACK track;
+	cstrk_init(&track);
+	assert(cstrk_create(&track, CSTRK_MAX_DIMENSION, CSTRK_MAX_DIMENSION, error, sizeof(error)));
+	for (size_t index = 0; index < sizeof(positions) / sizeof(positions[0]); index++) {
+		struct CSTRK_OBJECT tree =
+			object_at(CSTRK_PINE_TREE_ID, positions[index][0], positions[index][1]);
+		assert(cstrk_add_object(&track, &tree, error, sizeof(error)));
+	}
+	/* The sparse turn and straight share an origin without claiming the same
+	 * ground. Queries include the turn's unclaimed northwest quadrant too. */
+	struct CSTRK_OBJECT curve = object_at(QUERY_CURVE_ID, QUERY_COLUMN, QUERY_ROW);
+	curve.width = curve.height = QUERY_WIDE;
+	curve.occupied_mask = QUERY_CURVE_MASK;
+	assert(cstrk_add_object(&track, &curve, error, sizeof(error)));
+	struct CSTRK_OBJECT straight = object_at(QUERY_STRAIGHT_ID, QUERY_COLUMN, QUERY_ROW);
+	assert(cstrk_add_object(&track, &straight, error, sizeof(error)));
+	activate(&track);
+	assert_all_cell_queries(track.objects);
+	struct CSTRK_OBJECT *objects = extended_track_model()->objects;
+	for (legacy_u32 index = 0; index < track.object_count; index++) {
+		objects[index].width = objects[index].height = QUERY_WIDE;
+		assert_all_cell_queries(track.objects);
+		objects[index] = track.objects[index];
+		objects[index].width = objects[index].height = 1;
+		assert_all_cell_queries(track.objects);
+		objects[index] = track.objects[index];
+		objects[index].x = objects[index].y = CSTRK_MAX_DIMENSION - 1;
+		assert_all_cell_queries(track.objects);
+		objects[index] = track.objects[index];
+		objects[index].x = objects[index].y = 0;
+		assert_all_cell_queries(track.objects);
+		objects[index] = track.objects[index];
+	}
+	/* This valid codec record has no corresponding native scenery footprint.
+	 * Failed resource admission must retain the preceding track and lookup. */
+	track.objects[QUERY_EDGE_OBJECT].width = QUERY_WIDE;
+	track.objects[QUERY_EDGE_OBJECT].occupied_mask = QUERY_WIDE_MASK;
+	legacy_u8 *encoded = NULL;
+	size_t encoded_size = 0;
+	assert(cstrk_encode(&track, &encoded, &encoded_size, error, sizeof(error)));
+	assert(!extended_track_load(encoded, encoded_size, error, sizeof(error)));
+	free(encoded);
+	track.objects[QUERY_EDGE_OBJECT].width = 1;
+	track.objects[QUERY_EDGE_OBJECT].occupied_mask = 1;
+	assert(extended_track_model()->objects == objects);
+	assert_all_cell_queries(track.objects);
+	activate(&track);
+	assert_all_cell_queries(track.objects);
+	/* A successful empty reload replaces every old candidate interval. */
+	track.object_count = 0;
+	activate(&track);
+	assert_all_cell_queries(track.objects);
+	extended_track_unload();
+	assert_cell_query(NULL, QUERY_COLUMN, QUERY_ROW);
+	cstrk_free(&track);
+	/* Exercise offsets near the maximum 90x90 grid and object-count bound. */
+	assert(cstrk_create(&track, CSTRK_MAX_DIMENSION, CSTRK_MAX_DIMENSION, error, sizeof(error)));
+	track.objects = calloc(CSTRK_MAX_OBJECTS, sizeof(*track.objects));
+	assert(track.objects != NULL);
+	track.object_count = CSTRK_MAX_OBJECTS;
+	for (legacy_u32 index = 0; index < track.object_count; index++) {
+		track.objects[index] =
+			object_at(CSTRK_PINE_TREE_ID, index % track.width, index / track.width);
+	}
+	activate(&track);
+	assert_cell_query(track.objects, 0, 0);
+	assert_cell_query(track.objects, CSTRK_MAX_DIMENSION - 1, CSTRK_MAX_DIMENSION - 1);
+	extended_track_unload();
+	cstrk_free(&track);
+}
+
 int main(void)
 {
 	FILE *resource = fopen("GAME.PRE", "rb");
@@ -3247,6 +3498,7 @@ int main(void)
 	legacy_u8 *legacy_terrain = track_terrain_map;
 	legacy_s16 *legacy_links = track_primary_route_links;
 	test_native_mesh_rotations();
+	test_native_mesh_copy_boundaries();
 	test_world_coordinates_and_surfaces();
 	test_raised_stunt_and_snapshot();
 	test_every_element_on_straight_slopes();
@@ -3279,6 +3531,7 @@ int main(void)
 	test_crop_field_scenery();
 	test_extended_material_variants();
 	test_shared_road_anchor();
+	test_cell_object_queries();
 	test_opponent_shortest_branch();
 	test_sparse_catalog_footprints();
 	test_sparse_corner_terrain();

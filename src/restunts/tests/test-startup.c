@@ -28,6 +28,7 @@ static legacy_u16 startup_audio_calls, startup_video_calls;
 static legacy_s16 startup_exit_status;
 static jmp_buf exit_jump;
 legacy_u8 fps_display_enabled;
+legacy_u8 mph_display_enabled;
 static legacy_u8 expected_fps_display_enabled;
 static legacy_u32 startup_fps_reset_calls;
 
@@ -758,6 +759,30 @@ static void test_startup_physics_options(void)
 	}
 }
 
+static void test_startup_owoot_options(void)
+{
+	static legacy_s8 *arguments[][3] = {
+		{(legacy_s8 *)"game"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"--owoot"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"--owoot:on"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"--OWOOT:OFF"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"--owoot:off", (legacy_s8 *)"--owoot:on"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"--owoot:on", (legacy_s8 *)"--owoot:off"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"--owoot:off", (legacy_s8 *)"--owoot"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"--owoot:on", (legacy_s8 *)"--owoot:invalid"},
+		{(legacy_s8 *)"game"},
+	};
+	static const legacy_s16 counts[] = {1, 2, 2, 2, 3, 3, 3, 3, 1};
+	static const legacy_s16 expected_enabled[] = {0, 1, 1, 0, 1, 0, 1, 1, 0};
+	owoot_enabled = 1;
+	for (legacy_u32 scenario = 0; scenario < sizeof(counts) / sizeof(counts[0]); scenario++) {
+		timer_calls = status_calls = 0;
+		audio_failure = 0;
+		init_main(counts[scenario], arguments[scenario]);
+		assert(owoot_enabled == expected_enabled[scenario]);
+	}
+}
+
 static void reset_startup_hypervision(void)
 {
 #ifdef RESTUNTS_SDL3
@@ -1103,6 +1128,55 @@ static void test_startup_fullscreen_options(void)
 #endif
 }
 
+static void test_startup_mph_display_options(void)
+{
+	static const struct {
+		const legacy_s8 *argument;
+		legacy_u8 enabled;
+	} cases[] = {{"--showmph:on", FRAME_MPH_DISPLAY_ON},
+				 {"--showmph:off", FRAME_MPH_DISPLAY_OFF},
+				 {"--SHOWMPH:On", FRAME_MPH_DISPLAY_ON},
+				 {"--sHoWmPh:OfF", FRAME_MPH_DISPLAY_OFF}};
+	for (legacy_u16 index = 0; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)cases[index].argument};
+		reset_startup_hypervision();
+		mph_display_enabled = cases[index].enabled == FRAME_MPH_DISPLAY_OFF ? FRAME_MPH_DISPLAY_ON
+																			: FRAME_MPH_DISPLAY_OFF;
+		init_main(sizeof(arguments) / sizeof(arguments[0]), arguments);
+		assert(mph_display_enabled == cases[index].enabled);
+		assert(startup_options.mph_display_enabled == cases[index].enabled);
+		assert(startup_options.mph_display_specified);
+	}
+
+	/* A new launch restores its option instead of retaining the session toggle. */
+	legacy_s8 *defaults[] = {(legacy_s8 *)"game"};
+	mph_display_enabled = FRAME_MPH_DISPLAY_ON;
+	reset_startup_hypervision();
+	init_main(sizeof(defaults) / sizeof(defaults[0]), defaults);
+	assert(mph_display_enabled == FRAME_MPH_DISPLAY_OFF);
+	assert(startup_options.mph_display_enabled == FRAME_MPH_DISPLAY_OFF);
+	assert(!startup_options.mph_display_specified);
+
+	static const legacy_s8 *invalid[] = {"--showmph:",	  "--showmph:auto",	  "--showmph:1",
+										 "--showmph:onx", "--showmph:off:on", "--SHOWMPH:unknown"};
+	for (legacy_u16 index = 0; index < sizeof(invalid) / sizeof(invalid[0]); ++index) {
+		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)invalid[index]};
+		mph_display_enabled = FRAME_MPH_DISPLAY_ON;
+		expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
+		assert(mph_display_enabled == FRAME_MPH_DISPLAY_ON);
+	}
+	for (legacy_u16 first = 0; first < sizeof(cases) / sizeof(cases[0]); ++first) {
+		for (legacy_u16 second = 0; second < sizeof(cases) / sizeof(cases[0]); ++second) {
+			legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)cases[first].argument,
+									  (legacy_s8 *)"--fps:off",
+									  (legacy_s8 *)cases[second].argument};
+			mph_display_enabled = FRAME_MPH_DISPLAY_ON;
+			expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
+			assert(mph_display_enabled == FRAME_MPH_DISPLAY_ON);
+		}
+	}
+}
+
 static void test_startup_fps_display_options(void)
 {
 	static const struct {
@@ -1381,6 +1455,7 @@ int main(void)
 	test_startup_game_version();
 	test_startup_intro_option();
 	test_startup_physics_options();
+	test_startup_owoot_options();
 #ifdef RESTUNTS_SDL3
 	test_startup_hypervision_options();
 	test_startup_ogg_music_options();
@@ -1389,6 +1464,7 @@ int main(void)
 #endif
 #endif
 	test_startup_fps_display_options();
+	test_startup_mph_display_options();
 	test_startup_multi_core_options();
 	test_startup_fullscreen_options();
 	test_startup_controller_vibration_options();

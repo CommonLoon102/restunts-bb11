@@ -48,6 +48,17 @@
 #define TEST_BUILD_GROWTH_COMMANDS 257U
 #define TEST_BUILD_STRIPE_DIVISOR 3
 #define TEST_BUILD_DEPTH_STEP 0.001
+#define TEST_BUILD_WARP_DEPTH (TEST_NEAR_DEPTH - TEST_MIDDLE_DEPTH)
+#define TEST_PARTITION_STRIPES 8U
+#define TEST_PARTITION_FIRST_WIN 3U
+#define TEST_SEARCH_SHORT_COUNT 7
+#define TEST_SEARCH_LONG_COUNT 31
+#define TEST_SEARCH_REPLACE_PERIOD 3
+#define TEST_OUTLINE_SEGMENTS 16U
+#define TEST_OUTLINE_VERTICES (TEST_RECTANGLE_VERTICES * TEST_OUTLINE_SEGMENTS)
+#define TEST_OUTLINE_GROUPS 2
+
+enum { TEST_PARTITION_HIDDEN, TEST_PARTITION_VISIBLE, TEST_PARTITION_DECAL, TEST_PARTITION_CASES };
 
 static struct SPRITE sprite;
 static struct HIRES_RASTER_TARGET target;
@@ -67,14 +78,19 @@ static void begin_frame(legacy_s32 scale)
 	hires_backend_begin(NULL);
 }
 
-static const legacy_u8 *end_frame(void)
+static const legacy_u8 *finish_frame(legacy_s32 preserve_depth)
 {
-	(void)hires_backend_end(&target, 0);
+	(void)hires_backend_end(&target, preserve_depth);
 	hires_end();
 	legacy_s32 width, height;
 	const legacy_u8 *pixels = video_framebuffer(screen, &width, &height);
 	assert(pixels != NULL && width == target.width && height == target.height);
 	return pixels;
+}
+
+static const legacy_u8 *end_frame(void)
+{
+	return finish_frame(0);
 }
 
 static struct HIRES_BACKEND_MATERIAL material(legacy_u16 color, legacy_u32 family)
@@ -132,6 +148,95 @@ static void test_crossing_surfaces(legacy_s32 scale)
 			assert_same_pixels(pixels);
 		}
 	}
+}
+
+/* Whole and contained winners preserve untouched ends and later depth crossings.
+ * A decal's offset depth must not replace its supporting surface's depth. */
+static void test_whole_span_replacement(legacy_s32 scale)
+{
+	enum { TEST_WHOLE_REJECTED, TEST_WHOLE_WINNER, TEST_WHOLE_DECAL, TEST_WHOLE_CROSSING };
+	enum { TEST_WHOLE_FULL, TEST_WHOLE_LEFT, TEST_WHOLE_RIGHT, TEST_WHOLE_INTERIOR };
+	const legacy_char *workers[] = {TEST_NO_WORKERS, "1", "3"};
+	const struct HIRES_BACKEND_MATERIAL support = material(TEST_FIRST_COLOR, TEST_FIRST_FAMILY);
+	const struct HIRES_BACKEND_MATERIAL rejected = material(TEST_SECOND_COLOR, TEST_SECOND_FAMILY);
+	const struct HIRES_BACKEND_MATERIAL winner = material(TEST_SECOND_COLOR, TEST_FIRST_FAMILY);
+	const struct HIRES_BACKEND_MATERIAL crossing = material(TEST_FIRST_COLOR, TEST_SECOND_FAMILY);
+	struct HIRES_BACKEND_MATERIAL decal = material(TEST_DECAL_COLOR, TEST_FIRST_FAMILY);
+	decal.flags = HIRES_BACKEND_DECAL;
+	hires_render_workers_set_enabled(1);
+	for (legacy_u32 worker = 0; worker < SDL_arraysize(workers); worker++) {
+		hires_render_workers_shutdown();
+		assert(SDL_setenv_unsafe("RESTUNTS_RENDER_WORKERS", workers[worker], true) == 0);
+		for (legacy_s32 bounds = TEST_WHOLE_FULL; bounds <= TEST_WHOLE_INTERIOR; bounds++) {
+			for (legacy_s32 kind = TEST_WHOLE_REJECTED; kind <= TEST_WHOLE_CROSSING; kind++) {
+				begin_frame(scale);
+				legacy_s32 left = bounds == TEST_WHOLE_RIGHT || bounds == TEST_WHOLE_INTERIOR
+									  ? target.width / 4
+									  : 0;
+				legacy_s32 right = bounds == TEST_WHOLE_LEFT || bounds == TEST_WHOLE_INTERIOR
+									   ? target.width * 3 / 4
+									   : target.width;
+				legacy_s32 marker_left = bounds == TEST_WHOLE_RIGHT ? 0 : target.width * 7 / 8;
+				legacy_s32 marker_right =
+					bounds == TEST_WHOLE_RIGHT ? target.width / 8 : target.width;
+				rectangle(0, target.width, 0, target.height, TEST_FAR_DEPTH, TEST_FAR_DEPTH,
+						  &support);
+				/* A separate, identical-looking command leaves an untouched neighbor
+				 * beside contained replacements without changing the pixel oracle. */
+				if (bounds != TEST_WHOLE_FULL) {
+					rectangle(marker_left, marker_right, 0, target.height, TEST_FAR_DEPTH,
+							  TEST_FAR_DEPTH, &support);
+				}
+				rectangle(left, right, 0, target.height, TEST_FAR_DEPTH / 2, TEST_FAR_DEPTH / 2,
+						  &rejected);
+				if (kind >= TEST_WHOLE_WINNER) {
+					rectangle(kind >= TEST_WHOLE_DECAL ? 0 : left,
+							  kind >= TEST_WHOLE_DECAL ? target.width : right, 0, target.height,
+							  TEST_NEAR_DEPTH, TEST_NEAR_DEPTH, &winner);
+				}
+				if (kind >= TEST_WHOLE_DECAL) {
+					if (bounds != TEST_WHOLE_FULL) {
+						rectangle(marker_left, marker_right, 0, target.height, TEST_NEAR_DEPTH,
+								  TEST_NEAR_DEPTH, &winner);
+					}
+					rectangle(left, right, 0, target.height, TEST_FAR_DEPTH / 4, TEST_FAR_DEPTH / 4,
+							  &decal);
+				}
+				if (kind == TEST_WHOLE_CROSSING) {
+					rectangle(0, target.width, 0, target.height, TEST_NEAR_DEPTH + TEST_FAR_DEPTH,
+							  TEST_MIDDLE_DEPTH, &crossing);
+				}
+				const legacy_u8 *pixels = end_frame();
+				for (legacy_s32 y = 0; y < target.height; y++) {
+					for (legacy_s32 x = 0; x < target.width; x++) {
+						legacy_u32 offset = (legacy_u32)y * target.width + x;
+						legacy_s32 covered = x >= left && x < right;
+						legacy_s32 won =
+							kind >= TEST_WHOLE_WINNER && (kind >= TEST_WHOLE_DECAL || covered);
+						legacy_u8 color = won ? TEST_SECOND_COLOR : TEST_FIRST_COLOR;
+						legacy_u32 family = TEST_FIRST_FAMILY;
+						legacy_f64 depth = won ? TEST_NEAR_DEPTH : TEST_FAR_DEPTH;
+						if (kind >= TEST_WHOLE_DECAL && covered) {
+							color = TEST_DECAL_COLOR;
+						}
+						if (kind == TEST_WHOLE_CROSSING && x < target.width / 2) {
+							color = TEST_FIRST_COLOR;
+							family = TEST_SECOND_FAMILY;
+							depth = TEST_NEAR_DEPTH + TEST_FAR_DEPTH +
+									(TEST_MIDDLE_DEPTH - TEST_NEAR_DEPTH - TEST_FAR_DEPTH) *
+										(x + HIRES_SAMPLE_CENTER_OFFSET) / target.width;
+						}
+						assert(pixels[offset] == color);
+						assert(target.depth_family[offset] == family);
+						legacy_f64 error = target.inverse_depth[offset] - depth;
+						assert(error >= -depth * TEST_DEPTH_TOLERANCE &&
+							   error <= depth * TEST_DEPTH_TOLERANCE);
+					}
+				}
+			}
+		}
+	}
+	hires_render_workers_set_enabled(0);
 }
 
 static void test_concave_coverage(legacy_s32 scale)
@@ -252,6 +357,114 @@ static legacy_s32 contains_sample(const struct TEST_POLYGON *polygon, legacy_f64
 		previous = current;
 	}
 	return inside;
+}
+
+/* A late first win must reconstruct the rejected prefix without losing either
+ * untouched end of the partition or the rejected suffix after that win. */
+static void test_lazy_partition_prefix(legacy_s32 scale)
+{
+	hires_render_workers_set_enabled(1);
+	for (legacy_s32 workers = 0; workers <= 1; workers++) {
+		hires_render_workers_shutdown();
+		assert(SDL_setenv_unsafe("RESTUNTS_RENDER_WORKERS",
+								 workers ? TEST_WORKER_COUNT : TEST_NO_WORKERS, true) == 0);
+		for (legacy_s32 variant = 0; variant < TEST_PARTITION_CASES; variant++) {
+			begin_frame(scale);
+			legacy_s32 stripe_width = target.width / TEST_PARTITION_STRIPES;
+			for (legacy_u32 stripe = 0; stripe < TEST_PARTITION_STRIPES; stripe++) {
+				struct HIRES_BACKEND_MATERIAL support =
+					material((stripe & 1U) == 0 ? TEST_FIRST_COLOR : TEST_SECOND_COLOR,
+							 TEST_FIRST_FAMILY + stripe);
+				legacy_f64 depth =
+					stripe == TEST_PARTITION_FIRST_WIN ? TEST_FAR_DEPTH : TEST_NEAR_DEPTH;
+				rectangle(stripe * stripe_width, (stripe + 1U) * stripe_width, 0, target.height,
+						  depth, depth, &support);
+			}
+			legacy_s32 left = stripe_width / 2;
+			legacy_s32 right = target.width - left;
+			legacy_s32 top = target.height / 4;
+			legacy_s32 bottom = target.height - top;
+			struct HIRES_BACKEND_MATERIAL incoming =
+				material(TEST_DECAL_COLOR, TEST_FIRST_FAMILY + TEST_PARTITION_STRIPES);
+			legacy_f64 incoming_depth =
+				variant == TEST_PARTITION_VISIBLE ? TEST_MIDDLE_DEPTH : TEST_FAR_DEPTH / 2;
+			if (variant == TEST_PARTITION_DECAL) {
+				/* The decal is behind every stripe. Its matching support is the
+				 * first winning overlap and must retain the support's depth. */
+				incoming.flags = HIRES_BACKEND_DECAL;
+				incoming.family = TEST_FIRST_FAMILY + TEST_PARTITION_FIRST_WIN;
+			}
+			rectangle(left, right, top, bottom, incoming_depth, incoming_depth, &incoming);
+			const legacy_u8 *pixels = end_frame();
+			for (legacy_s32 y = 0; y < target.height; y++) {
+				for (legacy_s32 x = 0; x < target.width; x++) {
+					legacy_u32 stripe = x / stripe_width;
+					legacy_s32 covered = variant != TEST_PARTITION_HIDDEN &&
+										 stripe == TEST_PARTITION_FIRST_WIN && y >= top &&
+										 y < bottom;
+					legacy_u8 expected =
+						covered ? TEST_DECAL_COLOR
+								: ((stripe & 1U) == 0 ? TEST_FIRST_COLOR : TEST_SECOND_COLOR);
+					legacy_f32 depth =
+						stripe == TEST_PARTITION_FIRST_WIN ? TEST_FAR_DEPTH : TEST_NEAR_DEPTH;
+					legacy_u32 family = TEST_FIRST_FAMILY + stripe;
+					if (covered && variant == TEST_PARTITION_VISIBLE) {
+						depth = TEST_MIDDLE_DEPTH;
+						family = incoming.family;
+					}
+					legacy_u32 offset = (legacy_u32)y * target.width + x;
+					assert(pixels[offset] == expected);
+					assert(target.inverse_depth[offset] == depth);
+					assert(target.depth_family[offset] == family);
+				}
+			}
+		}
+	}
+	hires_render_workers_set_enabled(0);
+}
+
+/* Exact pixel boundaries exercise the partition search at both ends and
+ * throughout long rows whose span counts need not be powers of two. */
+static void test_partition_pixel_boundaries(legacy_s32 scale)
+{
+	const legacy_s32 counts[] = {
+		1, 2, TEST_SEARCH_SHORT_COUNT, TEST_SEARCH_LONG_COUNT, TEST_WIDTH - 1, TEST_WIDTH};
+	const struct HIRES_BACKEND_MATERIAL incoming = material(TEST_DECAL_COLOR, TEST_SECOND_FAMILY);
+	for (legacy_u32 partition = 0; partition < SDL_arraysize(counts); partition++) {
+		begin_frame(scale);
+		legacy_s32 count = counts[partition] * scale;
+		for (legacy_s32 x = 0; x < count; x++) {
+			struct HIRES_BACKEND_MATERIAL support =
+				material((x & 1) == 0 ? TEST_FIRST_COLOR : TEST_SECOND_COLOR, TEST_FIRST_FAMILY);
+			rectangle(x, x + 1, 0, 1, TEST_FAR_DEPTH, TEST_FAR_DEPTH, &support);
+		}
+		for (legacy_s32 x = count - 1; x >= 0; x--) {
+			if (x % TEST_SEARCH_REPLACE_PERIOD == 0 || x == count - 1) {
+				rectangle(x, x + 1, 0, 1, TEST_NEAR_DEPTH, TEST_NEAR_DEPTH, &incoming);
+			}
+		}
+		const legacy_u8 *pixels = end_frame();
+		for (legacy_s32 y = 0; y < target.height; y++) {
+			for (legacy_s32 x = 0; x < target.width; x++) {
+				legacy_s32 supported = y == 0 && x < count;
+				legacy_s32 replaced =
+					supported && (x % TEST_SEARCH_REPLACE_PERIOD == 0 || x == count - 1);
+				legacy_u8 expected = !supported		? TEST_BACKGROUND
+									 : replaced		? TEST_DECAL_COLOR
+									 : (x & 1) == 0 ? TEST_FIRST_COLOR
+													: TEST_SECOND_COLOR;
+				legacy_u32 offset = (legacy_u32)y * target.width + x;
+				assert(pixels[offset] == expected);
+				assert(target.depth_family[offset] == (!supported ? HIRES_DEPTH_FAMILY_NONE
+													   : replaced ? TEST_SECOND_FAMILY
+																  : TEST_FIRST_FAMILY));
+				if (supported) {
+					assert(target.inverse_depth[offset] ==
+						   (replaced ? TEST_NEAR_DEPTH : TEST_FAR_DEPTH));
+				}
+			}
+		}
+	}
 }
 
 static void test_offscreen_depth_oracle(legacy_s32 scale)
@@ -607,9 +820,15 @@ static void build_test_group(void *context, legacy_s32 index, struct HIRES_BACKE
 			paint.pattern = TEST_PATTERN_EVEN_COLUMNS;
 		}
 	}
-	const struct HIRES_BACKEND_VERTEX vertices[TEST_RECTANGLE_VERTICES] = {
+	struct HIRES_BACKEND_VERTEX vertices[TEST_RECTANGLE_VERTICES] = {
 		{left, top, depth}, {right, top, depth}, {right, bottom, depth}, {left, bottom, depth}};
 	for (legacy_u32 repeat = 0; repeat < repeats; repeat++) {
+		/* Mix planar commands with warped quads, including clipped geometry.
+		 * The repeated group also grows its private depth interpolation stream. */
+		vertices[TEST_RECTANGLE_VERTICES / 2U].inverse_z =
+			depth + ((((legacy_u32)index + repeat) & 1U) != 0U || index == TEST_BUILD_CLIPPED_GROUP
+						 ? TEST_BUILD_WARP_DEPTH
+						 : 0);
 		hires_backend_polygon_to(buffer, vertices, count, &paint);
 	}
 }
@@ -631,14 +850,97 @@ static void test_parallel_build_matches(void)
 				begin_frame(scale);
 				const struct HIRES_BACKEND_MATERIAL support =
 					material(TEST_FIRST_COLOR, TEST_FIRST_FAMILY);
+				const struct HIRES_BACKEND_VERTEX prefix[TEST_RECTANGLE_VERTICES] = {
+					{0, 0, TEST_FAR_DEPTH},
+					{target.width, 0, TEST_FAR_DEPTH},
+					{target.width, target.height, TEST_NEAR_DEPTH},
+					{0, target.height, TEST_FAR_DEPTH}};
+				/* Parallel depth ranges must append after an existing warped command. */
+				hires_backend_polygon(prefix, TEST_RECTANGLE_VERTICES, &support);
 				rectangle(0, target.width, 0, target.height, TEST_MIDDLE_DEPTH, TEST_MIDDLE_DEPTH,
 						  &support);
 				hires_backend_build(counts[count], build_test_group, NULL);
 				/* Reusing private buffers must append after existing commands. */
 				hires_backend_build(TEST_BUILD_APPEND_GROUPS, build_test_group, NULL);
-				const legacy_u8 *pixels = end_frame();
+				legacy_s32 preserve_depth = counts[count] == TEST_BUILD_GROUPS;
+				if (preserve_depth) {
+					/* Reuse the sparse streams after rendering, retaining the first pass. */
+					(void)hires_backend_end(&target, 0);
+					hires_backend_begin(NULL);
+					hires_backend_build(TEST_BUILD_APPEND_GROUPS, build_test_group, NULL);
+				}
+				const legacy_u8 *pixels = finish_frame(preserve_depth);
 				size_t samples = (size_t)target.width * target.height;
 				if (worker == 0) {
+					memcpy(reference, pixels, samples);
+					memcpy(depths, target.inverse_depth, samples * sizeof(*depths));
+					memcpy(families, target.depth_family, samples * sizeof(*families));
+				} else {
+					assert_same_pixels(pixels);
+					assert(memcmp(depths, target.inverse_depth, samples * sizeof(*depths)) == 0);
+					assert(memcmp(families, target.depth_family, samples * sizeof(*families)) == 0);
+				}
+			}
+		}
+	}
+	hires_render_workers_set_enabled(0);
+	free(depths);
+	free(families);
+}
+
+struct TEST_BUILD_OUTLINE {
+	const struct HIRES_BACKEND_VERTEX *vertices;
+	legacy_u32 count;
+};
+
+static void build_test_outline(void *context, legacy_s32 index, struct HIRES_BACKEND_BUFFER *buffer)
+{
+	(void)index;
+	const struct TEST_BUILD_OUTLINE *outline = context;
+	const struct HIRES_BACKEND_MATERIAL paint = material(TEST_FIRST_COLOR, TEST_FIRST_FAMILY);
+	hires_backend_polygon_to(buffer, outline->vertices, outline->count, &paint);
+}
+
+/* Every subdivided edge spans at least one scanline. Exact integer slopes keep
+ * this maximum-edge outline pixel-identical to its four-corner reference. */
+static void test_maximum_edge_outline(void)
+{
+	legacy_f32 *depths = malloc((size_t)HIRES_WIDTH * HIRES_HEIGHT * sizeof(*depths));
+	legacy_u32 *families = malloc((size_t)HIRES_WIDTH * HIRES_HEIGHT * sizeof(*families));
+	assert(depths != NULL && families != NULL);
+	const legacy_char *workers[] = {TEST_NO_WORKERS, "1", "3"};
+	hires_render_workers_set_enabled(1);
+	for (legacy_s32 scale = HIRES_MINIMUM_SCALE; scale <= HIRES_SCALE;
+		 scale *= HIRES_MEDIUM_SCALE) {
+		const struct HIRES_BACKEND_VERTEX corners[TEST_RECTANGLE_VERTICES] = {
+			{16 * scale, 16 * scale, TEST_MIDDLE_DEPTH},
+			{112 * scale, 32 * scale, TEST_MIDDLE_DEPTH},
+			{112 * scale, 160 * scale, TEST_MIDDLE_DEPTH},
+			{16 * scale, 144 * scale, TEST_MIDDLE_DEPTH}};
+		struct HIRES_BACKEND_VERTEX subdivided[TEST_OUTLINE_VERTICES];
+		for (legacy_u32 side = 0; side < TEST_RECTANGLE_VERTICES; side++) {
+			const struct HIRES_BACKEND_VERTEX *first = &corners[side];
+			const struct HIRES_BACKEND_VERTEX *last =
+				&corners[(side + 1U) % TEST_RECTANGLE_VERTICES];
+			for (legacy_u32 segment = 0; segment < TEST_OUTLINE_SEGMENTS; segment++) {
+				subdivided[side * TEST_OUTLINE_SEGMENTS + segment] = (struct HIRES_BACKEND_VERTEX){
+					first->x + (last->x - first->x) * segment / TEST_OUTLINE_SEGMENTS,
+					first->y + (last->y - first->y) * segment / TEST_OUTLINE_SEGMENTS,
+					TEST_MIDDLE_DEPTH};
+			}
+		}
+		struct TEST_BUILD_OUTLINE outlines[] = {{corners, TEST_RECTANGLE_VERTICES},
+												{subdivided, TEST_OUTLINE_VERTICES}};
+		for (legacy_u32 outline = 0; outline < SDL_arraysize(outlines); outline++) {
+			for (legacy_u32 worker = 0; worker < SDL_arraysize(workers); worker++) {
+				hires_render_workers_shutdown();
+				assert(SDL_setenv_unsafe("RESTUNTS_RENDER_WORKERS", workers[worker], true) == 0);
+				begin_frame(scale);
+				/* Two copies exercise both parallel merge and visibility at every scale. */
+				hires_backend_build(TEST_OUTLINE_GROUPS, build_test_outline, &outlines[outline]);
+				const legacy_u8 *pixels = end_frame();
+				size_t samples = (size_t)target.width * target.height;
+				if (outline == 0 && worker == 0) {
 					memcpy(reference, pixels, samples);
 					memcpy(depths, target.inverse_depth, samples * sizeof(*depths));
 					memcpy(families, target.depth_family, samples * sizeof(*families));
@@ -669,6 +971,7 @@ legacy_int main(void)
 	for (legacy_s32 scale = HIRES_MINIMUM_SCALE; scale <= HIRES_SCALE;
 		 scale *= HIRES_MEDIUM_SCALE) {
 		test_crossing_surfaces(scale);
+		test_whole_span_replacement(scale);
 		test_concave_coverage(scale);
 		test_cutout_and_occluder(scale);
 		test_coplanar_decal(scale);
@@ -678,10 +981,13 @@ legacy_int main(void)
 		test_attached_support_depth(scale);
 		test_ground_uses_surface_ownership(scale);
 		test_warped_quad_depth(scale);
+		test_lazy_partition_prefix(scale);
+		test_partition_pixel_boundaries(scale);
 	}
 	test_growth_and_reset();
 	test_workers_match();
 	test_parallel_build_matches();
+	test_maximum_edge_outline();
 	hires_backend_shutdown();
 	hires_shutdown();
 	puts("HyperVision visibility, cutouts, decals, queue lifetime and worker parity passed.");

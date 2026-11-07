@@ -28,6 +28,11 @@ runs as a separate process and remains running after the launcher closes. The
 AppImage hides the startup window and waits for the game to exit so its mounted
 assets remain available.
 
+In **Graphics settings**, **Show MPH (Ctrl+F9)** follows **Show FPS**. It starts
+off and selects `--showmph:on` or `--showmph:off` for the game. The display shows
+MPH at the bottom right while driving. Ctrl+F9 toggles it for the current game
+session without changing the saved checkbox.
+
 The **Driving rules** group ends with **Chicane Fast-Grass**, **Amiga Grass**,
 and **OWOOT**, in that order. **Chicane Fast-Grass** starts enabled; turning it
 off passes `--cfg:off`, giving green chicane areas ordinary grass behavior.
@@ -120,6 +125,39 @@ A successful build still needs target-system GUI verification for folder selecti
 DPI scaling, process startup and persistence.
 The production launcher has been exercised on Linux and Windows XP SP3 with
 QEMU's Pentium III CPU model (no SSE2), including native folder selection, process
-arguments, saved preferences and Cancel. macOS, BSD and Haiku runtime validation
-remains outstanding; shared-source support alone does not establish a successful
-native GUI test on those systems.
+arguments, saved preferences and Cancel. macOS packages additionally have a hosted CI smoke test; native BSD and Haiku
+GUI verification remains outstanding.
+
+## macOS package smoke test
+
+After the Universal package is built, CI downloads and verifies that archive in
+an isolated macOS 15 job. It opens its actual startup window, verifies sound is
+on and the intro is enabled, and activates **Start game**. ScreenCaptureKit
+records only that game's system audio during an uninterrupted intro interval.
+The test checks decoded PNG content, recognizes the main-menu labels, clicks
+**Let's Drive**, and verifies a new cockpit view responds to acceleration.
+Recorded PCM must contain sustained, varying sound across multiple seconds;
+empty, silent, constant and truncated captures fail.
+
+The `macos-smoke-evidence` artifact retains window screenshots, intro WAV audio,
+OCR and signal measurements, device information and logs for 14 days, including
+on failure. Game data and the extracted runtime stay in a temporary directory.
+The package archive is not rebuilt or modified by this check.
+
+To run the same check on a logged-in macOS 14+ desktop with Xcode Command Line
+Tools and original game data, install the pinned image validator and supply a
+verified package and its source commit:
+
+```sh
+python3 -m pip install -r tools/scripts/requirements-macos-smoke.txt
+python3 tools/scripts/test-macos-smoke.py \
+    dist/packages/restunts-macos-universal.tar.gz /path/to/Stunts \
+    out/macos-smoke --commit "$(git rev-parse HEAD)"
+```
+
+The output directory must be new. The desktop session needs Screen Recording,
+Accessibility and event-posting access; GitHub's hosted macOS images preconfigure
+these permissions for their runner. The check fails with diagnostics when
+capture or a CoreAudio output device is unavailable. It uses app-filtered system
+loopback audio, not a microphone or an audio-synthesis trace. Existing launcher
+preferences are restored when the test ends.

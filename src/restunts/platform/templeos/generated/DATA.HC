@@ -13,7 +13,7 @@ MemSet(&rs_file_car_file_car_model_extensions,0,sizeof(rs_file_car_file_car_mode
 legacy_s8 *rs_file_car_file_car_dashboard_extensions[6];
 MemSet(&rs_file_car_file_car_dashboard_extensions,0,
     sizeof(rs_file_car_file_car_dashboard_extensions));
-CRsAnonDcade8718ff6 rs_file_car_file_track_search;
+CRsAnon326a22075848 rs_file_car_file_track_search;
 MemSet(&rs_file_car_file_track_search,0,sizeof(rs_file_car_file_track_search));
 CMatrix rs_math_math_mat_z_rot;
 MemSet(&rs_math_math_mat_z_rot,0,sizeof(rs_math_math_mat_z_rot));
@@ -76,6 +76,7 @@ CSprite *mouse_background_sprite=0;
 legacy_s8 mouse_background_dirty=0;
 legacy_s8 rs_game_input_mouse_transparent_mode=0;
 legacy_u8 fps_display_enabled=0;
+legacy_u8 mph_display_enabled=0;
 legacy_s16 rs_game_input_input_elapsed_frames=0;
 legacy_s16 rs_game_input_input_mouse_repeat_at=0;
 legacy_s16 rs_game_input_input_joystick_repeat_at=0;
@@ -312,6 +313,15 @@ legacy_u8 rs_frame_fps_fps_sample_started=0;
 CRectangle rs_frame_fps_fps_present_bounds;
 MemSet(&rs_frame_fps_fps_present_bounds,0,sizeof(rs_frame_fps_fps_present_bounds));
 legacy_u8 rs_frame_fps_fps_present_pending=0;
+CSprite *rs_frame_fps_mph_background[MPH_TEXT_PAGE_COUNT];
+MemSet(&rs_frame_fps_mph_background,0,sizeof(rs_frame_fps_mph_background));
+CSprite rs_frame_fps_mph_target[MPH_TEXT_PAGE_COUNT];
+MemSet(&rs_frame_fps_mph_target,0,sizeof(rs_frame_fps_mph_target));
+legacy_u8 rs_frame_fps_mph_background_valid[MPH_TEXT_PAGE_COUNT];
+MemSet(&rs_frame_fps_mph_background_valid,0,sizeof(rs_frame_fps_mph_background_valid));
+legacy_u16 rs_frame_fps_mph_background_width=0;
+legacy_u16 rs_frame_fps_mph_background_height=0;
+legacy_u16 rs_frame_fps_mph_page_count=0;
 legacy_s8 rs_command_line_command_line_version_prefix[38];
 MemSet(&rs_command_line_command_line_version_prefix,0,
     sizeof(rs_command_line_command_line_version_prefix));
@@ -320,7 +330,7 @@ MemSet(&rs_command_line_command_line_revision,0,sizeof(rs_command_line_command_l
 legacy_s8 rs_command_line_command_line_version_suffix[17];
 MemSet(&rs_command_line_command_line_version_suffix,0,
     sizeof(rs_command_line_command_line_version_suffix));
-legacy_s8 rs_command_line_command_line_help[1686];
+legacy_s8 rs_command_line_command_line_help[1743];
 MemSet(&rs_command_line_command_line_help,0,sizeof(rs_command_line_command_line_help));
 CGameInfo gameconfig;
 MemSet(&gameconfig,0,sizeof(gameconfig));

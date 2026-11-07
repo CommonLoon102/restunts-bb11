@@ -330,9 +330,28 @@ dead ends and scenery do not affect its center or bounding box. It looks toward
 that center at 45 degrees down, at least twelve hill levels above it; larger
 courses raise the orbit enough to keep all lap pieces visible. Tracks without
 a valid complete lap use the map center. The scene extends behind the title and
-best recorded time. F11 or Shift+F11 toggles FPS and render time over the preview;
-the counter measures presented preview frames, and timing excludes pacing and
-display synchronization. Turning HyperVision off restores the 2D surface map.
+best recorded time. The live preview is capped at 25 FPS. F11 or Shift+F11 toggles
+FPS and render time over the preview; the counter measures presented preview
+frames, and timing excludes pacing and display synchronization. Turning
+HyperVision off restores the 2D surface map.
+
+Extended-track driving, replays, and the rotating preview use available authored
+low-detail meshes for objects farther than 20 tile lengths from the camera,
+including the Full preset. Distance is measured in 3D to the nearest point of the
+complete object's bounds, including its footprint, height, overlays, grove trees,
+and grade. Camera height counts too. Any part within 20 tiles, including exactly
+20 tiles, keeps full detail; models without a low alternative keep their full
+meshes. Vine fields, terrain meshes and road cutouts keep their full geometry,
+and vehicles keep their existing detail policy. Multi-core rendering also
+prepares the preview's geometry in parallel.
+
+HyperVision can use optional car meshes with up to 65,535 vertices and
+primitives per mesh. Their `.H3D` companions provide enhanced geometry while
+the original model remains available to the classic renderer. See
+[HyperVision car meshes](docs/hypervision-meshes.md) for the format and fallback
+behavior. The McMurtry companion imports detailed exterior geometry from the
+supplied high-resolution source, with palette materials and native animated
+wheels. Its classic fallback and driving physics retain the existing model.
 
 In SDL3 builds, HyperVision corrects each car model's visible ride height so
 its underside meets the driving surface, including cars with spherical wheels.
@@ -341,7 +360,9 @@ movement and jumps without changing physics or replay data. The original rendere
 
 HyperVision uses fewer segments for wheels and spheres that occupy only a small
 part of the screen. Segment counts follow their projected size; nearby round
-shapes and background geometry retain their full detail.
+shapes retain their full detail. Full HyperVision keeps full authored meshes on
+classic tracks. Classic reduced-detail rendering can select authored low-detail
+meshes. Extended tracks use the 20-tile object-distance policy above.
 
 In SDL3 builds, HyperVision adds car-shaped shadows on nearby surfaces below
 each car. Small cached silhouettes follow the model's size, body, wheels, and
@@ -496,6 +517,13 @@ The renderer and display shortcuts work in all driving and replay cameras,
 including opponent and ghost views and paused replays. Holding a shortcut key
 changes its selection only once.
 
+Press **Ctrl+F9** to toggle the MPH display at the bottom right while driving.
+It starts off; use `--showmph:on` to enable it from startup or `--showmph:off`
+to select the default explicitly. The desktop, Android, and web startup windows
+place **Show MPH (Ctrl+F9)** immediately after **Show FPS** and remember its
+selection. Ctrl+F9 changes only the current game session, leaving the saved
+launcher checkbox unchanged.
+
 ### Race against a ghost
 
 In **Opponent**, choose **Clock**, then **Ghost** to select a replay. The game
@@ -618,7 +646,7 @@ assembly executables and the renderer dump tools retain their existing interface
 
 ### OWOOT driving rules
 
-Run `restunts.exe --owoot` to require at least part of one player wheel to remain
+Run `restunts.exe --owoot:on` to require at least part of one player wheel to remain
 on or above the road. The check uses the car model's tire geometry, including
 steering, suspension, pitch, and roll, and is independent of camera position,
 zoom, and detail level. Red-white rumble strips on large corners count as grass.
@@ -636,19 +664,21 @@ over the receiving road for additional tiles.
 
 A violation triggers the normal crash immediately. Only the player is checked,
 including during replay playback. Rewinding restores the OWOOT progress along
-with the car state. The switch is case-insensitive and can be combined with
-`--pg:off`, `--lc:off`, and `--nointro`; it is disabled by default.
+with the car state. `--owoot` is shorthand for `--owoot:on`; `--owoot:off`
+disables the rules, which are off by default. These switches are case-insensitive,
+and the last recognized value wins. They can be combined with `--pg:off`,
+`--lc:off`, and `--nointro`.
 
 The physics dump tool also accepts `repldump.exe <replay> --owoot`. Replays do not
 store the switch, so launch with the same settings for recording and playback.
 See [OWOOT validation notes](docs/owoot-validation.md) for replay audit findings.
 
-With `--owoot`, `repldump.exe R0019.RPL --owoot` also writes `R0019.owo`, containing
+With OWOOT enabled, `repldump.exe R0019.RPL --owoot` also writes `R0019.owo`, containing
 exactly `pass` or `fail`. Passing requires finishing the race without an OWOOT
 violation; ordinary crashes and unfinished replays fail too. The result starts
 as `fail` and changes to `pass` only after successful processing. File-writing
 or replay-loading errors return a nonzero exit code; check that code as well
-when validating a batch. Without `--owoot`, no `.owo` file is created or updated.
+when validating a batch. With OWOOT disabled, no `.owo` file is created or updated.
 
 ### Replay driving-time reports
 
@@ -693,11 +723,12 @@ the tachometer. The stock value `0x0010` keeps both needles white, and
 
 ### McMurtry Speirling PURE custom car
 
-The `MCMU` car has new showroom/racing meshes rebuilt from the supplied
-high-resolution Speirling model, seven paints, a digital race cockpit,
-single-speed electric drive and fan adhesion. Driving specifications retain
-the 2026 production PURE tuning; exterior proportions follow the source mesh.
-Install it with:
+The `MCMU` car has classic showroom/racing meshes rebuilt from the supplied
+high-resolution Speirling model and an optional detailed `.H3D` companion
+imported directly from that source for HyperVision. Both use seven paints and
+native animated wheels. A digital race cockpit, single-speed electric drive
+and fan adhesion retain the 2026 production PURE tuning. Exterior proportions
+follow the source mesh. Install it with:
 
 ```sh
 python3 tools/scripts/generate-mcmurtry-speirling.py --install stunts
@@ -754,7 +785,7 @@ for both 32-bit ARM and ARM64. Import your original game folder or ZIP on first
 launch; game data is not bundled in the APK. Transparent touch circles support
 driving, menu navigation, and replay controls. Manual shift buttons appear only
 while racing with manual gears; replay swipes skip ten seconds. The launcher
-offers **New MIDI**, **Show FPS**, **Show Control Layout**, **Tilt steering**,
+offers **New MIDI**, **Show FPS**, **Show MPH (Ctrl+F9)**, **Show Control Layout**, **Tilt steering**,
 and all six **HyperVision** presets. **Driving rules** keeps **Power Gear**,
 **Original Collision Bugs**, **Left Corner Bias**, **Dual-Way Switching**,
 **Chicane Fast-Grass**, **Amiga Grass**, and **OWOOT**,
@@ -1976,10 +2007,12 @@ releases the mouse, and the 2D editor retains its zoom and map position.
 The Scenery palette includes **Wheat field**, a one-tile patch of golden crop
 rows. Adjacent tiles form larger fields, rotation changes the row direction, and
 straight inclines are supported. Cars drive through the crops using the terrain
-beneath them. **Tulip field** adds solid purple, orange, red, pink, purple and
-yellow flower rows. **Vine field** adds twelve low, narrow rows with
-triangular tops and dense purple grape clusters. Both support hillside
-inclines, rotation and adjoining fields. All three appear in the game and the editor's 2D and 3D views.
+beneath them. **Tulip field** adds ten narrow flower rows ordered green, red, pink,
+blue, yellow, purple, teal, pink, white and yellow, with green edging and soil
+separators.
+**Vine field** adds twenty-four short, narrow green rows with triangular tops
+and evenly spaced soil separators. Both support hillside inclines, rotation and
+adjoining fields. All three appear in the game and the editor's 2D and 3D views.
 Tulip and Vine fields require `.cstrk` v12.
 
 The palette also includes **Pine trees (10)** and **Pine trees (6)**. Both

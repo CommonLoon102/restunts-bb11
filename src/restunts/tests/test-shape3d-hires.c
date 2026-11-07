@@ -1,6 +1,8 @@
 #include "../c/video/video_framebuffer.h"
 #include <assert.h>
+#include <fenv.h>
 #include <float.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -503,6 +505,66 @@ static void test_attached_polygon_preserves_interior_depth(void)
 			}
 		}
 	}
+}
+
+/* These logical viewport boundaries have known padded extents at each scale.
+ * A one-ULP overhang survives the rounding margin; a half-pixel overhang does not. */
+static void test_prepared_clip_context(void)
+{
+	enum {
+		CLIP_TEST_FOCAL = 160,
+		CLIP_TEST_CENTER_Y = 100,
+		CLIP_TEST_LEFT = 40,
+		CLIP_TEST_RIGHT = 279,
+		CLIP_TEST_TOP = 30,
+		CLIP_TEST_BOTTOM = 169
+	};
+	const legacy_f64 limits[][2] = {{121, 71}, {120.75, 70.75}, {120.625, 70.625}};
+	const legacy_f64 depths[] = {1, SHAPE3D_NEAR_CLIP_Z, CLIP_TEST_FOCAL};
+	const legacy_u8 flags[] = {SHAPE3D_RECT_CLIP_LEFT, SHAPE3D_RECT_CLIP_RIGHT,
+							   SHAPE3D_RECT_CLIP_BOTTOM, SHAPE3D_RECT_CLIP_TOP};
+	struct RECTANGLE saved_rectangle = select_rect_rc;
+	legacy_u16 saved_center_x = projection_center_x, saved_center_y = projection_center_y;
+	legacy_u16 saved_focal_x = projection_focal_length_x, saved_focal_y = projection_focal_length_y;
+	legacy_s32 saved_scale = hires_render_scale();
+	for (legacy_u32 resolution = 0; resolution < SDL_arraysize(limits); resolution++) {
+		hires_set_render_scale(HIRES_MINIMUM_SCALE << resolution);
+		select_rect_rc =
+			(struct RECTANGLE){CLIP_TEST_LEFT, CLIP_TEST_RIGHT, CLIP_TEST_TOP, CLIP_TEST_BOTTOM};
+		projection_center_x = CLIP_TEST_FOCAL;
+		projection_center_y = CLIP_TEST_CENTER_Y;
+		projection_focal_length_x = projection_focal_length_y = CLIP_TEST_FOCAL;
+		struct SHAPE3D_HIRES_CLIP_CONTEXT context;
+		shape3d_hires_prepare_clip(&context);
+		for (legacy_u32 depth = 0; depth < SDL_arraysize(depths); depth++) {
+			for (legacy_u32 edge = 0; edge < SDL_arraysize(flags); edge++) {
+				struct SHAPE3D_HIRES_VECTOR point = {0, 0, depths[depth]};
+				legacy_f64 direction = (edge & 1U) != 0 ? 1 : -1;
+				legacy_f64 *coordinate = edge < 2 ? &point.x : &point.y;
+				*coordinate = direction * limits[resolution][edge / 2] * point.z / CLIP_TEST_FOCAL;
+				assert(shape3d_hires_clip_prepared(&point, &context) == 0);
+				*coordinate = nextafter(*coordinate, direction * HUGE_VAL);
+				assert(shape3d_hires_clip_prepared(&point, &context) == 0);
+				*coordinate += direction * HIRES_SAMPLE_CENTER_OFFSET * point.z / CLIP_TEST_FOCAL;
+				assert(shape3d_hires_clip_prepared(&point, &context) == flags[edge]);
+			}
+		}
+		const struct SHAPE3D_HIRES_VECTOR clamped_near = {1, 0, 0};
+		assert(shape3d_hires_clip_prepared(&clamped_near, &context) == SHAPE3D_RECT_CLIP_RIGHT);
+		const struct SHAPE3D_HIRES_VECTOR probe = {-(CLIP_TEST_FOCAL - CLIP_TEST_LEFT), 0,
+												   CLIP_TEST_FOCAL};
+		select_rect_rc.left += CLIP_TEST_LEFT;
+		projection_center_x += CLIP_TEST_LEFT / 2;
+		assert(shape3d_hires_clip_prepared(&probe, &context) == 0);
+		shape3d_hires_prepare_clip(&context);
+		assert(shape3d_hires_clip_prepared(&probe, &context) == SHAPE3D_RECT_CLIP_LEFT);
+	}
+	select_rect_rc = saved_rectangle;
+	projection_center_x = saved_center_x;
+	projection_center_y = saved_center_y;
+	projection_focal_length_x = saved_focal_x;
+	projection_focal_length_y = saved_focal_y;
+	hires_set_render_scale(saved_scale);
 }
 
 static void test_projection_and_subpixel_edges(void)
@@ -1183,6 +1245,322 @@ static void prepare_scene(const struct VECTOR *vertices, legacy_u32 count,
 	material_patlist_ptr_cpy = scene_patterns;
 	material_patlist2_ptr_cpy = scene_patterns;
 }
+
+#define WIDE_MESH_BOUND_COUNT 8U
+#define WIDE_MESH_TRIANGLE_VERTEX_COUNT 3U
+#define WIDE_MESH_EXTENDED_VERTEX_COUNT 260U
+#define WIDE_MESH_EXTENDED_PRIMITIVE_COUNT (LEGACY_U8_MAX + 2U)
+#define WIDE_MESH_PRIMITIVE_BYTES (SHAPE3D_PRIMITIVE_HEADER_SIZE + 1U + 3U * sizeof(legacy_u16))
+#define WIDE_MESH_ADDRESS_BOUNDARY_VERTEX (LEGACY_U16_MAX / SHAPE3D_VERTEX_SIZE + 1U)
+
+static void test_wide_meshes_use_hypervision_only(void)
+{
+	const struct VECTOR triangles[][WIDE_MESH_TRIANGLE_VERTEX_COUNT] = {
+		{{-30, -20, 200}, {0, 20, 200}, {30, -20, 200}},
+		{{-30, -20, 1}, {0, 20, 200}, {30, -20, 200}}};
+	const struct VECTOR box[WIDE_MESH_BOUND_COUNT] = {
+		{-40, -30, 190}, {40, -30, 190}, {-40, -30, 210}, {40, -30, 210},
+		{-40, 30, 190},	 {40, 30, 190},	 {-40, 30, 210},  {40, 30, 210}};
+	const legacy_u8 compact_primitive[] = {3, 1, 0, 0, 1, 2, 0, 0};
+	const legacy_u16 counts[] = {256U, WIDE_MESH_EXTENDED_VERTEX_COUNT,
+								 WIDE_MESH_ADDRESS_BOUNDARY_VERTEX + 3U};
+	legacy_u8 wide_primitive[WIDE_MESH_PRIMITIVE_BYTES] = {3, 1, 0};
+	legacy_u8 visibility[SHAPE3D_VISIBILITY_MASK_SIZE];
+	legacy_u8 front_facing[SHAPE3D_VISIBILITY_MASK_SIZE] = {0};
+	memset(visibility, LEGACY_U8_MAX, sizeof(visibility));
+
+	for (legacy_u32 geometry = 0; geometry < SDL_arraysize(triangles); geometry++) {
+		const struct VECTOR *triangle = triangles[geometry];
+		prepare_scene(triangle, WIDE_MESH_TRIANGLE_VERTEX_COUNT, compact_primitive,
+					  sizeof(compact_primitive), 1);
+		assert(shape3d_transform_and_queue(&scene_instance) == 0);
+		shape3d_render_queued_primitives();
+		assert(count_color(7) > 0);
+		size_t image_size = (size_t)hires_render_width() * hires_render_height();
+		legacy_u8 *reference = malloc(image_size);
+		assert(reference != NULL);
+		memcpy(reference, pixels(), image_size);
+
+		for (legacy_u32 sample = 0; sample < SDL_arraysize(counts); sample++) {
+			struct SHAPE3D wide = {0};
+			wide.shape3d_numverts = counts[sample];
+			wide.shape3d_vertex_bytes = calloc(counts[sample], SHAPE3D_VERTEX_SIZE);
+			assert(wide.shape3d_vertex_bytes != NULL);
+			wide.shape3d_numprimitives = wide.shape3d_numpaints = 1;
+			wide.shape3d_primitives = wide_primitive;
+			wide.shape3d_visibility_masks = visibility;
+			wide.shape3d_front_facing_masks = front_facing;
+			for (legacy_u16 index = 0; index < WIDE_MESH_BOUND_COUNT; index++) {
+				shape3d_vertex_write(&wide, index, &box[index]);
+			}
+			for (legacy_u16 vertex = 0; vertex < WIDE_MESH_TRIANGLE_VERTEX_COUNT; vertex++) {
+				legacy_u16 index = counts[sample] - WIDE_MESH_TRIANGLE_VERTEX_COUNT + vertex;
+				shape3d_vertex_write(&wide, index, &triangle[vertex]);
+				LEGACY_WRITE_U16_LE(wide_primitive + SHAPE3D_PRIMITIVE_HEADER_SIZE + 1U +
+										vertex * sizeof(legacy_u16),
+									index);
+			}
+			prepare_scene(triangle, WIDE_MESH_TRIANGLE_VERTEX_COUNT, compact_primitive,
+						  sizeof(compact_primitive), 1);
+			scene_shape = wide;
+			assert(shape3d_transform_and_queue(&scene_instance) == 0);
+			assert(shape3d_queued_primitive_count() == 1);
+			shape3d_render_queued_primitives();
+			assert(memcmp(reference, pixels(), image_size) == 0);
+
+			/* Wide indices must never enter the original fixed-capacity pipeline. */
+			prepare_scene(triangle, WIDE_MESH_TRIANGLE_VERTEX_COUNT, compact_primitive,
+						  sizeof(compact_primitive), 0);
+			scene_shape = wide;
+			assert(shape3d_transform_and_queue(&scene_instance) == 1);
+			assert(shape3d_queued_primitive_count() == 0);
+			free(wide.shape3d_vertex_bytes);
+
+			/* Switching back still renders the old byte-indexed shape normally. */
+			prepare_scene(triangle, WIDE_MESH_TRIANGLE_VERTEX_COUNT, compact_primitive,
+						  sizeof(compact_primitive), 1);
+			assert(shape3d_transform_and_queue(&scene_instance) == 0);
+			shape3d_render_queued_primitives();
+			assert(memcmp(reference, pixels(), image_size) == 0);
+		}
+		free(reference);
+	}
+}
+
+static void test_wide_meshes_retain_all_primitives(void)
+{
+	const struct VECTOR points[] = {{-20, 0, 200}, {20, 0, 200}};
+	const legacy_u8 compact[] = {1, 1, 0, 0, 0, 0};
+	prepare_scene(points, SDL_arraysize(points), compact, sizeof(compact), 1);
+	struct SHAPE3D wide = {0};
+	wide.shape3d_numverts = WIDE_MESH_EXTENDED_VERTEX_COUNT;
+	wide.shape3d_numprimitives = WIDE_MESH_EXTENDED_PRIMITIVE_COUNT;
+	wide.shape3d_numpaints = 1;
+	wide.shape3d_vertex_bytes = calloc(wide.shape3d_numverts, SHAPE3D_VERTEX_SIZE);
+	wide.shape3d_visibility_masks =
+		malloc((size_t)wide.shape3d_numprimitives * SHAPE3D_VISIBILITY_MASK_SIZE);
+	wide.shape3d_front_facing_masks =
+		calloc(wide.shape3d_numprimitives, SHAPE3D_VISIBILITY_MASK_SIZE);
+	size_t stride = SHAPE3D_PRIMITIVE_HEADER_SIZE + 1U + sizeof(legacy_u16);
+	wide.shape3d_primitives = calloc(wide.shape3d_numprimitives, stride);
+	assert(wide.shape3d_vertex_bytes != NULL && wide.shape3d_visibility_masks != NULL &&
+		   wide.shape3d_front_facing_masks != NULL && wide.shape3d_primitives != NULL);
+	memset(wide.shape3d_visibility_masks, LEGACY_U8_MAX,
+		   (size_t)wide.shape3d_numprimitives * SHAPE3D_VISIBILITY_MASK_SIZE);
+	for (legacy_u16 index = 0; index < WIDE_MESH_BOUND_COUNT; index++) {
+		shape3d_vertex_write(&wide, index, &points[0]);
+	}
+	shape3d_vertex_write(&wide, wide.shape3d_numverts - 2U, &points[0]);
+	shape3d_vertex_write(&wide, wide.shape3d_numverts - 1U, &points[1]);
+	for (legacy_u16 index = 0; index < wide.shape3d_numprimitives; index++) {
+		legacy_u8 *primitive = wide.shape3d_primitives + index * stride;
+		legacy_u8 last = index + 1U == wide.shape3d_numprimitives;
+		primitive[0] = SHAPE3D_PRIMITIVE_POINT;
+		primitive[1] = 1;
+		primitive[SHAPE3D_PRIMITIVE_HEADER_SIZE] = last;
+		LEGACY_WRITE_U16_LE(primitive + SHAPE3D_PRIMITIVE_HEADER_SIZE + 1U,
+							wide.shape3d_numverts - 2U + last);
+	}
+	scene_shape = wide;
+	assert(shape3d_transform_and_queue(&scene_instance) == 0);
+	assert(shape3d_queued_primitive_count() == WIDE_MESH_EXTENDED_PRIMITIVE_COUNT);
+	shape3d_render_queued_primitives();
+	assert(count_color(7) != 0 && count_color(8) != 0);
+	free(wide.shape3d_vertex_bytes);
+	free(wide.shape3d_visibility_masks);
+	free(wide.shape3d_front_facing_masks);
+	free(wide.shape3d_primitives);
+}
+
+#define TRANSFORM_TEST_EVALUATE_AS_DECLARED 0
+#define TRANSFORM_TEST_EVALUATE_AS_DOUBLE 1
+/* Match the identity shortcut's binary64 evaluation contract. With x87 excess
+ * precision, independent reference functions can have different spill points. */
+#if FLT_EVAL_METHOD == TRANSFORM_TEST_EVALUATE_AS_DECLARED ||                                      \
+	FLT_EVAL_METHOD == TRANSFORM_TEST_EVALUATE_AS_DOUBLE
+/* Keep an independent full-matrix reference for exact vertex transforms. */
+static struct SHAPE3D_HIRES_VECTOR
+reference_rotate_vertex(const struct SHAPE3D_HIRES_VECTOR *source, const struct MATRIX *matrix)
+{
+	return (struct SHAPE3D_HIRES_VECTOR){
+		(source->x * matrix->m._11 + source->y * matrix->m._12 + source->z * matrix->m._13) /
+			TRIG_FIXED_ONE,
+		(source->x * matrix->m._21 + source->y * matrix->m._22 + source->z * matrix->m._23) /
+			TRIG_FIXED_ONE,
+		(source->x * matrix->m._31 + source->y * matrix->m._32 + source->z * matrix->m._33) /
+			TRIG_FIXED_ONE};
+}
+
+static void assert_transform_coordinate(legacy_f64 actual, legacy_f64 expected)
+{
+	if (isnan(expected)) {
+		assert(isnan(actual));
+	} else {
+		/* Numeric equality alone would miss changes to signed zero. */
+		assert(memcmp(&actual, &expected, sizeof(actual)) == 0);
+	}
+}
+
+static void check_reference_transform(const struct SHAPE3D *shape,
+									  struct SHAPE3D_HIRES_PIPELINE_CONTEXT *context,
+									  struct SHAPE3D_HIRES_VECTOR source)
+{
+	legacy_f64 scale = shape_half_scale != 0 ? 0.5 : 1.0;
+	source.x *= scale;
+	source.y *= scale;
+	source.z *= scale;
+	struct SHAPE3D_HIRES_VECTOR world =
+		reference_rotate_vertex(&source, &context->hires.object_to_world_rotation);
+	struct SHAPE3D_HIRES_VECTOR expected;
+	if ((context->flags & SHAPE3D_PRETRANSFORMED_FLAG) != 0) {
+		expected = reference_rotate_vertex(&world, &mat_temp);
+		expected.x += context->hires.object_translation.x;
+		expected.y += context->hires.object_translation.y;
+		expected.z += context->hires.object_translation.z;
+	} else {
+		world.x += context->hires.object_translation.x;
+		world.y += context->hires.object_translation.y;
+		world.z += context->hires.object_translation.z;
+		expected = reference_rotate_vertex(&world, &mat_temp);
+	}
+	shape3d_hires_cache_vertex(shape, context, 0);
+	const struct SHAPE3D_HIRES_VECTOR *actual = &context->hires.hires_vertices[0];
+	assert_transform_coordinate(actual->x, expected.x);
+	assert_transform_coordinate(actual->y, expected.y);
+	assert_transform_coordinate(actual->z, expected.z);
+}
+
+static void check_precise_reference_vertices(const struct SHAPE3D *shape,
+											 struct SHAPE3D_HIRES_PIPELINE_CONTEXT *context,
+											 const struct SHAPE3D_HIRES_VECTOR *vertices,
+											 legacy_u32 count)
+{
+	for (legacy_u32 vertex = 0; vertex < count; vertex++) {
+		context->hires.source_vertices = &vertices[vertex];
+		check_reference_transform(shape, context, vertices[vertex]);
+	}
+}
+
+#define TRANSFORM_TEST_ROUNDING_MODE_CAPACITY 4U
+#define TRANSFORM_TEST_BOUNDARY_NEIGHBOR_COUNT 4U
+
+static void test_identity_object_rotation(void)
+{
+	/* These inputs deliberately raise overflow, underflow and invalid flags.
+	 * Keep traps disabled during the fixture and restore the caller's flags. */
+	fenv_t saved_environment;
+	assert(feholdexcept(&saved_environment) == 0);
+	legacy_int rounding_modes[TRANSFORM_TEST_ROUNDING_MODE_CAPACITY];
+	legacy_u32 rounding_mode_count = 0;
+#ifdef FE_TONEAREST
+	rounding_modes[rounding_mode_count++] = FE_TONEAREST;
+#endif
+#ifdef FE_UPWARD
+	rounding_modes[rounding_mode_count++] = FE_UPWARD;
+#endif
+#ifdef FE_DOWNWARD
+	rounding_modes[rounding_mode_count++] = FE_DOWNWARD;
+#endif
+#ifdef FE_TOWARDZERO
+	rounding_modes[rounding_mode_count++] = FE_TOWARDZERO;
+#endif
+	const struct SHAPE3D_HIRES_VECTOR vertices[] = {
+		{0.0, 0.0, 0.0},
+		{-0.0, 0.0, 0.0},
+		{0.0, -0.0, 0.0},
+		{0.0, 0.0, -0.0},
+		{-0.0, -0.0, 0.0},
+		{-0.0, 0.0, -0.0},
+		{0.0, -0.0, -0.0},
+		{-0.0, -0.0, -0.0},
+		{1.125, -2.5, -0.0},
+		{-1.125, -2.5, -0.0},
+		{DBL_MIN, -DBL_MIN, DBL_MIN * DBL_EPSILON},
+		{-DBL_MIN * DBL_EPSILON, -0.0, DBL_MIN * DBL_EPSILON},
+		{DBL_MAX / TRIG_FIXED_ONE, -DBL_MAX / TRIG_FIXED_ONE, 0.0},
+		{DBL_MAX, -DBL_MAX, 0.0},
+		{HUGE_VAL, 0.0, -0.0},
+		{NAN, 1.0, -1.0}};
+	struct SHAPE3D_HIRES_VECTOR boundary_neighbors[TRANSFORM_TEST_BOUNDARY_NEIGHBOR_COUNT];
+	legacy_f64 bound = DBL_MAX / TRIG_FIXED_ONE;
+	boundary_neighbors[0].x = nextafter(bound, 0.0);
+	boundary_neighbors[1].x = nextafter(bound, HUGE_VAL);
+	boundary_neighbors[2].x = nextafter(-bound, 0.0);
+	boundary_neighbors[3].x = nextafter(-bound, -HUGE_VAL);
+	for (legacy_u32 neighbor = 0; neighbor < SDL_arraysize(boundary_neighbors); neighbor++) {
+		boundary_neighbors[neighbor].y = -boundary_neighbors[neighbor].x;
+		boundary_neighbors[neighbor].z = boundary_neighbors[neighbor].x;
+	}
+	const struct VECTOR native_vertices[] = {
+		{0, 0, 0}, {0, -1, 0}, {(-(legacy_s32)LEGACY_S16_MAX - 1), LEGACY_S16_MAX, -1}};
+	struct MATRIX rotations[3] = {0};
+	rotations[0].m._11 = rotations[0].m._22 = rotations[0].m._33 = TRIG_FIXED_ONE;
+	mat_rot_y(&rotations[1], ANGLE_QUARTER_TURN);
+	rotations[2] = rotations[0];
+	rotations[2].m._12 = 1;
+	struct MATRIX cameras[3];
+	cameras[0] = rotations[0];
+	cameras[1] =
+		*mat_rot_zxy(ANGLE_QUARTER_TURN / 3, -ANGLE_QUARTER_TURN / 2, ANGLE_QUARTER_TURN / 2, 0);
+	for (legacy_u32 element = 0; element < MATRIX_ELEMENT_COUNT; element++) {
+		/* Every coefficient is negative to expose each zero coordinate's sign. */
+		cameras[2].vals[element] = -TRIG_FIXED_ONE;
+	}
+	struct SHAPE3D shape = {0};
+	legacy_u8 native_vertex[SHAPE3D_VERTEX_SIZE];
+	shape.shape3d_vertex_bytes = native_vertex;
+	struct TRANSFORMEDSHAPE3D instance = {0};
+	struct SHAPE3D_HIRES_PIPELINE_CONTEXT context = {0};
+	struct MATRIX saved_camera = mat_temp;
+	struct SHAPE3D_HIRES_VECTOR saved_origin = shape3d_hires_state.geometry_origin;
+	legacy_u16 saved_half_scale = shape_half_scale;
+	shape3d_hires_set_origin(NULL);
+	legacy_u32 tested_rounding_modes = 0;
+	for (legacy_u32 mode = 0; mode < rounding_mode_count; mode++) {
+		if (fesetround(rounding_modes[mode]) != 0) {
+			continue;
+		}
+		assert(feclearexcept(FE_ALL_EXCEPT) == 0);
+		tested_rounding_modes++;
+		for (legacy_u32 rotation = 0; rotation < SDL_arraysize(rotations); rotation++) {
+			shape3d_hires_prepare_instance(&instance, &context, &rotations[rotation]);
+			for (legacy_u32 camera = 0; camera < SDL_arraysize(cameras); camera++) {
+				mat_temp = cameras[camera];
+				for (legacy_u16 half_scale = 0; half_scale <= 1; half_scale++) {
+					shape_half_scale = half_scale;
+					for (legacy_u32 flags = 0; flags <= 1; flags++) {
+						context.flags = flags != 0 ? SHAPE3D_PRETRANSFORMED_FLAG : 0;
+						for (legacy_u32 translated = 0; translated <= 1; translated++) {
+							context.hires.object_translation =
+								translated ? (struct SHAPE3D_HIRES_VECTOR){400.25, -200.5, 1000.125}
+										   : (struct SHAPE3D_HIRES_VECTOR){-0.0, -0.0, -0.0};
+							check_precise_reference_vertices(&shape, &context, vertices,
+															 SDL_arraysize(vertices));
+							check_precise_reference_vertices(&shape, &context, boundary_neighbors,
+															 SDL_arraysize(boundary_neighbors));
+							context.hires.source_vertices = NULL;
+							for (legacy_u16 vertex = 0; vertex < SDL_arraysize(native_vertices);
+								 vertex++) {
+								shape3d_vertex_write(&shape, 0, &native_vertices[vertex]);
+								struct SHAPE3D_HIRES_VECTOR source = {native_vertices[vertex].x,
+																	  native_vertices[vertex].y,
+																	  native_vertices[vertex].z};
+								check_reference_transform(&shape, &context, source);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	assert(tested_rounding_modes != 0);
+	shape_half_scale = saved_half_scale;
+	mat_temp = saved_camera;
+	shape3d_hires_set_origin(&saved_origin);
+	assert(fesetenv(&saved_environment) == 0);
+}
+
+#endif
 
 static void test_visible_line_overhang_survives_culling(void)
 {
@@ -3598,6 +3976,27 @@ static void join_geometry_test_job(void *argument, legacy_s32 job)
 	shape3d_hires_set_model_scale(1);
 }
 
+static legacy_s32 geometry_test_join_required(void *argument, legacy_s32 job)
+{
+	(void)argument;
+	return job == GEOMETRY_TEST_EMPTY_JOB || job == GEOMETRY_TEST_GROWTH_JOB;
+}
+
+static void join_batched_geometry_test_job(void *argument, legacy_s32 job)
+{
+	struct GEOMETRY_TEST_FRAME *frame = argument;
+	/* Defer immutable groups across empty, clipped and shadow-only producers.
+	 * The last callback is required even when the predicate does not request it. */
+	assert(job == GEOMETRY_TEST_EMPTY_JOB || job == GEOMETRY_TEST_GROWTH_JOB ||
+		   job == GEOMETRY_TEST_JOBS - 1);
+	legacy_s32 previous = job == GEOMETRY_TEST_EMPTY_JOB	? 0
+						  : job == GEOMETRY_TEST_GROWTH_JOB ? GEOMETRY_TEST_EMPTY_JOB + 1
+															: GEOMETRY_TEST_GROWTH_JOB + 1;
+	assert(frame->joined_count == previous);
+	frame->joined_count = job;
+	join_geometry_test_job(argument, job);
+}
+
 static void capture_geometry_test_scene(struct GEOMETRY_TEST_SNAPSHOT *snapshot)
 {
 	assert(hires_backend_scene_count < GEOMETRY_TEST_MAX_PRIMITIVES);
@@ -3701,57 +4100,61 @@ static void test_parallel_geometry_matches_serial(void)
 	}
 	colors[BACKLIGHT_PAINT_NORMAL] = 8;
 	colors[BACKLIGHT_PAINT_BRAKING] = 9;
-	for (legacy_u32 pass = 0; pass < SDL_arraysize(settings); pass++) {
-		hires_render_workers_shutdown();
-		assert(SDL_setenv_unsafe("RESTUNTS_RENDER_WORKERS", settings[pass], true) == 0);
-		hires_render_workers_set_enabled(1);
-		prepare_scene(vertices, SDL_arraysize(vertices), primitives, sizeof(primitives), 1);
-		material_clrlist_ptr_cpy = material_clrlist2_ptr_cpy = colors;
-		material_patlist_ptr_cpy = material_patlist2_ptr_cpy = patterns;
-		shape_half_scale = 0;
-		backlights_paint_override = BACKLIGHT_PAINT_NORMAL;
-		shape3d_hires_scene_reset();
-		assert(hires_begin(&target));
-		projection_center_x = 160;
-		projection_center_y = 100;
-		projection_focal_length_x = projection_focal_length_y = GEOMETRY_TEST_FOCAL_LENGTH;
-		const struct VECTOR camera = {0, GEOMETRY_TEST_CAMERA_HEIGHT, 0};
-		const struct VECTOR cars[] = {{0, -40, 300}, {20, -35, 310}};
-		shape3d_hires_shadows_begin(&camera);
-		for (legacy_u32 car = 0; car < SDL_arraysize(cars); car++) {
-			shape3d_hires_shadow_car(&cars[car], 0, GEOMETRY_TEST_CAR_WIDTH,
-									 GEOMETRY_TEST_CAR_LENGTH);
-		}
-		struct GEOMETRY_TEST_FRAME frame = {0};
-		for (legacy_u32 rectangle = 0; rectangle < GEOMETRY_TEST_RECTANGLES; rectangle++) {
-			frame.rectangles[rectangle] = (struct RECTANGLE){320, 0, 200, 0};
-		}
-		/* A preexisting scene makes all merged primitive/shape/family/shadow
-		 * tokens nonzero offsets and keeps later joined inserts observable. */
-		build_geometry_test_job(&frame, 0);
-		shape3d_hires_geometry_run(GEOMETRY_TEST_JOBS, build_geometry_test_job,
-								   join_geometry_test_job, &frame);
-		assert(frame.joined_count == GEOMETRY_TEST_JOBS && shape3d_hires_thread_state == NULL);
-		assert(hires_backend_scene_count >
-			   GEOMETRY_TEST_GROWTH_SHAPES * GEOMETRY_TEST_PRIMITIVES_PER_SHAPE);
-		assert(shape3d_hires_state.shadow_surface_count > GEOMETRY_TEST_GROWTH_SHAPES);
-		if (pass == 0) {
-			capture_geometry_test_scene(&reference);
-			expected_frame = frame;
-		} else {
-			compare_geometry_test_scene(&reference);
-			assert(memcmp(expected_frame.joined_scene_counts, frame.joined_scene_counts,
-						  sizeof(frame.joined_scene_counts)) == 0);
-			assert(memcmp(expected_frame.rectangles, frame.rectangles, sizeof(frame.rectangles)) ==
-				   0);
-			assert(memcmp(expected_frame.joined_rectangles, frame.joined_rectangles,
-						  sizeof(frame.joined_rectangles)) == 0);
-		}
-		shape3d_render_queued_primitives();
-		if (pass == 0) {
-			memcpy(image, pixels(), sizeof(image));
-		} else {
-			assert(memcmp(image, pixels(), sizeof(image)) == 0);
+	for (legacy_u32 batched = 0; batched <= 1; batched++) {
+		for (legacy_u32 pass = 0; pass < SDL_arraysize(settings); pass++) {
+			hires_render_workers_shutdown();
+			assert(SDL_setenv_unsafe("RESTUNTS_RENDER_WORKERS", settings[pass], true) == 0);
+			hires_render_workers_set_enabled(1);
+			prepare_scene(vertices, SDL_arraysize(vertices), primitives, sizeof(primitives), 1);
+			material_clrlist_ptr_cpy = material_clrlist2_ptr_cpy = colors;
+			material_patlist_ptr_cpy = material_patlist2_ptr_cpy = patterns;
+			shape_half_scale = 0;
+			backlights_paint_override = BACKLIGHT_PAINT_NORMAL;
+			shape3d_hires_scene_reset();
+			assert(hires_begin(&target));
+			projection_center_x = 160;
+			projection_center_y = 100;
+			projection_focal_length_x = projection_focal_length_y = GEOMETRY_TEST_FOCAL_LENGTH;
+			const struct VECTOR camera = {0, GEOMETRY_TEST_CAMERA_HEIGHT, 0};
+			const struct VECTOR cars[] = {{0, -40, 300}, {20, -35, 310}};
+			shape3d_hires_shadows_begin(&camera);
+			for (legacy_u32 car = 0; car < SDL_arraysize(cars); car++) {
+				shape3d_hires_shadow_car(&cars[car], 0, GEOMETRY_TEST_CAR_WIDTH,
+										 GEOMETRY_TEST_CAR_LENGTH);
+			}
+			struct GEOMETRY_TEST_FRAME frame = {0};
+			for (legacy_u32 rectangle = 0; rectangle < GEOMETRY_TEST_RECTANGLES; rectangle++) {
+				frame.rectangles[rectangle] = (struct RECTANGLE){320, 0, 200, 0};
+			}
+			/* A preexisting scene makes all merged primitive/shape/family/shadow
+			 * tokens nonzero offsets and keeps later joined inserts observable. */
+			build_geometry_test_job(&frame, 0);
+			shape3d_hires_geometry_run(GEOMETRY_TEST_JOBS, build_geometry_test_job,
+									   batched ? join_batched_geometry_test_job
+											   : join_geometry_test_job,
+									   batched ? geometry_test_join_required : NULL, &frame);
+			assert(frame.joined_count == GEOMETRY_TEST_JOBS && shape3d_hires_thread_state == NULL);
+			assert(hires_backend_scene_count >
+				   GEOMETRY_TEST_GROWTH_SHAPES * GEOMETRY_TEST_PRIMITIVES_PER_SHAPE);
+			assert(shape3d_hires_state.shadow_surface_count > GEOMETRY_TEST_GROWTH_SHAPES);
+			if (pass == 0) {
+				capture_geometry_test_scene(&reference);
+				expected_frame = frame;
+			} else {
+				compare_geometry_test_scene(&reference);
+				assert(memcmp(expected_frame.joined_scene_counts, frame.joined_scene_counts,
+							  sizeof(frame.joined_scene_counts)) == 0);
+				assert(memcmp(expected_frame.rectangles, frame.rectangles,
+							  sizeof(frame.rectangles)) == 0);
+				assert(memcmp(expected_frame.joined_rectangles, frame.joined_rectangles,
+							  sizeof(frame.joined_rectangles)) == 0);
+			}
+			shape3d_render_queued_primitives();
+			if (pass == 0) {
+				memcpy(image, pixels(), sizeof(image));
+			} else {
+				assert(memcmp(image, pixels(), sizeof(image)) == 0);
+			}
 		}
 	}
 	backlights_paint_override = saved_backlights;
@@ -3783,6 +4186,7 @@ legacy_int main(void)
 	projection_center_y = 100;
 	projection_focal_length_x = 160;
 	projection_focal_length_y = 160;
+	test_prepared_clip_context();
 	test_projection_and_subpixel_edges();
 	test_attached_polygon_weight();
 	test_attached_polygon_midrange_weight();
@@ -3806,6 +4210,12 @@ legacy_int main(void)
 	test_roundness_preserves_near_and_bounds_small_shapes();
 	test_roundness_matches_worker_bands();
 	test_disabled_and_reset();
+	test_wide_meshes_use_hypervision_only();
+	test_wide_meshes_retain_all_primitives();
+#if FLT_EVAL_METHOD == TRANSFORM_TEST_EVALUATE_AS_DECLARED ||                                      \
+	FLT_EVAL_METHOD == TRANSFORM_TEST_EVALUATE_AS_DOUBLE
+	test_identity_object_rotation();
+#endif
 	test_visible_line_overhang_survives_culling();
 	test_visible_round_overhang_survives_culling();
 	test_line_weight_in_half_scale_view();

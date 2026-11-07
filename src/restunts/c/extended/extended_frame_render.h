@@ -16,6 +16,11 @@ struct FRAME_EXTENDED_OBJECT;
 
 #if defined(RESTUNTS_SDL3)
 
+/* Call reset/configuration only after all render workers have joined. */
+void hires_frame_extended_ground_cache_reset(void);
+void hires_frame_extended_ground_cache_set_budget(legacy_u32 bytes);
+legacy_u32 hires_frame_extended_ground_cache_bytes(void);
+
 #define HIRES_FRAME_EXTENDED_GROUND_AREA_EPSILON 0.00000001
 #define HIRES_FRAME_EXTENDED_ROAD_OVERSCAN 8
 #define HIRES_FRAME_EXTENDED_LOOKAHEAD_RADIUS 28
@@ -102,6 +107,14 @@ legacy_u16 hires_frame_extended_clip_precise_ground(const struct SHAPE3D_HIRES_V
 													const struct SHAPE3D_HIRES_VECTOR *a,
 													const struct SHAPE3D_HIRES_VECTOR *b,
 													legacy_s16 orientation);
+#endif
+#if defined(RESTUNTS_SDL3)
+void hires_frame_extended_split_precise_ground(
+	const struct SHAPE3D_HIRES_VECTOR *points, legacy_u16 count,
+	struct SHAPE3D_HIRES_VECTOR *inside, legacy_u16 *inside_count,
+	struct SHAPE3D_HIRES_VECTOR *outside, legacy_u16 *outside_count,
+	const struct SHAPE3D_HIRES_VECTOR *a, const struct SHAPE3D_HIRES_VECTOR *b,
+	legacy_s16 orientation);
 #endif
 #if defined(RESTUNTS_SDL3)
 legacy_s16 hires_frame_extended_append_precise_fragments(

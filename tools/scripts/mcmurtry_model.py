@@ -33,6 +33,10 @@ SHOWROOM_SCALE = 20
 CONTACT_Y = -6
 SHOWROOM_Y_OFFSET = -CONTACT_Y * SHOWROOM_SCALE
 NATIVE_LIMIT = 255
+HYPERVISION_LIMIT = 65535
+HYPERVISION_CONTAINER_MAGIC = b"H3D\0"
+HYPERVISION_CONTAINER_HEADER_SIZE = struct.calcsize("<4sHH")
+HYPERVISION_CONTAINER_ENTRY_SIZE = struct.calcsize("<4sII")
 PAINT_COUNT = 7
 POINT_PRIMITIVE = 1
 LINE_PRIMITIVE = 2
@@ -343,8 +347,12 @@ def _shoulders(shape, side):
         _attach(shape, wheel, start, shape._wheel_roofs)
 
 
-# Wheel-crown slots follow the downloaded shell. Their bounded dark faces
-# approximate the exposed tread while the solid cover controls native sorting.
+# Wheel-crown slots sit on the downloaded shell. The front pair follows the
+# supplied overhead reference: parallel long sides and squared ends, retained
+# as four corners to fit the native vertex budget at every detail level.
+# Their bounded dark faces approximate the exposed tread while the solid cover
+# controls native sorting.
+FRONT_CROWN_OPENING_PLAN = ((13.0, 31), (17.2, 31), (17.2, 22), (13.0, 22))
 VENTS = tuple({"wheel": wheel, "center_x": x, "center_z": z}
               for wheel, x, z in ((0, -15, 27), (1, 15, 27),
                                   (2, 15, -25), (3, -15, -25)))
@@ -352,8 +360,7 @@ VENTS = tuple({"wheel": wheel, "center_x": x, "center_z": z}
 
 def vent_geometry(wheel):
     side = -1 if wheel in (0, 3) else 1
-    plan = (((12.4, 31), (17.2, 30), (17.2, 22), (15.3, 22))
-            if wheel < 2 else
+    plan = (FRONT_CROWN_OPENING_PLAN if wheel < FRONT_WHEEL_COUNT else
             ((13.3, -21), (17.0, -20.3), (17.1, -28.2), (13.0, -29)))
     lip = tuple((side * x, fender_surface_height(x, z) + .25, z) for x, z in plan)
     return {"lip": lip}
@@ -698,6 +705,13 @@ def build_models():
                  ("car1", _car().encode()), ("car2", _car(simple=True).encode())]
     resources.extend((f"exp{i}", _debris(i)) for i in range(4))
     return _container(resources)
+
+
+def build_hypervision_models():
+    """Build detailed source-derived companions beside the classic shapes."""
+    import mcmurtry_hypervision
+
+    return mcmurtry_hypervision.build_container()
 
 
 def export_obj(paint=0):

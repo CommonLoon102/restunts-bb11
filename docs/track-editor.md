@@ -166,10 +166,10 @@ the row direction. Wheat supports raised flat ground and straight inclines and
 appears in both the 2D editor and 3D preview. Cars can drive through the crops;
 the underlying terrain determines driving grip. Wheat field requires `.cstrk` v11.
 
-**Tulip field** adds dense flower bands ordered purple, orange, red, pink,
-purple and yellow, with one color along each row. **Vine field** adds twelve low,
-narrow green rows with triangular tops and dense purple grape clusters on
-both sides.
+**Tulip field** adds ten narrow flower bands ordered green, red, pink, blue,
+yellow, purple, teal, pink, white and yellow, with one color along each row and
+green edging and soil separators between the bands. **Vine field** adds twenty-four
+short, narrow green rows with triangular tops and evenly spaced soil separators.
 Both occupy one tile, join into larger fields, and support rotation, raised
 ground and straight hillside inclines in every direction.
 They appear in the 2D editor, 3D preview and game. Both are drive-through
@@ -243,6 +243,7 @@ support up to 8,000 printable ASCII characters, with tabs and line breaks.
 | Move tile cursor / place | Arrow keys / Enter |
 | Undo / redo | Ctrl+Z / Ctrl+Shift+Z |
 | Save / open | Ctrl+S / Ctrl+O |
+| Check track | C |
 | Element groups | F1–F10 |
 
 ## Files and game support
@@ -255,7 +256,7 @@ replay selectors include both legacy and new files; `.cstrk` and `.csrpl` names
 are red, with extensions displayed to distinguish matching stems. Legacy builds
 retain their original formats.
 
-Use **Check track** to check terrain, placement, surfaces and the race route.
+Use **Check track** or press **C** to check terrain, placement, surfaces and the race route.
 The editor walks the route using the game's connection, branch and jump rules.
 Errors identify the column and row using the editor's numbering (starting at 1).
 A valid result confirms the data and route; it does not predict whether a car

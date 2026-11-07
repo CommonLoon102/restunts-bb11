@@ -1,6 +1,7 @@
-#include "hypervision.h"
+#include "hypervision_internal.h"
 #include "../fatal.h"
 #include "render_workers.h"
+#include <SDL3/SDL_cpuinfo.h>
 #include <float.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,10 +11,12 @@
 	((HIRES_HEIGHT + HIRES_VISIBILITY_BAND_HEIGHT - 1) / HIRES_VISIBILITY_BAND_HEIGHT)
 #define HIRES_VISIBILITY_INITIAL_COMMANDS 1024U
 #define HIRES_VISIBILITY_INITIAL_EDGES (HIRES_VISIBILITY_INITIAL_COMMANDS * 4U)
+#define HIRES_VISIBILITY_INITIAL_DEPTHS 64U
 #define HIRES_VISIBILITY_INITIAL_BIN 256U
 #define HIRES_VISIBILITY_INITIAL_BUILD_BUFFERS 8U
 #define HIRES_VISIBILITY_INITIAL_BUILD_COMMANDS 128U
 #define HIRES_VISIBILITY_INITIAL_BUILD_EDGES (HIRES_VISIBILITY_INITIAL_BUILD_COMMANDS * 4U)
+#define HIRES_VISIBILITY_INITIAL_BUILD_DEPTHS 16U
 #define HIRES_VISIBILITY_NO_COMMAND LEGACY_U32_MAX
 #define HIRES_VISIBILITY_PARALLEL_MIN_AREA 262144U
 /* A small relative offset replaces the old order-dependent decal families. */
@@ -24,38 +27,27 @@
 #define HIRES_VISIBILITY_EVALUATE_AS_DECLARED 0
 #define HIRES_VISIBILITY_EVALUATE_AS_DOUBLE 1
 
-struct HIRES_VISIBILITY_EDGE {
-	legacy_f64 x, y, z, x_step, z_step;
-	legacy_s32 top, bottom;
-};
-struct HIRES_VISIBILITY_COMMAND {
-	struct HIRES_BACKEND_MATERIAL material;
-	legacy_u32 first_edge, hires_edge_count;
-	legacy_s32 top, bottom;
-	struct HIRES_DEPTH_PLANE plane;
-	legacy_s32 planar;
-};
+#if HIRES_HEIGHT > LEGACY_S16_MAX || HIRES_BACKEND_MAX_VERTICES > LEGACY_U16_MAX
+#error HyperVision command bounds exceed their compact internal fields
+#endif
+
 struct HIRES_VISIBILITY_BIN {
-	legacy_u32 *hires_commands;
-	size_t count, capacity;
+	struct HIRES_VISIBILITY_LIST lists[HIRES_VISIBILITY_CLASS_COUNT];
 	struct HIRES_RASTER_CONTEXT context;
-};
-struct HIRES_VISIBILITY_SPAN {
-	legacy_s32 left, right;
-	legacy_f64 origin, step;
-	legacy_u32 command;
-};
-struct HIRES_VISIBILITY_CROSSING {
-	legacy_f64 x, z;
 };
 
 struct HIRES_BACKEND_BUFFER {
 	struct HIRES_VISIBILITY_COMMAND *commands;
 	struct HIRES_VISIBILITY_EDGE *edges;
+	struct HIRES_VISIBILITY_EDGE_DEPTH *depths;
 	size_t command_count, command_capacity, edge_count, edge_capacity;
-	size_t command_offset, edge_offset;
+	size_t depth_count, depth_capacity;
+	size_t command_offset, edge_offset, depth_offset;
 	legacy_u32 command_area;
 	legacy_s32 allocation_failed;
+	/* Adjacent jobs update their counts for every polygon. Keep that mutable
+	 * metadata on separate cache lines without requiring an aligned realloc. */
+	legacy_u8 cache_padding[SDL_CACHELINE_SIZE];
 };
 
 static struct HIRES_BACKEND_BUFFER hires_frame;
@@ -115,6 +107,7 @@ static void hires_backend_buffer_reset(struct HIRES_BACKEND_BUFFER *buffer)
 {
 	buffer->command_count = 0;
 	buffer->edge_count = 0;
+	buffer->depth_count = 0;
 	buffer->command_area = 0;
 	buffer->allocation_failed = 0;
 }
@@ -123,6 +116,7 @@ static void hires_backend_buffer_free(struct HIRES_BACKEND_BUFFER *buffer)
 {
 	free(buffer->commands);
 	free(buffer->edges);
+	free(buffer->depths);
 	memset(buffer, 0, sizeof(*buffer));
 }
 
@@ -145,7 +139,9 @@ void hires_backend_shutdown(void)
 	hires_build_buffers = NULL;
 	hires_build_capacity = 0;
 	for (legacy_s32 band = 0; band < HIRES_VISIBILITY_BAND_COUNT; band++) {
-		free(hires_bins[band].hires_commands);
+		for (legacy_s32 kind = 0; kind < HIRES_VISIBILITY_CLASS_COUNT; kind++) {
+			free(hires_bins[band].lists[kind].commands);
+		}
 		memset(&hires_bins[band], 0, sizeof(hires_bins[band]));
 	}
 	hires_backend_begin(NULL);
@@ -229,7 +225,18 @@ void hires_backend_polygon_to(struct HIRES_BACKEND_BUFFER *buffer,
 	}
 	struct HIRES_VISIBILITY_COMMAND command = {*material, (legacy_u32)buffer->edge_count, 0,
 											   HIRES_HEIGHT, 0};
-	command.planar = hires_visibility_polygon_plane(vertices, count, &command.plane);
+	command.planar = hires_visibility_polygon_plane(vertices, count, &command.depth.plane);
+	if (!command.planar) {
+		buffer->depths = hires_visibility_reserve(
+			buffer->depths, &buffer->depth_capacity, buffer->depth_count + count,
+			buffer == &hires_frame ? HIRES_VISIBILITY_INITIAL_DEPTHS
+								   : HIRES_VISIBILITY_INITIAL_BUILD_DEPTHS,
+			sizeof(*buffer->depths), &buffer->allocation_failed);
+		if (buffer->allocation_failed) {
+			return;
+		}
+		command.depth.first_depth = (legacy_u32)buffer->depth_count;
+	}
 	const struct HIRES_BACKEND_VERTEX *previous = &vertices[count - 1U];
 	for (legacy_u32 vertex = 0; vertex < count; vertex++) {
 		const struct HIRES_BACKEND_VERTEX *current = &vertices[vertex];
@@ -250,14 +257,12 @@ void hires_backend_polygon_to(struct HIRES_BACKEND_BUFFER *buffer,
 			continue;
 		}
 		legacy_f64 reciprocal = 1.0 / (upper->y - lower->y);
-		buffer->edges[buffer->edge_count++] =
-			(struct HIRES_VISIBILITY_EDGE){lower->x,
-										   lower->y,
-										   lower->inverse_z,
-										   (upper->x - lower->x) * reciprocal,
-										   (upper->inverse_z - lower->inverse_z) * reciprocal,
-										   top,
-										   bottom};
+		buffer->edges[buffer->edge_count++] = (struct HIRES_VISIBILITY_EDGE){
+			lower->x, lower->y, (upper->x - lower->x) * reciprocal, top, bottom};
+		if (!command.planar) {
+			buffer->depths[buffer->depth_count++] = (struct HIRES_VISIBILITY_EDGE_DEPTH){
+				lower->inverse_z, (upper->inverse_z - lower->inverse_z) * reciprocal};
+		}
 		command.hires_edge_count++;
 		if (top < command.top) {
 			command.top = top;
@@ -268,6 +273,9 @@ void hires_backend_polygon_to(struct HIRES_BACKEND_BUFFER *buffer,
 	}
 	if (command.hires_edge_count < 2U) {
 		buffer->edge_count = command.first_edge;
+		if (!command.planar) {
+			buffer->depth_count = command.depth.first_depth;
+		}
 		return;
 	}
 	buffer->commands = hires_visibility_reserve(
@@ -311,11 +319,18 @@ static void hires_backend_merge_job(void *argument, legacy_s32 index)
 	for (size_t command = 0; command < buffer->command_count; command++) {
 		struct HIRES_VISIBILITY_COMMAND copy = buffer->commands[command];
 		copy.first_edge += (legacy_u32)buffer->edge_offset;
+		if (!copy.planar) {
+			copy.depth.first_depth += (legacy_u32)buffer->depth_offset;
+		}
 		hires_frame.commands[buffer->command_offset + command] = copy;
 	}
 	if (buffer->edge_count != 0) {
 		memcpy(hires_frame.edges + buffer->edge_offset, buffer->edges,
 			   buffer->edge_count * sizeof(*buffer->edges));
+	}
+	if (buffer->depth_count != 0) {
+		memcpy(hires_frame.depths + buffer->depth_offset, buffer->depths,
+			   buffer->depth_count * sizeof(*buffer->depths));
 	}
 }
 
@@ -350,6 +365,7 @@ void hires_backend_build(legacy_s32 count,
 	hires_render_workers_run(count, hires_backend_build_job, &build);
 	size_t commands = hires_frame.command_count;
 	size_t edges = hires_frame.edge_count;
+	size_t depths = hires_frame.depth_count;
 	for (legacy_s32 index = 0; index < count; index++) {
 		struct HIRES_BACKEND_BUFFER *buffer = &hires_build_buffers[index];
 		if (buffer->allocation_failed ||
@@ -360,8 +376,10 @@ void hires_backend_build(legacy_s32 count,
 		}
 		buffer->command_offset = commands;
 		buffer->edge_offset = edges;
+		buffer->depth_offset = depths;
 		commands += buffer->command_count;
 		edges += buffer->edge_count;
+		depths += buffer->depth_count;
 		if (hires_frame.command_area < HIRES_VISIBILITY_PARALLEL_MIN_AREA) {
 			hires_frame.command_area += buffer->command_area;
 		}
@@ -372,30 +390,41 @@ void hires_backend_build(legacy_s32 count,
 	hires_frame.edges = hires_visibility_reserve(hires_frame.edges, &hires_frame.edge_capacity,
 												 edges, HIRES_VISIBILITY_INITIAL_EDGES,
 												 sizeof(*hires_frame.edges), &failed);
+	hires_frame.depths = hires_visibility_reserve(hires_frame.depths, &hires_frame.depth_capacity,
+												  depths, HIRES_VISIBILITY_INITIAL_DEPTHS,
+												  sizeof(*hires_frame.depths), &failed);
 	if (failed) {
 		fatal_error("Cannot allocate HyperVision command buffer");
 		return;
 	}
 	/* Prefix offsets preserve authored primitive order while independent workers
-	 * copy commands and edges into disjoint output ranges. */
+	 * copy commands, edges and fallback depths into disjoint output ranges. */
 	hires_render_workers_run(count, hires_backend_merge_job, NULL);
 	hires_frame.command_count = commands;
 	hires_frame.edge_count = edges;
+	hires_frame.depth_count = depths;
 }
 
-static legacy_f64 hires_visibility_depth(const struct HIRES_VISIBILITY_SPAN *span, legacy_s32 x)
+/* Both endpoints share material classification. Keep each depth expression in
+ * its original order so decal scaling and coplanar tie tests retain their
+ * rounding behavior. The incoming span always names a queued command. */
+static void hires_visibility_depths(const struct HIRES_VISIBILITY_SPAN *span, legacy_u8 flags,
+									legacy_s32 left, legacy_s32 right, legacy_f64 *first,
+									legacy_f64 *last)
 {
-	if (span->command == HIRES_VISIBILITY_NO_COMMAND) {
-		return -DBL_MAX;
+	if ((flags & HIRES_BACKEND_BACKGROUND) != 0U) {
+		*first = 0;
+		*last = 0;
+		return;
 	}
-	const struct HIRES_BACKEND_MATERIAL *material = &hires_frame.commands[span->command].material;
-	if ((material->flags & HIRES_BACKEND_BACKGROUND) != 0U) {
-		return 0;
+	legacy_f64 first_depth = span->origin + span->step * left;
+	legacy_f64 last_depth = span->origin + span->step * (right - 1);
+	if ((flags & HIRES_BACKEND_DECAL) != 0U) {
+		first_depth *= HIRES_VISIBILITY_DECAL_DEPTH_SCALE;
+		last_depth *= HIRES_VISIBILITY_DECAL_DEPTH_SCALE;
 	}
-	legacy_f64 depth = span->origin + span->step * x;
-	return (material->flags & HIRES_BACKEND_DECAL) != 0U
-			   ? depth * HIRES_VISIBILITY_DECAL_DEPTH_SCALE
-			   : depth;
+	*first = first_depth;
+	*last = last_depth;
 }
 
 static void hires_visibility_append(struct HIRES_VISIBILITY_SPAN *output, legacy_s32 *count,
@@ -422,63 +451,149 @@ static void hires_visibility_append(struct HIRES_VISIBILITY_SPAN *output, legacy
  * functions cross at most once, so an overlap needs only its endpoint tests. */
 static void hires_visibility_insert(struct HIRES_VISIBILITY_SPAN *visible, legacy_s32 *count,
 									struct HIRES_VISIBILITY_SPAN *scratch,
-									const struct HIRES_VISIBILITY_SPAN *incoming, legacy_s32 y)
+									const struct HIRES_VISIBILITY_SPAN *incoming, legacy_s32 y,
+									legacy_s32 *hint)
 {
 	const struct HIRES_BACKEND_MATERIAL *material =
 		&hires_frame.commands[incoming->command].material;
-	legacy_s32 first = 0;
-	legacy_s32 end = *count;
-	while (first < end) {
-		legacy_s32 middle = first + (end - first) / 2;
-		if (visible[middle].right <= incoming->left) {
-			first = middle + 1;
-		} else {
-			end = middle;
+	const legacy_u8 flags = material->flags;
+	const legacy_u32 family = material->family;
+	const legacy_s32 ground_clip =
+		hires_ground_enabled && (flags & HIRES_BACKEND_GROUND_CLIP) != 0U;
+	/* Neighboring faces often begin inside the same partition span. Keep a
+	 * scanline-local hint and check one adjacent span before searching. */
+	legacy_s32 first = *hint;
+	legacy_s32 nearby =
+		visible[first].left <= incoming->left && incoming->left < visible[first].right;
+	if (!nearby) {
+		if (incoming->left < visible[first].left) {
+			if (first > 0) {
+				first--;
+				nearby = visible[first].left <= incoming->left;
+			}
+		} else if (first + 1 < *count) {
+			first++;
+			nearby = incoming->left < visible[first].right;
+		}
+	}
+	if (!nearby) {
+		/* Halve the candidate length independently of the comparison so native
+		 * compilers can select the next index without a data-dependent branch. */
+		first = 0;
+		legacy_s32 remaining = *count;
+		while (remaining > 1) {
+			legacy_s32 half = remaining / 2;
+			legacy_s32 middle = first + half;
+			first = visible[middle - 1].right <= incoming->left ? middle : first;
+			remaining -= half;
+		}
+		if (remaining != 0) {
+			first += visible[first].right <= incoming->left;
 		}
 	}
 	legacy_s32 last = first;
 	legacy_s32 replacement = 0;
-	hires_visibility_append(scratch, &replacement, &visible[first], visible[first].left,
-							incoming->left);
+	legacy_s32 changed = 0;
 	while (last < *count && visible[last].left < incoming->right) {
 		const struct HIRES_VISIBILITY_SPAN *old = &visible[last];
 		legacy_s32 left = old->left > incoming->left ? old->left : incoming->left;
 		legacy_s32 right = old->right < incoming->right ? old->right : incoming->right;
-		if ((material->flags & HIRES_BACKEND_DECAL) != 0U &&
-			old->command != HIRES_VISIBILITY_NO_COMMAND &&
-			material->family != HIRES_DEPTH_FAMILY_NONE &&
-			material->family == hires_frame.commands[old->command].material.family) {
+		const struct HIRES_BACKEND_MATERIAL *old_material =
+			old->command == HIRES_VISIBILITY_NO_COMMAND
+				? NULL
+				: &hires_frame.commands[old->command].material;
+		const legacy_u8 old_flags = old_material != NULL ? old_material->flags : 0;
+		legacy_s32 supported = (flags & HIRES_BACKEND_DECAL) != 0U && old_material != NULL &&
+							   family != HIRES_DEPTH_FAMILY_NONE && family == old_material->family;
+		legacy_f64 start = 0, finish = 0;
+		if (!supported) {
+			/* Independently clipped coplanar edges can differ by a few depth ULPs.
+			 * Treat those surfaces as tied across the overlap instead of amplifying
+			 * a near-zero slope into alternating one-row visibility fragments. */
+			legacy_f64 first_depth, last_depth;
+			legacy_f64 old_first = -DBL_MAX, old_last = -DBL_MAX;
+			hires_visibility_depths(incoming, flags, left, right, &first_depth, &last_depth);
+			if (old_material != NULL) {
+				hires_visibility_depths(old, old_flags, left, right, &old_first, &old_last);
+			}
+			if (ground_clip &&
+				(old_material == NULL || (old_flags & HIRES_BACKEND_BACKGROUND) != 0U)) {
+				old_first =
+					hires_ground.origin + hires_ground.y_step * y + hires_ground.x_step * left;
+				old_last = hires_ground.origin + hires_ground.y_step * y +
+						   hires_ground.x_step * (right - 1);
+			}
+			start = first_depth * (1 + HIRES_VISIBILITY_DEPTH_RELATIVE_EPSILON) - old_first;
+			finish = last_depth * (1 + HIRES_VISIBILITY_DEPTH_RELATIVE_EPSILON) - old_last;
+			if (start < 0 && finish < 0) {
+				if (changed) {
+					hires_visibility_append(scratch, &replacement, old, left, right);
+				}
+				last++;
+				continue;
+			}
+		}
+		/* A contained winner leaves one or two unchanged ends. Write the final
+		 * partition directly, preserving coalescing. Exact whole spans retain
+		 * the general path below. */
+		if (first == last && incoming->right <= old->right &&
+			(old->left < incoming->left || incoming->right < old->right) &&
+			(supported || (start >= 0 && finish >= 0))) {
+			legacy_s32 prefix = old->left < incoming->left;
+			legacy_s32 suffix = incoming->right < old->right;
+			legacy_s32 added = prefix + suffix;
+			struct HIRES_VISIBILITY_SPAN previous = *old;
+			struct HIRES_VISIBILITY_SPAN winning = *incoming;
+			if (supported) {
+				winning.origin = previous.origin;
+				winning.step = previous.step;
+			}
+			if (previous.command == winning.command && previous.origin == winning.origin &&
+				previous.step == winning.step) {
+				*hint = first;
+				return;
+			}
+			memmove(visible + first + added + 1, visible + first + 1,
+					(size_t)(*count - first - 1) * sizeof(*visible));
+			if (prefix) {
+				visible[first] = previous;
+				visible[first].right = incoming->left;
+			}
+			visible[first + prefix] = winning;
+			if (suffix) {
+				visible[first + prefix + 1] = previous;
+				visible[first + prefix + 1].left = incoming->right;
+			}
+			*count += added;
+			*hint = first + prefix;
+			return;
+		}
+		if (!changed) {
+			/* Hidden surfaces leave the partition unchanged. Delay scratch writes
+			 * until the first winning overlap, then restore its untouched
+			 * prefix and any preceding overlaps rejected by the depth tests. */
+			hires_visibility_append(scratch, &replacement, &visible[first], visible[first].left,
+									incoming->left);
+			for (legacy_s32 rejected = first; rejected < last; rejected++) {
+				const struct HIRES_VISIBILITY_SPAN *prefix = &visible[rejected];
+				legacy_s32 prefix_left =
+					prefix->left > incoming->left ? prefix->left : incoming->left;
+				legacy_s32 prefix_right =
+					prefix->right < incoming->right ? prefix->right : incoming->right;
+				hires_visibility_append(scratch, &replacement, prefix, prefix_left, prefix_right);
+			}
+			changed = 1;
+		}
+		if (supported) {
 			/* An authored decal is a material layer on its support. Keep that
 			 * support's depth for other shapes and shadows, independent of the
 			 * decal's deliberately offset vertices. */
-			struct HIRES_VISIBILITY_SPAN supported = *incoming;
-			supported.origin = old->origin;
-			supported.step = old->step;
-			hires_visibility_append(scratch, &replacement, &supported, left, right);
-			last++;
-			continue;
-		}
-		/* Independently clipped coplanar edges can differ by a few depth ULPs.
-		 * Treat those surfaces as tied across the overlap instead of amplifying
-		 * a near-zero slope into alternating one-row visibility fragments. */
-		legacy_f64 first_depth = hires_visibility_depth(incoming, left);
-		legacy_f64 last_depth = hires_visibility_depth(incoming, right - 1);
-		legacy_f64 old_first = hires_visibility_depth(old, left);
-		legacy_f64 old_last = hires_visibility_depth(old, right - 1);
-		if (hires_ground_enabled && (material->flags & HIRES_BACKEND_GROUND_CLIP) != 0U &&
-			(old->command == HIRES_VISIBILITY_NO_COMMAND ||
-			 (hires_frame.commands[old->command].material.flags & HIRES_BACKEND_BACKGROUND) !=
-				 0U)) {
-			old_first = hires_ground.origin + hires_ground.y_step * y + hires_ground.x_step * left;
-			old_last =
-				hires_ground.origin + hires_ground.y_step * y + hires_ground.x_step * (right - 1);
-		}
-		legacy_f64 start = first_depth * (1 + HIRES_VISIBILITY_DEPTH_RELATIVE_EPSILON) - old_first;
-		legacy_f64 finish = last_depth * (1 + HIRES_VISIBILITY_DEPTH_RELATIVE_EPSILON) - old_last;
-		if (start >= 0 && finish >= 0) {
+			struct HIRES_VISIBILITY_SPAN supported_span = *incoming;
+			supported_span.origin = old->origin;
+			supported_span.step = old->step;
+			hires_visibility_append(scratch, &replacement, &supported_span, left, right);
+		} else if (start >= 0 && finish >= 0) {
 			hires_visibility_append(scratch, &replacement, incoming, left, right);
-		} else if (start < 0 && finish < 0) {
-			hires_visibility_append(scratch, &replacement, old, left, right);
 		} else {
 			legacy_f64 crossing = left - start * (right - left - 1) / (finish - start);
 			legacy_s32 split = hires_visibility_ceil(crossing);
@@ -497,12 +612,18 @@ static void hires_visibility_insert(struct HIRES_VISIBILITY_SPAN *visible, legac
 		}
 		last++;
 	}
+	if (!changed) {
+		*hint = first;
+		return;
+	}
 	hires_visibility_append(scratch, &replacement, &visible[last - 1], incoming->right,
 							visible[last - 1].right);
 	memmove(visible + first + replacement, visible + last,
 			(size_t)(*count - last) * sizeof(*visible));
 	memcpy(visible + first, scratch, (size_t)replacement * sizeof(*visible));
 	*count += replacement - (last - first);
+	/* At most one untouched prefix can end at the incoming left edge. */
+	*hint = first + (visible[first].right <= incoming->left);
 }
 
 static void hires_visibility_sample_span(struct HIRES_RASTER_CONTEXT *context,
@@ -547,11 +668,14 @@ static void hires_visibility_scan_command(struct HIRES_VISIBILITY_BIN *bin,
 										  legacy_u32 command_index, legacy_s32 y,
 										  struct HIRES_VISIBILITY_SPAN *visible,
 										  legacy_s32 *visible_count,
-										  struct HIRES_VISIBILITY_SPAN *scratch, legacy_s32 sampled)
+										  struct HIRES_VISIBILITY_SPAN *scratch, legacy_s32 *hint,
+										  legacy_s32 sampled)
 {
 	const struct HIRES_VISIBILITY_COMMAND *command = &hires_frame.commands[command_index];
 	struct HIRES_VISIBILITY_CROSSING crossings[HIRES_BACKEND_MAX_VERTICES];
 	legacy_u32 crossing_count = 0;
+	const struct HIRES_VISIBILITY_EDGE_DEPTH *depths =
+		command->planar ? NULL : hires_frame.depths + command->depth.first_depth;
 	for (legacy_u32 index = 0; index < command->hires_edge_count; index++) {
 		const struct HIRES_VISIBILITY_EDGE *edge = &hires_frame.edges[command->first_edge + index];
 		if (y < edge->top || y >= edge->bottom) {
@@ -560,7 +684,9 @@ static void hires_visibility_scan_command(struct HIRES_VISIBILITY_BIN *bin,
 		legacy_f64 distance = y + HIRES_VISIBILITY_HALF_PIXEL - edge->y;
 		struct HIRES_VISIBILITY_CROSSING crossing = {
 			edge->x + hires_visibility_binary64(distance * edge->x_step),
-			command->planar ? 0 : edge->z + hires_visibility_binary64(distance * edge->z_step)};
+			depths == NULL
+				? 0
+				: depths[index].z + hires_visibility_binary64(distance * depths[index].z_step)};
 		legacy_u32 insertion = crossing_count++;
 		while (insertion != 0 && crossings[insertion - 1U].x > crossing.x) {
 			crossings[insertion] = crossings[insertion - 1U];
@@ -585,10 +711,10 @@ static void hires_visibility_scan_command(struct HIRES_VISIBILITY_BIN *bin,
 		if (left >= right) {
 			continue;
 		}
-		legacy_f64 step =
-			command->planar ? command->plane.x_step : (last->z - first->z) / (last->x - first->x);
+		legacy_f64 step = command->planar ? command->depth.plane.x_step
+										  : (last->z - first->z) / (last->x - first->x);
 		legacy_f64 origin = command->planar
-								? command->plane.origin + y * command->plane.y_step
+								? command->depth.plane.origin + y * command->depth.plane.y_step
 								: first->z + (HIRES_VISIBILITY_HALF_PIXEL - first->x) * step;
 		struct HIRES_VISIBILITY_SPAN span = {left, right, origin, step, command_index};
 
@@ -598,7 +724,7 @@ static void hires_visibility_scan_command(struct HIRES_VISIBILITY_BIN *bin,
 		if (sampled) {
 			hires_visibility_sample_span(&bin->context, &span, y);
 		} else {
-			hires_visibility_insert(visible, visible_count, scratch, &span, y);
+			hires_visibility_insert(visible, visible_count, scratch, &span, y, hint);
 		}
 	}
 }
@@ -611,32 +737,21 @@ static void hires_visibility_draw_band(void *argument, legacy_s32 band)
 	struct HIRES_VISIBILITY_SPAN scratch[HIRES_VISIBILITY_SPAN_CAPACITY];
 	for (legacy_s32 y = bin->context.top; y < bin->context.bottom; y++) {
 		legacy_s32 count = 1;
+		legacy_s32 hint = 0;
 		visible[0] =
 			(struct HIRES_VISIBILITY_SPAN){bin->context.target->left, bin->context.target->right, 0,
 										   0, HIRES_VISIBILITY_NO_COMMAND};
-		for (size_t index = 0; index < bin->count; index++) {
-			legacy_u32 entry = bin->hires_commands[index];
-			const struct HIRES_VISIBILITY_COMMAND *command = &hires_frame.commands[entry];
-			if (y < command->top || y >= command->bottom ||
-				(command->material.mode == HIRES_PAINT_PATTERN ||
-				 (command->material.flags & (HIRES_BACKEND_DECAL | HIRES_BACKEND_GROUND_CLIP)) !=
-					 0U)) {
-				continue;
-			}
-			hires_visibility_scan_command(bin, entry, y, visible, &count, scratch,
-										  hires_incremental);
-		}
-		/* Solid detail layers share the same visibility partition. Most road
-		 * markings and line quads therefore need no per-sample depth checks. */
-		for (size_t index = 0; index < bin->count; index++) {
-			legacy_u32 entry = bin->hires_commands[index];
-			const struct HIRES_VISIBILITY_COMMAND *command = &hires_frame.commands[entry];
-			if (command->material.mode != HIRES_PAINT_PATTERN &&
-				(command->material.flags & (HIRES_BACKEND_DECAL | HIRES_BACKEND_GROUND_CLIP)) !=
-					0U &&
-				y >= command->top && y < command->bottom) {
-				hires_visibility_scan_command(bin, entry, y, visible, &count, scratch,
-											  hires_incremental);
+		/* Classify once when bins are built. Each list keeps submission order,
+		 * and solid detail layers still follow their supporting surfaces. */
+		for (legacy_s32 kind = HIRES_VISIBILITY_SOLID; kind <= HIRES_VISIBILITY_DETAIL; kind++) {
+			const struct HIRES_VISIBILITY_LIST *list = &bin->lists[kind];
+			for (size_t index = 0; index < list->count; index++) {
+				legacy_u32 entry = list->commands[index];
+				const struct HIRES_VISIBILITY_COMMAND *command = &hires_frame.commands[entry];
+				if (y >= command->top && y < command->bottom) {
+					hires_visibility_scan_command(bin, entry, y, visible, &count, scratch, &hint,
+												  hires_incremental);
+				}
 			}
 		}
 		if (!hires_incremental) {
@@ -654,12 +769,12 @@ static void hires_visibility_draw_band(void *argument, legacy_s32 band)
 					material->color, material->alternate, material->pattern, material->mode);
 			}
 		}
-		for (size_t index = 0; index < bin->count; index++) {
-			legacy_u32 entry = bin->hires_commands[index];
+		const struct HIRES_VISIBILITY_LIST *patterns = &bin->lists[HIRES_VISIBILITY_PATTERN];
+		for (size_t index = 0; index < patterns->count; index++) {
+			legacy_u32 entry = patterns->commands[index];
 			const struct HIRES_VISIBILITY_COMMAND *command = &hires_frame.commands[entry];
-			if (command->material.mode == HIRES_PAINT_PATTERN && y >= command->top &&
-				y < command->bottom) {
-				hires_visibility_scan_command(bin, entry, y, visible, &count, scratch, 1);
+			if (y >= command->top && y < command->bottom) {
+				hires_visibility_scan_command(bin, entry, y, visible, &count, scratch, &hint, 1);
 			}
 		}
 	}
@@ -680,7 +795,9 @@ legacy_s32 hires_backend_end(const struct HIRES_RASTER_TARGET *target, legacy_s3
 		(target->height + HIRES_VISIBILITY_BAND_HEIGHT - 1) / HIRES_VISIBILITY_BAND_HEIGHT;
 	for (legacy_s32 band = 0; band < band_count; band++) {
 		struct HIRES_VISIBILITY_BIN *bin = &hires_bins[band];
-		bin->count = 0;
+		for (legacy_s32 kind = 0; kind < HIRES_VISIBILITY_CLASS_COUNT; kind++) {
+			bin->lists[kind].count = 0;
+		}
 		bin->context = (struct HIRES_RASTER_CONTEXT){target, band * HIRES_VISIBILITY_BAND_HEIGHT,
 													 (band + 1) * HIRES_VISIBILITY_BAND_HEIGHT, 0};
 		if (bin->context.top < target->top) {
@@ -692,21 +809,26 @@ legacy_s32 hires_backend_end(const struct HIRES_RASTER_TARGET *target, legacy_s3
 	}
 	for (size_t index = 0; index < hires_frame.command_count; index++) {
 		const struct HIRES_VISIBILITY_COMMAND *command = &hires_frame.commands[index];
+		legacy_s32 kind =
+			command->material.mode == HIRES_PAINT_PATTERN ? HIRES_VISIBILITY_PATTERN
+			: (command->material.flags & (HIRES_BACKEND_DECAL | HIRES_BACKEND_GROUND_CLIP)) != 0U
+				? HIRES_VISIBILITY_DETAIL
+				: HIRES_VISIBILITY_SOLID;
 		legacy_s32 first = command->top / HIRES_VISIBILITY_BAND_HEIGHT;
 		legacy_s32 last = (command->bottom - 1) / HIRES_VISIBILITY_BAND_HEIGHT;
 		if (last >= band_count) {
 			last = band_count - 1;
 		}
 		for (legacy_s32 band = first; band <= last; band++) {
-			struct HIRES_VISIBILITY_BIN *bin = &hires_bins[band];
-			bin->hires_commands = hires_visibility_reserve(
-				bin->hires_commands, &bin->capacity, bin->count + 1U, HIRES_VISIBILITY_INITIAL_BIN,
-				sizeof(*bin->hires_commands), &hires_frame.allocation_failed);
+			struct HIRES_VISIBILITY_LIST *list = &hires_bins[band].lists[kind];
+			list->commands = hires_visibility_reserve(
+				list->commands, &list->capacity, list->count + 1U, HIRES_VISIBILITY_INITIAL_BIN,
+				sizeof(*list->commands), &hires_frame.allocation_failed);
 			if (hires_frame.allocation_failed) {
 				fatal_error("Cannot allocate HyperVision visibility bins");
 				return 0;
 			}
-			bin->hires_commands[bin->count++] = (legacy_u32)index;
+			list->commands[list->count++] = (legacy_u32)index;
 		}
 	}
 	legacy_s32 workers = 0;
@@ -725,5 +847,6 @@ legacy_s32 hires_backend_end(const struct HIRES_RASTER_TARGET *target, legacy_s3
 	hires_raster_finish(target, cleared);
 	hires_frame.command_count = 0;
 	hires_frame.edge_count = 0;
+	hires_frame.depth_count = 0;
 	return workers;
 }

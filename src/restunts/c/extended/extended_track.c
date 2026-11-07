@@ -8,6 +8,9 @@
 #include "../track/track_objects.h"
 #include "../track/trackdata_layout.h"
 #include "extended_geometry.h"
+#ifndef RESTUNTS_HEADLESS
+#include "extended_frame_render.h"
+#endif
 #include "roll_ramp.h"
 
 struct EXTENDED_TRACK_BINDINGS {
@@ -22,6 +25,11 @@ struct EXTENDED_TRACK_BINDINGS {
 	legacy_s8 *columns;
 	legacy_s8 *rows;
 };
+
+#define EXTENDED_TRACK_FOOTPRINT_ORIGIN_COUNT 4U
+#if EXTENDED_TRACK_FOOTPRINT_ORIGIN_COUNT * CSTRK_MAX_OBJECTS > LEGACY_U16_MAX
+#error Extended track candidate offsets must fit in legacy_u16
+#endif
 
 struct EXTENDED_TRACK_STORAGE {
 	legacy_s16 primary[EXTENDED_TRACK_ROUTE_CAPACITY];
@@ -39,6 +47,8 @@ struct EXTENDED_TRACK_STORAGE {
 	int32_t origin_next[CSTRK_MAX_OBJECTS];
 	uint8_t object_ids[CSTRK_MAX_OBJECTS];
 	legacy_u8 lap_tiles[EXTENDED_TRACK_MAX_CELLS];
+	legacy_u16 candidate_offsets[EXTENDED_TRACK_MAX_CELLS + 1U];
+	legacy_u16 candidate_indices[EXTENDED_TRACK_FOOTPRINT_ORIGIN_COUNT * CSTRK_MAX_OBJECTS];
 };
 
 static struct CSTRK_TRACK current_track;
@@ -385,6 +395,9 @@ static void extended_track_rebind(void)
 
 void extended_track_unload(void)
 {
+#ifndef RESTUNTS_HEADLESS
+	hires_frame_extended_ground_cache_reset();
+#endif
 	restore_bindings();
 	free(storage);
 	storage = NULL;
@@ -583,6 +596,25 @@ static int prepare_storage(const struct CSTRK_TRACK *track, struct EXTENDED_TRAC
 			}
 		}
 	}
+	/* Flatten all four frozen origin chains in the query's original order.
+	 * Keep non-covering candidates too: queries still inspect live object
+	 * coordinates and dimensions, including unclaimed footprint quadrants. */
+	legacy_u16 candidate_count = 0;
+	for (legacy_u16 row = 0; row < track->height; row++) {
+		for (legacy_u16 column = 0; column < track->width; column++) {
+			legacy_u16 cell = row * track->width + column;
+			target->candidate_offsets[cell] = candidate_count;
+			for (legacy_u16 y = row > 0 ? row - 1U : row; y <= row; y++) {
+				for (legacy_u16 x = column > 0 ? column - 1U : column; x <= column; x++) {
+					for (legacy_s32 index = target->origin_heads[y * track->width + x]; index >= 0;
+						 index = target->origin_next[index]) {
+						target->candidate_indices[candidate_count++] = (legacy_u16)index;
+					}
+				}
+			}
+		}
+	}
+	target->candidate_offsets[track->width * track->height] = candidate_count;
 	/* Draw/route map retains resource anchor and continuation semantics. Road
  * anchors take priority over decoration anchors in a free inner quadrant;
  * collision and rendering use the independent object list and occupancy. */
@@ -633,6 +665,9 @@ int extended_track_load(const uint8_t *data, size_t size, char *error, size_t er
 		cstrk_free(&next);
 		return 0;
 	}
+#ifndef RESTUNTS_HEADLESS
+	hires_frame_extended_ground_cache_reset();
+#endif
 	restore_bindings();
 	free(storage);
 	cstrk_free(&current_track);
@@ -668,22 +703,19 @@ const struct CSTRK_OBJECT *extended_track_object_at(int column, int row)
 legacy_u16 extended_track_objects_in_cell(legacy_s16 column, legacy_s16 row,
 										  const struct CSTRK_OBJECT **objects, legacy_u16 capacity)
 {
-	if (!storage || !objects || column < 0 || row < 0 || column >= current_track.width ||
-		row >= current_track.height) {
+	if (!storage || !objects || capacity == 0 || column < 0 || row < 0 ||
+		column >= current_track.width || row >= current_track.height) {
 		return 0;
 	}
+	legacy_u16 cell = row * current_track.width + column;
 	legacy_u16 count = 0;
-	/* At most four origins can cover a cell with one- or two-cell pieces. */
-	for (legacy_s16 y = row > 0 ? row - 1 : row; y <= row; y++) {
-		for (legacy_s16 x = column > 0 ? column - 1 : column; x <= column; x++) {
-			for (legacy_s32 index = storage->origin_heads[y * current_track.width + x]; index >= 0;
-				 index = storage->origin_next[index]) {
-				const struct CSTRK_OBJECT *object = &current_track.objects[index];
-				if (column < object->x + object->width && row < object->y + object->height &&
-					count < capacity) {
-					objects[count++] = object;
-				}
-			}
+	legacy_u16 end = storage->candidate_offsets[cell + 1U];
+	for (legacy_u16 candidate = storage->candidate_offsets[cell];
+		 candidate < end && count < capacity; candidate++) {
+		const struct CSTRK_OBJECT *object =
+			&current_track.objects[storage->candidate_indices[candidate]];
+		if (column < object->x + object->width && row < object->y + object->height) {
+			objects[count++] = object;
 		}
 	}
 	return count;

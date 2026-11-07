@@ -954,6 +954,7 @@
     }
     function checkTrack() {
         const issues = state.doc.validate(), container = $('check-results');
+        let succeeded = false;
         container.replaceChildren();
         const intro = document.createElement('p');
         intro.textContent = 'Checks terrain, piece placement, surfaces, and the connected race route, including jump rules.';
@@ -961,7 +962,16 @@
         function addResult(text, error = false) {
             const item = document.createElement('div');
             item.className = 'check-item' + (error ? ' error' : '');
-            item.textContent = text;
+            const icon = document.createElement('span');
+            icon.className = 'check-result-icon';
+            icon.dataset.result = error ? 'error' : 'success';
+            icon.setAttribute('role', 'img');
+            icon.setAttribute('aria-label', error ? 'Track check failed' : 'Track check passed');
+            icon.append(makeIcon(error ? 'close' : 'tick'));
+            const message = document.createElement('span');
+            message.className = 'check-message';
+            message.textContent = text;
+            item.append(icon, message);
             container.append(item);
         }
         if (issues.length) {
@@ -973,12 +983,14 @@
                 }
                 const route = window.TrackEditorValidation.validateRoute(state.doc);
                 if (route.status === 0) {
+                    succeeded = true;
                     addResult('Track data and race route are valid. ' + route.pieces + ' route pieces across ' + state.doc.width + ' × ' + state.doc.height + ' tiles.');
                 } else addResult(route.message, true);
             } catch (error) {
                 addResult(error?.message || 'The race route could not be checked.', true);
             }
         }
+        $('check-title').textContent = succeeded ? 'Track passed validation' : 'Track failed validation';
         showDialog('check-dialog');
     }
 
@@ -1150,6 +1162,7 @@
             if (ctrl && key === 's') { event.preventDefault(); finishDrag(); openSave(); }
             else if (ctrl && key === 'o') { event.preventDefault(); $('track-file-input').click(); }
             else if (ctrl && (key === 'z' || key === 'y')) { event.preventDefault(); historyEdit(key === 'y' || event.shiftKey); }
+            else if (!ctrl && !event.altKey && key === 'c') { event.preventDefault(); checkTrack(); }
             else if (state.viewMode === '3d') return;
             else if (ctrl && (key === 'c' || key === 'x') && state.selection?.objects.length) { event.preventDefault(); copySelection(key === 'x'); }
             else if (ctrl && key === 'v' && state.clipboard?.objects.length) { event.preventDefault(); startPaste(); }

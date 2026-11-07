@@ -9,18 +9,23 @@
 #define SHAPE3D_SHADOW_PRIMITIVE_FLAGS_OFFSET 1U
 struct SHAPE3D_HIRES_TRANSFORM_CONTEXT {
 	struct MATRIX object_to_world_rotation;
+	legacy_u8 object_rotation_identity;
 	struct SHAPE3D_HIRES_VECTOR object_translation;
 	struct SHAPE3D_HIRES_VECTOR view_origin;
 	struct SHAPE3D_HIRES_VECTOR hires_vertices[SHAPE3D_HIRES_VERTEX_CAPACITY];
+	struct SHAPE3D_HIRES_VECTOR *extended_vertices;
 	const struct SHAPE3D_HIRES_VECTOR *source_vertices;
 	legacy_u32 shadow_surfaces[SHAPE3D_SHADOW_PRIMITIVE_CAPACITY];
+	legacy_u32 *extended_shadow_surfaces;
 	legacy_u32 shadow_surface_count;
 };
 struct SHAPE3D_HIRES_PIPELINE_CONTEXT {
 	legacy_u16 vertex_count, paint_count;
 	legacy_u8 material, flags, view_sector;
 	struct RECTANGLE *rectangle;
+	struct SHAPE3D_HIRES_CLIP_CONTEXT clip;
 	legacy_u8 vertex_clip_flags[LEGACY_U8_MAX + 1U];
+	legacy_u8 *extended_vertex_clip_flags;
 	struct MATRIX object_to_view_rotation;
 	struct SHAPE3D_HIRES_TRANSFORM_CONTEXT hires;
 	legacy_s32 visibility_mask;
