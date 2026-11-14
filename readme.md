@@ -539,6 +539,8 @@ F11, Shift+F11, and F12 also work in both car-selection screens and during the
 nighttime driving intro without skipping the animation, including in 16-bit DOS. F12 also
 works in the track preview and opponent-selection menu, with the same two-second
 status display. SDL3 builds additionally support Shift+F12 in these locations.
+F11, F12, and SDL3's Shift+F12 also retain their display actions throughout the
+intro screens and the main menu's idle replay without dismissing playback.
 The main menu, opponent biographies, and static track-selection previews hide
 F11 diagnostics; the F11 setting is retained when returning to a screen that
 displays them. HyperVision previews of extended tracks show the same diagnostics
@@ -2029,6 +2031,22 @@ python3 tools/scripts/test-plan-replay-shards.py
 dotnet test tools/scripts/dumpsrv/dumpsrv.slnx --configuration Release
 dotnet format tools/scripts/dumpsrv/dumpsrv.slnx --verify-no-changes
 ```
+
+### Workflow dependency lockfile
+
+The generated [.github/workflows/actions.lock](.github/workflows/actions.lock)
+pins direct and transitive action dependencies. The **Verify workflow lockfile**
+CI check verifies that it matches the workflows. Do not edit the lockfile manually.
+
+Install the pinned GitHub CLI extension, then regenerate the lockfile after
+changing action dependencies:
+
+```sh
+gh extension install github/gh-actions-lock --pin v0.4.1
+gh actions-lock
+```
+
+Validate it locally with `gh actions-lock --verify`.
 
 ### Compiler migration validation
 
